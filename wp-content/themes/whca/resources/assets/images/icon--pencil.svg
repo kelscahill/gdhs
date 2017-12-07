@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 45.2 (43514) - http://www.bohemiancoding.com/sketch -->
+    <title>pencil icon</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+        <g id="pencil-icon" stroke="#FDD370" stroke-width="2">
+            <path d="M5.34079748,18.1189782 L2.5,17.5 L2.35074953,15.0687267 L14.1135416,3.10448244 L17.1102937,6.15246106 L5.34079748,18.1189782 Z M19.8978765,3.31764396 L17.1108151,6.15234742 L14.1136905,3.10398997 L16.9007519,0.268907692 L19.8978765,3.31764396 Z" id="Combined-Shape"></path>
+            <path d="M5.3473154,18.117122 C4.1365972,18.3585604 3.26530962,18.2087717 2.73345266,17.6677559 C2.2015957,17.1267402 2.07384176,16.2602834 2.35019085,15.0683857 L1.16536864,17.952959 L1.16536864,17.952959 C0.9555321,18.4638279 1.19956708,19.0480752 1.71043602,19.2579117 C1.94995595,19.3562932 2.21829949,19.3579309 2.45900242,19.2624804 L5.3473154,18.117122 Z" id="Stroke-6"></path>
+        </g>
+    </g>
+</svg>

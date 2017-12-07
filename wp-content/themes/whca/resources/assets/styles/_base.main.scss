@@ -1,0 +1,13 @@
+/* ------------------------------------*\
+    $SITE MAIN
+\*------------------------------------ */
+
+body {
+  background: $background-color;
+  font: 400 100%/1.3 $font;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: $body-color;
+  overflow-x: hidden;
+}

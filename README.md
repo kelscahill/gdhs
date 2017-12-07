@@ -1,2 +1,2 @@
 # whca
-Repo for White House Correspondents' Association website
+Website for White House Correspondents' Association

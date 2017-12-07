@@ -1,0 +1,73 @@
+/* ------------------------------------*\
+    $COLOR MODIFIERS
+\*------------------------------------ */
+
+/**
+ * Text Colors
+ */
+.color--black {
+  color: $black;
+}
+
+.color--white {
+  color: $white;
+  -webkit-font-smoothing: antialiased;
+}
+
+.color--gray {
+  color: $gray;
+}
+
+/**
+ * Background Colors
+ */
+.no-bg {
+  background: none;
+}
+
+.background-color--white {
+  background-color: $white;
+}
+
+.background-color--black {
+  background-color: $black;
+}
+
+.background-color--primary {
+  background-color: $primary-color;
+}
+
+.background-color--secondary {
+  background-color: $secondary-color;
+}
+
+.background-color--tertiary {
+  background-color: $tertiary-color;
+}
+
+.background-color--quaternary {
+  background-color: $quaternary-color;
+}
+
+/**
+ * Path Fills
+ */
+.path-fill--white {
+  path {
+    fill: $white;
+  }
+}
+
+.path-fill--black {
+  path {
+    fill: $black;
+  }
+}
+
+.fill--white {
+  fill: $white;
+}
+
+.fill--black {
+  fill: $black;
+}

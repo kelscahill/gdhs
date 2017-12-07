@@ -1,0 +1,71 @@
+/* ------------------------------------*\
+    $ICONS
+\*------------------------------------ */
+.icon {
+  display: inline-block;
+}
+
+.icon--xs {
+  width: $icon-xsmall;
+  height: $icon-xsmall;
+}
+
+.icon--s {
+  width: $icon-small;
+  height: $icon-small;
+}
+
+.icon--m {
+  width: $icon-medium;
+  height: $icon-medium;
+}
+
+.icon--l {
+  width: $icon-large;
+  height: $icon-large;
+}
+
+.icon--xl {
+  width: $icon-xlarge;
+  height: $icon-xlarge;
+}
+
+.icon--admissions {
+  background: url('../../assets/images/icon--admissions.svg') no-repeat center center;
+}
+
+.icon--academics {
+  background: url('../../assets/images/icon--academics.svg') no-repeat center center;
+}
+
+.icon--building {
+  background: url('../../assets/images/icon--building.svg') no-repeat center center;
+}
+
+.icon--chart {
+  background: url('../../assets/images/icon--chart.svg') no-repeat center center;
+}
+
+.icon--contact {
+  background: url('../../assets/images/icon--contact.svg') no-repeat center center;
+}
+
+.icon--events {
+  background: url('../../assets/images/icon--events.svg') no-repeat center center;
+}
+
+.icon--news {
+  background: url('../../assets/images/icon--news.svg') no-repeat center center;
+}
+
+.icon--heart {
+  background: url('../../assets/images/icon--heart.svg') no-repeat center center;
+}
+
+.icon--pencil {
+  background: url('../../assets/images/icon--pencil.svg') no-repeat center center;
+}
+
+.icon--star {
+  background: url('../../assets/images/icon--star.svg') no-repeat center center;
+}

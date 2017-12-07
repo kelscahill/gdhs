@@ -1,0 +1,232 @@
+/* ------------------------------------*\
+    $SPECIFIC FORMS
+\*------------------------------------ */
+
+/* Chrome/Opera/Safari */
+::-webkit-input-placeholder {
+  color: $gray;
+}
+
+/* Firefox 19+ */
+::-moz-placeholder {
+  color: $gray;
+}
+
+/* IE 10+ */
+:-ms-input-placeholder {
+  color: $gray;
+}
+
+/* Firefox 18- */
+:-moz-placeholder {
+  color: $gray;
+}
+
+label {
+  margin-top: $space;
+  width: 100%;
+}
+
+input[type=email],
+input[type=number],
+input[type=search],
+input[type=tel],
+input[type=text],
+input[type=url],
+textarea {
+  width: 100%;
+}
+
+input[type=checkbox],
+input[type=radio] {
+  outline: none;
+  border: none;
+  margin: 0 rem(5) 0 0;
+  height: rem(15);
+  width: rem(15);
+  line-height: rem(15);
+  background-size: rem(15);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  cursor: pointer;
+  display: block;
+  float: left;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-appearance: none;
+  background-color: $white;
+  position: relative;
+  top: rem(5);
+}
+
+input[type=checkbox],
+input[type=radio] {
+  border-width: 1px;
+  border-style: solid;
+  border-color: $border-color;
+}
+
+input[type=checkbox]:checked,
+input[type=radio]:checked {
+  border-color: $border-color;
+  //background: url('../../dist/images/check.svg') center center no-repeat;
+}
+
+input[type=checkbox] + span,
+input[type=radio] + span {
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+}
+
+// Search Form
+.header--transparent .header__search {
+  .search-form {
+    input[type=text]:focus,
+    &.this-is-active input[type=text] {
+      color: white;
+
+      /* Chrome/Opera/Safari */
+      &::-webkit-input-placeholder {
+        color: white;
+      }
+
+      /* Firefox 19+ */
+      &::-moz-placeholder {
+        color: white;
+      }
+
+      /* IE 10+ */
+      &:-ms-input-placeholder {
+        color: white;
+      }
+
+      /* Firefox 18- */
+      &:-moz-placeholder {
+        color: white;
+      }
+    }
+  }
+}
+
+.header__search {
+  .search-form {
+    width: rem(230);
+
+    input[type=text]:focus,
+    &.this-is-active input[type=text] {
+      background-color: rgba($gray, 0.5);
+      color: $body-color;
+      right: 0;
+      transition: right 0.25s ease, color 0.2s ease;
+
+      /* Chrome/Opera/Safari */
+      &::-webkit-input-placeholder {
+        color: $body-color;
+      }
+
+      /* Firefox 19+ */
+      &::-moz-placeholder {
+        color: $body-color;
+      }
+
+      /* IE 10+ */
+      &:-ms-input-placeholder {
+        color: $body-color;
+      }
+
+      /* Firefox 18- */
+      &:-moz-placeholder {
+        color: $body-color;
+      }
+    }
+
+    input[type=text] {
+      background-color: transparent;
+      transition: all 0.3s ease;
+      width: rem(230);
+      right: rem(-230);
+      position: absolute;
+      color: transparent;
+
+      /* Chrome/Opera/Safari */
+      &::-webkit-input-placeholder {
+        color: transparent;
+      }
+
+      /* Firefox 19+ */
+      &::-moz-placeholder {
+        color: transparent;
+      }
+
+      /* IE 10+ */
+      &:-ms-input-placeholder {
+        color: transparent;
+      }
+
+      /* Firefox 18- */
+      &:-moz-placeholder {
+        color: transparent;
+      }
+    }
+  }
+}
+
+.search-form {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  position: relative;
+  overflow: hidden;
+  height: rem(50);
+  width: 100%;
+
+  input[type=text] {
+    border-radius: rem(7);
+    background-color: #002441;
+    height: rem(50);
+    border: none;
+    width: 100%;
+    right: 0;
+    position: absolute;
+    color: white;
+
+    /* Chrome/Opera/Safari */
+    &::-webkit-input-placeholder {
+      color: white;
+    }
+
+    /* Firefox 19+ */
+    &::-moz-placeholder {
+      color: white;
+    }
+
+    /* IE 10+ */
+    &:-ms-input-placeholder {
+      color: white;
+    }
+
+    /* Firefox 18- */
+    &:-moz-placeholder {
+      color: white;
+    }
+  }
+
+  button {
+    background-color: transparent;
+    padding: $pad-half;
+    padding-left: $pad;
+    position: absolute;
+    right: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+
+    &::after {
+      display: none;
+    }
+  }
+}
