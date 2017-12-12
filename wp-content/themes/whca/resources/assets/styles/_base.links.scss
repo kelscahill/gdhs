@@ -16,24 +16,3 @@ a {
     color: $body-color;
   }
 }
-
-.link--cta {
-  color: white;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-
-  .icon {
-    transition: right 0.25s ease-in-out;
-    right: 0;
-    position: relative;
-  }
-
-  &:hover {
-    color: white;
-
-    .icon {
-      right: rem(-2);
-    }
-  }
-}

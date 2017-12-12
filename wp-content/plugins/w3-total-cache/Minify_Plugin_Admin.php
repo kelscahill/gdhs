@@ -90,9 +90,7 @@ class Minify_Plugin_Admin {
 
 	public function admin_print_scripts_w3tc_general() {
 		$state = Dispatcher::config_state();
-		if ( !$state->get_boolean( 'minify.hide_minify_help' ) &&
-			!Util_Environment::is_w3tc_edge( $this->_config ) &&
-			!Util_Environment::is_w3tc_enterprise( $this->_config ) ) {
+		if ( !$state->get_boolean( 'minify.hide_minify_help' ) ) {
 			wp_enqueue_script( 'w3tc-minify-help',
 				plugins_url( 'Minify_GeneralPage_View_ShowHelp.js', W3TC_FILE ),
 				array(), W3TC_VERSION );
@@ -111,7 +109,7 @@ class Minify_Plugin_Admin {
 				'exclude' => array(
 					'*.files',
 					'.htaccess',
-					'index.php'
+					'index.html'
 				),
 				'cache_dir' => Util_Environment::cache_blog_dir( 'minify' ),
 				'expire' => $this->_config->get_integer( 'minify.file.gc' ),

@@ -29,21 +29,16 @@ class Cdn_Plugin {
 	 */
 	function run() {
 		$cdn_engine = $this->_config->get_string( 'cdn.engine' );
-		if ( Cdn_Util::is_engine_fsd( $cdn_engine ) ) {
-			$this->run_fsd();
-			return;
-		}
 
 		add_filter( 'cron_schedules', array(
 				$this,
 				'cron_schedules'
 			) );
 
-		if ( !$this->_config->get_boolean( 'cdn.debug' ) )
-			add_filter( 'w3tc_footer_comment', array(
-					$this,
-					'w3tc_footer_comment'
-				) );
+		add_filter( 'w3tc_footer_comment', array(
+				$this,
+				'w3tc_footer_comment'
+			) );
 
 		if ( !Cdn_Util::is_engine_mirror( $cdn_engine ) ) {
 			add_action( 'delete_attachment', array(
@@ -80,6 +75,11 @@ class Cdn_Plugin {
 					$this,
 					'update_feedback'
 				) );
+
+			add_filter( 'wp_prepare_attachment_for_js', array(
+					$this,
+					'wp_prepare_attachment_for_js'
+				), 0 );
 		}
 
 		add_filter( 'w3tc_admin_bar_menu',
@@ -111,24 +111,24 @@ class Cdn_Plugin {
 	 */
 	private function run_fsd() {
 		add_action( 'w3tc_flush_all', array(
-				'\W3TC\Cdn_Fsd_CacheFlush',
+				'\W3TC\Cdnfsd_CacheFlush',
 				'w3tc_flush_all'
 			), 3000, 1 );
 		add_action( 'w3tc_flush_post', array(
-				'\W3TC\Cdn_Fsd_CacheFlush',
+				'\W3TC\Cdnfsd_CacheFlush',
 				'w3tc_flush_post'
 			), 3000, 1 );
 		add_action( 'w3tc_flushable_posts', '__return_true', 3000 );
 		add_action( 'w3tc_flush_posts', array(
-				'\W3TC\Cdn_Fsd_CacheFlush',
+				'\W3TC\Cdnfsd_CacheFlush',
 				'w3tc_flush_all'
 			), 3000 );
 		add_action( 'w3tc_flush_url', array(
-				'\W3TC\Cdn_Fsd_CacheFlush',
+				'\W3TC\Cdnfsd_CacheFlush',
 				'w3tc_flush_url'
 			), 3000, 1 );
 		add_filter( 'w3tc_flush_execute_delayed_operations', array(
-				'\W3TC\Cdn_Fsd_CacheFlush',
+				'\W3TC\Cdnfsd_CacheFlush',
 				'w3tc_flush_execute_delayed_operations'
 			), 3000 );
 
@@ -338,7 +338,7 @@ class Cdn_Plugin {
 	 */
 	function get_files_includes() {
 		$includes_root = Util_Environment::normalize_path( ABSPATH . WPINC );
-		$doc_root = Util_Environment::document_root();
+		$doc_root = Util_Environment::normalize_path( Util_Environment::document_root() );
 		$includes_path = ltrim( str_replace( $doc_root, '', $includes_root ), '/' );
 
 		$files = Cdn_Util::search_files(
@@ -367,7 +367,7 @@ class Cdn_Plugin {
 
 		$themes_root = Util_Environment::normalize_path( $themes_root );
 		$themes_path = ltrim( str_replace(
-				Util_Environment::document_root(), '', $themes_root ), '/' );
+				Util_Environment::normalize_path( Util_Environment::document_root() ), '', $themes_root ), '/' );
 		$files = Cdn_Util::search_files(
 			$themes_root, $themes_path, $this->_config->get_string( 'cdn.theme.files' )
 		);
@@ -391,8 +391,10 @@ class Cdn_Plugin {
 
 			$minify = Dispatcher::component( 'Minify_Plugin' );
 
-			$document_root = Util_Environment::document_root();
-			$minify_root = Util_Environment::cache_blog_dir( 'minify' );
+			$document_root = Util_Environment::normalize_path(
+				Util_Environment::document_root() );
+			$minify_root = Util_Environment::normalize_path(
+				Util_Environment::cache_blog_dir( 'minify' ) );
 			$minify_path = ltrim( str_replace( $document_root, '', $minify_root ), '/' );
 			$urls = $minify->get_urls();
 
@@ -442,14 +444,15 @@ class Cdn_Plugin {
 	 */
 	function get_files_custom() {
 		$files = array();
-		$document_root = Util_Environment::document_root();
+		$document_root = Util_Environment::normalize_path(
+			Util_Environment::document_root() );
 		$custom_files = $this->_config->get_array( 'cdn.custom.files' );
 		$custom_files = array_map( array( '\W3TC\Util_Environment', 'parse_path' ), $custom_files );
-		$site_root = Util_Environment::site_root();
+		$site_root = Util_Environment::normalize_path( Util_Environment::site_root() );
 		$path = Util_Environment::site_url_uri();
 		$site_root_dir = str_replace( $document_root, '', $site_root );
 		if ( strstr( WP_CONTENT_DIR, Util_Environment::site_root() ) === false ) {
-			$site_root = Util_Environment::document_root();
+			$site_root = Util_Environment::normalize_path( Util_Environment::document_root() );
 			$path = '';
 		}
 
@@ -682,6 +685,54 @@ class Cdn_Plugin {
 		$admin->change_canonical_header();
 	}
 
+	/**
+	 * Adjusts attachment urls to cdn. This is for those who rely on
+	 * wp_prepare_attachment_for_js()
+	 *
+	 * @param 	array   $response	Mixed collection of data about the attachment object
+	 * @return 	array
+	 */
+	public function wp_prepare_attachment_for_js( $response ) {
+		$response['url'] = $this->wp_prepare_attachment_for_js_url( $response['url'] );
+		$response['link'] = $this->wp_prepare_attachment_for_js_url( $response['link'] );
+
+		if ( !empty( $response['sizes'] ) ) {
+			foreach( $response['sizes'] as $size => &$data ) {
+				$data['url'] = $this->wp_prepare_attachment_for_js_url( $data['url'] );
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * An attachment's local url to modify into a cdn url
+	 *
+	 * @param 	string   $url	the local url to modify
+	 * @return 	string
+	 */
+	private function wp_prepare_attachment_for_js_url( $url ) {
+		$url = trim( $url );
+		if ( !empty( $url ) ) {
+			$parsed = parse_url( $url );
+			$uri = ( isset( $parsed['path'] ) ? $parsed['path'] : '/' ) .
+					   ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
+
+			$wp_upload_dir = wp_upload_dir();
+			$upload_base_url = $wp_upload_dir['baseurl'];
+
+			if ( substr($url, 0, strlen( $upload_base_url ) ) == $upload_base_url ) {
+				$common = Dispatcher::component( 'Cdn_Core' );
+				$new_url = $common->url_to_cdn_url( $url, $uri );
+				if ( !is_null( $new_url ) ) {
+					$url = $new_url;
+				}
+			}
+		}
+
+		return $url;
+	}
+
 	public function w3tc_admin_bar_menu( $menu_items ) {
 		$cdn_engine = $this->_config->get_string( 'cdn.engine' );
 
@@ -721,14 +772,8 @@ class Cdn_Plugin {
 				sprintf( ' (%s)', $this->cdn_reject_reason ) ) );
 
 		if ( $this->_config->get_boolean( 'cdn.debug' ) ) {
-			$strings[] = "CDN debug info:";
-			$strings[] = sprintf( "%s%s", str_pad( 'Engine: ', 20 ),
-				$this->_config->get_string( 'cdn.engine' ) );
-
-			if ( $this->cdn_reject_reason ) {
-				$strings[] = sprintf( "%s%s", str_pad( 'Reject reason: ', 20 ),
-					$this->cdn_reject_reason );
-			}
+			$strings[] = '';
+			$strings[] = 'CDN debug info:';
 
 			if ( count( $this->_replaced_urls ) ) {
 				$strings[] = "Replaced URLs:";
@@ -739,6 +784,7 @@ class Cdn_Plugin {
 						Util_Content::escape_comment( $new_url ) );
 				}
 			}
+			$strings[] = '';
 		}
 
 		return $strings;
@@ -1007,7 +1053,14 @@ class _Cdn_Plugin_ContentFilter {
 				foreach ( $masks as $mask ) {
 					if ( !empty( $mask ) ) {
 						if ( Util_Environment::is_url( $mask ) ) {
-							$custom_regexps_urls[] = Cdn_Util::get_regexp_by_mask( $mask );
+							$url_match = array();
+							if ( preg_match( '~^((https?:)?//([^/]*))(.*)~', $mask, $url_match ) ) {
+								$custom_regexps_urls[] = array(
+									'domain_url' => Util_Environment::get_url_regexp(
+										$url_match[1] ),
+									'uri' => Cdn_Util::get_regexp_by_mask( $url_match[4] )
+								);
+							}
 						} elseif ( substr( $mask, 0, 1 ) == '/' ) {   // uri
 							$custom_regexps_uris[] = Cdn_Util::get_regexp_by_mask( $mask );
 						} else {
@@ -1021,15 +1074,17 @@ class _Cdn_Plugin_ContentFilter {
 				}
 
 				if ( count( $custom_regexps_urls ) > 0 ) {
-					foreach ( $custom_regexps_urls as $regexp )
-						$regexps[] = '~(["\'(=])\s*((' . $regexp . ')?(()([^"\'() >]*)))~i';
+					foreach ( $custom_regexps_urls as $regexp ) {
+						$regexps[] = '~(["\'(=])\s*((' . $regexp['domain_url'] .
+						')?((' . $regexp['uri'] . ')([^"\'() >]*)))~i';
+					}
 				}
 				if ( count( $custom_regexps_uris ) > 0 ) {
 					$regexps[] = '~(["\'(=])\s*((' . $domain_url_regexp .
 						')?((' . implode( '|', $custom_regexps_uris ) . ')([^"\'() >]*)))~i';
 				}
 
-				if ( count( $custom_regexps_docroot_related ) > 0) {
+				if ( count( $custom_regexps_docroot_related ) > 0 ) {
 					$regexps[] = '~(["\'(=])\s*((' . $domain_url_regexp .
 						')?(' . Util_Environment::preg_quote( $site_path ) .
 						'(' . implode( '|', $custom_regexps_docroot_related ) . ')([^"\'() >]*)))~i';
@@ -1118,15 +1173,8 @@ class _Cdn_Plugin_ContentFilter {
 	 */
 	function _link_replace_callback_ask_cdn( $match, $quote, $url, $path ) {
 		$common = Dispatcher::component( 'Cdn_Core' );
-		$cdn = $common->get_cdn();
-		$remote_path = $common->uri_to_cdn_uri( $path );
-		$new_url = $cdn->format_url( $remote_path );
-		if ( $new_url ) {
-			$is_engine_mirror = Cdn_Util::is_engine_mirror(
-				$this->_config->get_string( 'cdn.engine' ) );
-
-			$new_url = apply_filters( 'w3tc_cdn_url', $new_url, $url,
-				$is_engine_mirror );
+		$new_url = $common->url_to_cdn_url( $url, $path );
+		if ( !is_null( $new_url ) ) {
 			$this->replaced_urls[$url] = $new_url;
 			return $quote . $new_url;
 		}

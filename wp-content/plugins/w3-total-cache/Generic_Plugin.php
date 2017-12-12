@@ -261,7 +261,7 @@ class Generic_Plugin {
 				'id' => 'w3tc',
 				'title' =>
 				'<img src="' .
-				plugins_url( 'w3-total-cache/pub/img/w3tc-sprite-admin-bar.png' ) .
+				plugins_url( 'pub/img/w3tc-sprite-admin-bar.png', W3TC_FILE ) .
 				'" style="vertical-align:middle; margin-right:5px; width: 29px; height: 29px" />' .
 				__( 'Performance', 'w3-total-cache' ) .
 				$menu_postfix,
@@ -275,6 +275,15 @@ class Generic_Plugin {
 					'title' => __( 'Purge All Caches', 'w3-total-cache' ),
 					'href' => wp_nonce_url( network_admin_url(
 							'admin.php?page=w3tc_dashboard&amp;w3tc_flush_all' ),
+						'w3tc' )
+				);
+			if ( !is_admin() )
+				$menu_items['10020.generic'] = array(
+					'id' => 'w3tc_flush_current_page',
+					'parent' => 'w3tc',
+					'title' => __( 'Purge Current Page', 'w3-total-cache' ),
+					'href' => wp_nonce_url( admin_url(
+							'admin.php?page=w3tc_dashboard&amp;w3tc_flush_current_page' ),
 						'w3tc' )
 				);
 
@@ -490,30 +499,31 @@ class Generic_Plugin {
 				if ( Util_Environment::is_preview_mode() )
 					$buffer .= "\r\n<!-- W3 Total Cache used in preview mode -->";
 
-				if ( $this->_config->get_string( 'common.support' ) != '' ||
-					$this->_config->get_boolean( 'common.tweeted' ) ) {
-					$buffer .= sprintf( "\r\n<!-- Served from: %s @ %s by W3 Total Cache -->",
-						Util_Content::escape_comment( $host ), $date );
-				} else {
-					$strings = array();
-					$strings = apply_filters( 'w3tc_footer_comment', $strings );
+                $strings = array();
 
-					$buffer .= "\r\n<!-- Performance optimized by W3 Total Cache. Learn more: https://www.w3-edge.com/products/\r\n";
+                if ( $this->_config->get_string( 'common.support' ) == '' &&
+                    !$this->_config->get_boolean( 'common.tweeted' ) ) {
+                    $strings[] = 'Performance optimized by W3 Total Cache. Learn more: https://www.w3-edge.com/products/';
+                	$strings[] = '';
+                }
 
-					if ( count( $strings ) ) {
-						$buffer .= "\r\n" .
-							Util_Content::escape_comment( implode( "\r\n", $strings ) ) .
-							"\r\n";
-					}
+                $strings = apply_filters( 'w3tc_footer_comment', $strings );
 
-					$buffer .= sprintf( "\r\n Served from: %s @ %s by W3 Total Cache -->", Util_Content::escape_comment( $host ), $date );
-				}
+                if ( count( $strings ) ) {
+                	$strings[] = '';
+                	$strings[] = sprintf( "Served from: %s @ %s by W3 Total Cache",
+                            Util_Content::escape_comment( $host ), $date );
+
+                    $buffer .= "\r\n<!--\r\n" .
+                    	Util_Content::escape_comment( implode( "\r\n", $strings ) ) .
+                    	"\r\n-->";
+                }
 
 				$buffer = apply_filters( 'w3tc_process_content', $buffer );
 			}
-		
+
 			$buffer = Util_Bus::do_ob_callbacks(
-				array( 'minify', 'newrelic', 'cdn', 'browsercache', 'pagecache' ),
+				array( 'swarmify', 'minify', 'newrelic', 'cdn', 'browsercache', 'pagecache' ),
 				$buffer );
 		}
 

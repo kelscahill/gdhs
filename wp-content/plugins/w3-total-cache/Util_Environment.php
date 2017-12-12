@@ -135,9 +135,14 @@ class Util_Environment {
 	 * @return boolean
 	 */
 	static public function is_dbcluster() {
+		if ( !defined( 'W3TC_PRO' ) || !W3TC_PRO )
+			return false;
+
+		if ( isset( $GLOBALS['w3tc_dbcluster_config'] ) )
+			return true;
+
 		return defined( 'W3TC_FILE_DB_CLUSTER_CONFIG' ) &&
-			@file_exists( W3TC_FILE_DB_CLUSTER_CONFIG )
-			&& defined( 'W3TC_ENTERPRISE' ) && W3TC_ENTERPRISE;
+			@file_exists( W3TC_FILE_DB_CLUSTER_CONFIG );
 	}
 
 	/**
@@ -271,6 +276,15 @@ class Util_Environment {
 	 */
 	static public function is_nginx() {
 		return isset( $_SERVER['SERVER_SOFTWARE'] ) && stristr( $_SERVER['SERVER_SOFTWARE'], 'nginx' ) !== false;
+	}
+
+	/**
+	 * Returns true if server is nginx
+	 *
+	 * @return boolean
+	 */
+	static public function is_iis() {
+		return isset( $_SERVER['SERVER_SOFTWARE'] ) && stristr( $_SERVER['SERVER_SOFTWARE'], 'IIS' ) !== false;
 	}
 
 	/**
@@ -835,7 +849,7 @@ class Util_Environment {
 	 * Removes WP query string from URL
 	 */
 	static public function remove_query( $url ) {
-		$url = preg_replace( '~[&\?]+(ver=([a-z0-9-_\.]+|[0-9-]+))~i', '', $url );
+		$url = preg_replace( '~(\?|&amp;|&#038;|&)+ver=[a-z0-9-_\.]+~i', '', $url );
 
 		return $url;
 	}
@@ -919,6 +933,14 @@ class Util_Environment {
 	 */
 	static public function url_relative_to_full( $relative_url ) {
 		$relative_url = Util_Environment::path_remove_dots( $relative_url );
+
+		if (version_compare(PHP_VERSION, '5.4.7') < 0) {
+			if ( substr( $relative_url, 0, 2) == '//' ) {
+				$relative_url =
+					( Util_Environment::is_https() ? 'https' : 'http' ) .
+					':' . $relative_url;
+			}
+		}
 
 		$rel = parse_url( $relative_url );
 		// it's full url already
@@ -1006,6 +1028,10 @@ class Util_Environment {
 	}
 
 	static public function instance_id() {
+		if ( defined( 'W3TC_INSTANCE_ID' ) ) {
+			return W3TC_INSTANCE_ID;
+		}
+
 		static $instance_id;
 
 		if ( !isset( $instance_id ) ) {
@@ -1022,8 +1048,6 @@ class Util_Environment {
 	 * @return string
 	 */
 	static public function w3tc_edition( $config = null ) {
-		if ( Util_Environment::is_w3tc_enterprise( $config ) )
-			return 'enterprise';
 		if ( Util_Environment::is_w3tc_pro( $config ) &&  Util_Environment::is_w3tc_pro_dev() )
 			return 'pro development';
 		if ( Util_Environment::is_w3tc_pro( $config ) )
@@ -1040,6 +1064,8 @@ class Util_Environment {
 	static public function is_w3tc_pro( $config = null ) {
 		if ( defined( 'W3TC_PRO' ) && W3TC_PRO )
 		    return true;
+		if ( defined( 'W3TC_ENTERPRISE' ) && W3TC_ENTERPRISE )
+		    return true;
 
 		if ( is_object( $config ) ) {
 		    $plugin_type = $config->get_string( 'plugin.type' );
@@ -1047,9 +1073,6 @@ class Util_Environment {
 		    if ( $plugin_type == 'pro' || $plugin_type == 'pro_dev' )
 		        return true;
 		}
-
-		if ( Util_Environment::is_w3tc_enterprise( $config ) )
-		    return true;
 
 		return false;
 	}
@@ -1061,32 +1084,6 @@ class Util_Environment {
 	 */
 	static public function is_w3tc_pro_dev() {
 		return defined( 'W3TC_PRO_DEV_MODE' ) && W3TC_PRO_DEV_MODE;
-	}
-
-	/**
-	 *
-	 *
-	 * @param Config  $config
-	 * @return bool
-	 */
-	static public function is_w3tc_enterprise( $config = null ) {
-		if ( defined( 'W3TC_ENTERPRISE' ) && W3TC_ENTERPRISE )
-		    return true;
-
-		if ( is_object( $config ) &&
-			$config->get_string( 'plugin.type' ) == 'enterprise' )
-	        return true;
-
-		return false;
-	}
-
-	/**
-	 * Checks if site is using edge mode.
-	 *
-	 * @return bool
-	 */
-	static public function is_w3tc_edge( $config ) {
-		return $config->get_boolean( 'common.edge' );
 	}
 
 	/**
@@ -1197,5 +1194,17 @@ class Util_Environment {
 		}
 
 		return (boolean) $value;
+	}
+
+	/**
+	 * Returns the apache, nginx version
+	 *
+	 * @return string
+	 */
+	static public function get_server_version() {
+		$sig= explode( '/', $_SERVER['SERVER_SOFTWARE'] );
+		$temp = isset( $sig[1] ) ? explode( ' ', $sig[1] ) : array( '0' );
+		$version = $temp[0];
+		return $version;
 	}
 }

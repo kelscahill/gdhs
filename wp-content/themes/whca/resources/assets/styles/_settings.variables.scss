@@ -16,11 +16,6 @@ $max-width: rem($max-width-px) !default;
 /**
  * Colors
  */
-$blue: #001d34;
-$red: #eb4837;
-$yellow: #fdd370;
-$light-blue: #7396ac;
-$off-white: #fffcf6;
 $white: #fff;
 $black: #191919;
 $gray: #9b9b9b;
@@ -32,15 +27,14 @@ $information: #000db5;
 /**
  * Style Colors
  */
-$primary-color: $blue;
-$secondary-color: $red;
-$tertiary-color: $yellow;
-$quaternary-color: $light-blue;
-$background-color: $off-white;
-$link-color: $secondary-color;
-$link-hover: darken($secondary-color, 10%);
-$button-color: $secondary-color;
-$button-hover: darken($secondary-color, 10%);
+$primary-color: $black;
+$secondary-color: $white;
+$tertiary-color: $gray;
+$background-color: $white;
+$link-color: $tertiary-color;
+$link-hover: darken($tertiary-color, 10%);
+$button-color: $white;
+$button-hover: $black;
 $body-color: $black;
 $border-color: #e5e5e5;
 $overlay: rgba(25, 25, 25, 0.6);
@@ -85,7 +79,7 @@ $verticalspacing: (mobile: 20, desktop: 30);
  */
 $icon-xsmall: rem(10);
 $icon-small: rem(20);
-$icon-medium: rem(30);
+$icon-medium: rem(40);
 $icon-large: rem(50);
 $icon-xlarge: rem(80);
 
@@ -113,7 +107,7 @@ $breakpoints: (
 /**
  * Element Specific Dimensions
  */
-$article-max: rem(950);
+$article-max: rem(750);
 $sidebar-width: 320;
 $small-header-height: 70;
 $wide-header-height: 90;

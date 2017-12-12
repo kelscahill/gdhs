@@ -1,36 +1,3 @@
 /* ------------------------------------*\
     $MAIN CONTENT AREA
 \*------------------------------------ */
-
-.main {
-  padding: $pad-double 0;
-}
-
-.page-content {
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-
-  @include media('>large') {
-    flex-direction: row;
-  }
-
-  .article {
-    width: 100%;
-
-    @include media('>large') {
-      width: calc(100% - $sidebar-width);
-    }
-  }
-
-  .sidebar {
-    width: 100%;
-    margin-top: $space-double;
-
-    @include media('>large') {
-      width: rem($sidebar-width);
-      margin-left: $space-double;
-      margin-top: 0;
-    }
-  }
-}

@@ -45,7 +45,7 @@ class PgCache_Flush extends PgCache_ContentGrabber {
 			return false;
 
 		$full_urls = array();
-		$post = null;
+		$post = get_post( $post_id );
 		$terms = array();
 
 		$feeds = $this->_config->get_array( 'pgcache.purge.feed.types' );
@@ -58,9 +58,6 @@ class PgCache_Flush extends PgCache_ContentGrabber {
 			$terms = $this->_append_parent_terms( $terms, $terms );
 		}
 
-		$post = get_post( $post_id );
-		$post_type = in_array( $post->post_type, array(
-				'post', 'page', 'attachment', 'revision' ) ) ? null : $post->post_type;
 		$front_page = get_option( 'show_on_front' );
 
 		/**
@@ -102,7 +99,7 @@ class PgCache_Flush extends PgCache_ContentGrabber {
 		/**
 		 * Post author URLs
 		 */
-		if ( $this->_config->get_boolean( 'pgcache.purge.author' ) ) {
+		if ( $this->_config->get_boolean( 'pgcache.purge.author' ) && $post ) {
 			$full_urls = array_merge( $full_urls,
 				Util_PageUrls::get_post_author_urls( $post->post_author,
 					$limit_post_pages ) );
@@ -143,7 +140,13 @@ class PgCache_Flush extends PgCache_ContentGrabber {
 		/**
 		 * Feed URLs
 		 */
-		if ( $this->_config->get_boolean( 'pgcache.purge.feed.blog' ) ) {
+		if ( $this->_config->get_boolean( 'pgcache.purge.feed.blog' ) && $post ) {
+			$post_type = null;
+ 			if ( in_array( $post->post_type,
+ 				array( 'post', 'page', 'attachment', 'revision' ) ) ) {
+ 				$post_type = $post->post_type;
+ 			}
+
 			$full_urls = array_merge( $full_urls,
 				Util_PageUrls::get_feed_urls( $feeds, $post_type ) );
 		}
@@ -172,6 +175,11 @@ class PgCache_Flush extends PgCache_ContentGrabber {
 				Util_PageUrls::get_pages_urls( $pages ) );
 		}
 
+		// add mirror urls
+		$full_urls = Util_PageUrls::complement_with_mirror_urls( $full_urls );
+		$full_urls = apply_filters( 'pgcache_flush_post_queued_urls',
+			$full_urls );
+
 		/**
 		 * Queue flush
 		 */
@@ -179,10 +187,6 @@ class PgCache_Flush extends PgCache_ContentGrabber {
 			foreach ( $full_urls as $url )
 				$this->queued_urls[$url] = '*';
 		}
-
-		// add mirror urls
-		$this->queued_urls = Util_PageUrls::complement_with_mirror_urls(
-			$this->queued_urls );
 
 		return true;
 	}
@@ -204,8 +208,11 @@ class PgCache_Flush extends PgCache_ContentGrabber {
 				foreach ( $encryptions as $encryption ) {
 					foreach ( $compressions as $compression ) {
 						$page_keys = array();
-						$page_keys[] = $this->_get_page_key( $mobile_group,
-							$referrer_group, $encryption, $compression, false,
+						$page_keys[] = $this->_get_page_key( array(
+								'useragent' => $mobile_group,
+								'referrer' => $referrer_group,
+								'encryption' => $encryption,
+								'compression' => $compression ),
 							$url );
 						$page_keys = apply_filters(
 							'w3tc_pagecache_flush_url_keys', $page_keys );

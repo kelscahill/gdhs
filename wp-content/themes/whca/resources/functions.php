@@ -45,11 +45,6 @@ if (!class_exists('Roots\\Sage\\Container')) {
 }
 
 /**
- * Add excerpt to pages
- */
-add_post_type_support( 'page', 'excerpt' );
-
-/**
  * Sage required files
  *
  * The mapped array determines the code library included in your theme.
@@ -108,48 +103,32 @@ function cc_mime_types($mimes) {
 add_filter('upload_mimes', 'cc_mime_types');
 
 /**
- * Adds ACF options page
- */
-if (function_exists('acf_add_options_page')) {
-  acf_add_options_page(
-    array(
-  		'page_title' 	=> 'Theme General Settings',
-  		'menu_title'	=> 'Theme Settings',
-  		'menu_slug' 	=> 'theme-general-settings',
-  		'capability'	=> 'edit_posts',
-  		'redirect'		=> false
-  	)
-  );
-}
-
-
-/**
  * Custom fields
  */
 function cptui_register_my_cpts() {
 
 	/**
-	 * Post Type: Events.
+	 * Post Type: Scholarships.
 	 */
 	$labels = array(
-		"name" => __( 'Events', 'sage' ),
-		"singular_name" => __( 'Event', 'sage' ),
-		"menu_name" => __( 'Events', 'sage' ),
-		"all_items" => __( 'All Events', 'sage' ),
-		"add_new" => __( 'Add New Event', 'sage' ),
-		"edit_item" => __( 'Edit Event', 'sage' ),
-		"new_item" => __( 'New Event', 'sage' ),
-		"view_item" => __( 'View Event', 'sage' ),
-		"view_items" => __( 'View Events', 'sage' ),
-		"search_items" => __( 'Search Events', 'sage' ),
-		"not_found" => __( 'No Events Found', 'sage' ),
-		"not_found_in_trash" => __( 'No Events found in Trash', 'sage' ),
+		"name" => __( 'Scholarships', 'sage' ),
+		"singular_name" => __( 'Scholarship', 'sage' ),
+		"menu_name" => __( 'Scholarships', 'sage' ),
+		"all_items" => __( 'All Scholarships', 'sage' ),
+		"add_new" => __( 'Add New Scholarship', 'sage' ),
+		"edit_item" => __( 'Edit Scholarship', 'sage' ),
+		"new_item" => __( 'New Scholarship', 'sage' ),
+		"view_item" => __( 'View Scholarship', 'sage' ),
+		"view_items" => __( 'View Scholarships', 'sage' ),
+		"search_items" => __( 'Search Scholarships', 'sage' ),
+		"not_found" => __( 'No Scholarships Found', 'sage' ),
+		"not_found_in_trash" => __( 'No Scholarships found in Trash', 'sage' ),
 	);
 
 	$args = array(
-		"label" => __( 'Events', 'sage' ),
+		"label" => __( 'Scholarships', 'sage' ),
 		"labels" => $labels,
-		"description" => "A Wilkes School Event",
+		"description" => "WHCA Scholarships",
 		"public" => true,
 		"publicly_queryable" => true,
 		"show_ui" => true,
@@ -159,14 +138,14 @@ function cptui_register_my_cpts() {
 		"exclude_from_search" => false,
 		"capability_type" => "post",
 		"hierarchical" => true,
-		"rewrite" => array( "slug" => "events", "with_front" => true ),
+		"rewrite" => array( "slug" => "scholarship", "with_front" => true ),
     'has_archive' => false,
 		"query_var" => true,
 		"menu_position" => 3,
-		"menu_icon" => "dashicons-calendar",
+		"menu_icon" => "dashicons-awards",
 		"supports" => array( "title", "editor", "thumbnail" ),
 	);
 
-	register_post_type( "events", $args );
+	register_post_type( "scholarships", $args );
 }
 add_action( 'init', 'cptui_register_my_cpts' );

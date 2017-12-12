@@ -1,25 +1,51 @@
-@php
-  $classes = '';
-  if (is_front_page() || is_home() || is_page_template("views/template-landing.blade.php") || is_page_template("views/template-news.blade.php") || is_page_template("views/template-events.blade.php")) {
-    $classes = ' header--transparent position--absolute shadow';
-  }
-@endphp
-<div class="alert">
-</div>
-<div class="body-overlay"></div>
-<header class="{{ 'header'.$classes }}">
+<header class="header">
   <div class="container header--inner">
     <div class="header--left">
-      <a class="header__logo" href="{{ home_url('/') }}">@include('patterns.logo--full')</a>
+      @include('partials.navigation')
     </div>
     <div class="header--right">
-      <div class="header__search space--half-right hide-until--m">
-        @include('patterns.search-form')
-      </div>
-      <div class="header__social hide-until--m">
-        @include('partials.social-links')
-      </div>
-      @include('partials.navigation')
+      @if (has_nav_menu('secondary_navigation'))
+        <nav class="nav__secondary background-color--secondary" role="navigation">
+          @php
+            $menu_locations = get_nav_menu_locations();
+            $menu_id = $menu_locations['secondary_navigation'];
+            $secondary_nav = wp_get_nav_menu_items($menu_id);
+            $count = 0;
+            $submenu = false;
+          @endphp
+          <ul class="secondary-nav__list">
+            @foreach ($secondary_nav as $nav)
+              @php
+                if (!$nav->menu_item_parent) {
+                  $parent_id = $nav->ID;
+                  echo '<li class="secondary-nav__list-item js-this"><div class="secondary-nav__toggle"><a href="'.$nav->url.'" title="'.$nav->title.'" class="font--s">'.$nav->title.'</a><span class="js-toggle" data-prefix="secondary-nav__list-item" data-toggled="this"></span></div>';
+                }
+              @endphp
+              @if ($parent_id == $nav->menu_item_parent)
+                @if (!$submenu)
+                  @php($submenu = true)
+                  <ul class="subnav__list">
+                  @endif
+                    <li class="subnav__list-item">
+                      <a href="{{ $nav->url }}" class="subnav__link">{{ $nav->title }}</a>
+                    </li>
+                  @if ($secondary_nav[$count + 1]->menu_item_parent != $parent_id && $submenu)
+                  </ul>
+                  @php($submenu = false)
+                @endif
+              @endif
+              @if ($secondary_nav[$count + 1]->menu_item_parent != $parent_id)
+                </li>
+              @php
+                $submenu = false;
+                endif;
+                $count++;
+              @endphp
+            @endforeach
+            @php(wp_reset_postdata())
+          </ul>
+        </nav>
+      @endif
     </div>
   </div>
 </header>

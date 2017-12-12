@@ -1,62 +1,69 @@
-﻿=== Speed Booster Pack ===
-Contributors: tiguan
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EH65WAWPEYPXU
+=== Speed Booster Pack ===
+Contributors: machothemes
+Donate link:
 Tags: speed, optimization, performance, scripts to the footer, google libraries, font awesome cdn, defer parsing of javascript, remove query strings, lazy load images, gtmetrix, google pageSpeed, yslow, eliminate external render-blocking javascript and css, compression, async, render-blocking css
 Requires at least: 3.6
-Tested up to: 4.7.2
-Stable tag: 2.9
+Tested up to: 4.9
+Stable tag: 3.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Features options to improve your website performance and get a higher score on the major speed testing services.
+A light, frequently updated and easy to use plugin to make your site load faster and score higher on Google PSI.
 
 == Description ==
 
-Speed Booster Pack allows you to improve your page loading speed and get a higher score on the major speed testing services such as [GTmetrix](http://gtmetrix.com/), [Google PageSpeed](http://developers.google.com/speed/pagespeed/insights/), [YSlow](https://developer.yahoo.com/yslow/), [Pingdom](http://tools.pingdom.com/fpt/), [Webpagetest](http://www.webpagetest.org/) or other speed testing tools.
+**Speed Booster Pack is a lightweight, frequently updated, easy to use and well supported plugin which allows you to improve your website's loading speed.**
 
-= Why Site Speed Is Important =
+Improving your site's speed will get you a better score on major speed testing services such as [Google PageSpeed](http://developers.google.com/speed/pagespeed/insights/), [GTmetrix](http://gtmetrix.com/), [YSlow](https://developer.yahoo.com/yslow/), [Pingdom](http://tools.pingdom.com/fpt/), [Webpagetest](http://www.webpagetest.org/) and will also improve your overall site's usability. This will persuade Google and other search engines to rank your site higher in search results thus sending more traffic.
 
-When visitors lands on your site for the first time, you only have 3 seconds to capture their attention and convince them to stick around. That's not convinced you? Read on:
+= Why Site Speed Is Important? =
 
-* Google incorporating site speed in search rankings
-* 47% of online consumers expect a web page to load in 2 seconds or less
-* 40% of people will abandon a site that takes more than 3 seconds to load
-* 80% of online consumers are less likely to return to a slow website
-
-The following video is not about "how to get a score of 100 in Google Page Speed" but want to show the difference in points Before and After activating Speed ​​Booster Pack plugin:
-
-https://www.youtube.com/watch?v=u0G6pk2mX4M
+Visitors usually close a website if it doesn't load in a few seconds and the slower a site loads the greater the chances are that the visitors will leave. And you don't want that to happen, do you? :-)
+Speed Booster Pack is a plugin that can help you speed up your website by tweaking different options.
 
 = Main Plugin Features =
 
-* **Eliminates external render-blocking javascript and css** in above-the-fold content.
-* **Moves scripts to the footer** to improve page loading speed.
-* **Loads CSS asynchronously** to render your page more quickly and get a higher score on the major speed testing services.
+* **Eliminate external render-blocking javascript and css** in above-the-fold content.
+* **Move scripts to the footer** to improve page loading speed.
+* **Load CSS asynchronously** to render your page more quickly and get a higher score on the major speed testing services.
 * **Minify and inline all CSS styles and move them to the footer** to eliminate external render-blocking CSS and optimize CSS delivery.
+* ** Minify HTML and JavaScript to increase your page load speed.
 * **Lazy loads images** to improve page load times and save bandwidth.
-* **Changes image compression level** to keep file sizes smaller.
-* **Loads javascript files from Google Libraries** rather than serving them from your WordPress install directly, to reduce latency, increase parallelism and improve caching.
-* **Defers parsing of javascript files** to reduce the initial load time of your page.
-* **Removes query strings from static resources** to improve your speed scores.
-* **Removes extra Font Awesome stylesheets** added to your theme by certain plugins, if *Font Awesome* is already used in your theme.
-* **Removes junk header tags** to clean up your WordPress Header.
-* **Displays page loading time** in the plugin options page.
-* **Displays the number of executed queries** in the plugin options page.
-* **Displays the Peak Memory Used** in the plugin options page.
+* **Change image compression level** to keep file sizes smaller; Change JPG quality.
+* **Load javascript files from Google Libraries** rather than serving them from your WordPress install directly, to reduce latency, increase parallelism and improve browser caching.
+* **Defer parsing of javascript files** to reduce the initial load time of your page.
+* **Remove query strings from static resources** to improve your speed scores.
+* **Remove extra Font Awesome stylesheets** added to your theme by certain plugins, if *Font Awesome* is already used in your theme.
+* **Remove junk header tags** to clean up your WordPress Header.
+* **Display page loading time** in the plugin options page.
+* **Display the number of executed SQL queries** in the plugin options page.
+* **Display the Peak Memory Used** in the plugin options page.
+* **Exclude scripts** from being moved to the footer or defered.
+* **Remove RSD Link** if you are not using a Weblog Client or some 3rd party sites/programs that use the XML-RPC request formats.
+* **Remove WordPress Shortlink**
+* **Remove the WordPress Version** this option is added for security reasons and cleaning the header.
+* **Remove all rss feed links** to cleanup your WordPress header.
 
-* For complete usage instructions visit [Plugin Documentation](http://tiguandesign.com/docs/speed-booster/)
-* Check out our [Premium Themes](http://tiguandesign.com/category/premium-wordpress-themes/) that use our Speed Booster Pack plugin
+* For complete usage instructions visit [Plugin Documentation](http://docs.machothemes.com/category/118-speed-booster)
+
+A short video about how Speed Booster pack can help actually increase a website's score in Google PageSpeed Insights:
+
+https://www.youtube.com/watch?v=u0G6pk2mX4M
+
+Future Development:
+
+* Enable compression option.
+* Leverage browser caching.
+* Option to disable specific plugin actions on specific pages directly via the page edit screen metabox.
+* Option to keep specific scripts in the header, since there are many javascript-based plugins scripts, that rely on jQuery to be loaded prior to the HTML elements.
 
 = Recommended Plugins =
 
-The following are other recommended plugins by the author of Speed Booster Pack:
-
 * [Simple Author Box](http://wordpress.org/plugins/simple-author-box/) - A simple but cool author box with social icons.
-* [Verify Ownership](http://wordpress.org/plugins/verify-ownership/) - Adds meta tag verification codes to your site.
 
-= Translators are welcome! =
-* Romanian (ro_RO) - [Liviu Costache](http://tiguandesign.com/)
-* Spanish (es_ES) - [Andrew Kurtis](http://www.webhostinghub.com/)
+**About us:**
+We are a young team of WordPress aficionados who love building WordPress plugins & <a href="https://www.machothemes.com/" target="_blank" title="Premium WordPress themes">Premium WordPress themes</a> over on our theme shop. We’re also blogging and wish to help our users find the <a href="https://www.machothemes.com/blog/best-cheap-wordpress-hosting/" target="_blank" title="Best Cheap WordPress Hosting">Best Cheap WordPress Hosting</a> available on the market. Check out our blog. 
+
 
 == Installation ==
 
@@ -68,9 +75,32 @@ The following are other recommended plugins by the author of Speed Booster Pack:
 
 == Screenshots ==
 1. Plugin options page, simple view (v2.5)
-2. The Google Page Speed results on our [testing site](http://tiguandesign.com/testing-speed-booster/) (v2.5)
 
 == Changelog ==
+= 3.6.1 =
+ * Added a section for feedback in the plugin's dashboard
+
+= 3.6 =
+* Changed contributors and fixed a few bugs. Plugin is now under new ownership.
+
+= 3.5 =
+* Fix compatibility with the CrazyLazy plugin.
+
+= 3.4 =
+* Added an option to increase your page load speed by minifying JavaScript and HTML. Removed option to remove RSD Link, since its impact on improving speed was insignificant.
+
+= 3.3 =
+* Fix Lazy Load CSS problem.
+
+= 3.2 =
+* Added Lazy Load feature to improve the web page loading times of your images.
+
+= 3.1 =
+* Following requests from users, added back the option of excluding javascript elements.
+
+= 3.0 =
+* We removed the option of excluding javascript elements as this option falls page speed score, making this plugin almost useless. Also, these options were only for advanced users, for regular users, incorrect use these options could destabilize the entire site functionality.
+* We also removed the lazy load images option because it was outdated and broken. We'll come up with a new and updated solution soon.
 
 = 2.9 =
 * Added a new recommended features that can make your site load faster
@@ -172,6 +202,5 @@ Page Load Stats is a brief statistic displayed in the plugin options page. It di
 == Credits ==
 
 * Thanks to [Jason Penney](http://jasonpenney.net/) for Google Libraries feature.
-* Credits for Lazy Load feature belongs to: WordPress.com VIP team at Automattic, the TechCrunch 2011 Redesign team, and Jake Goldman (10up LLC).
 * CSS option was implemented from Async JS and CSS plugin and updated to our plugin.
-* The plugin uses [jQuery.sonar](http://www.artzstudio.com/files/jquery-boston-2010/jquery.sonar/) by Dave Artz (AOL).
+* Credits for Lazy Load feature belongs to [pluginkollektiv](https://github.com/pluginkollektiv/crazy-lazy)

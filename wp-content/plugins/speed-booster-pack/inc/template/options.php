@@ -50,10 +50,16 @@
 <label for="sbp_settings[query_strings]"><?php _e( 'Remove query strings', 'sb-pack' ); ?></label>
 </p>
 
-<p>
-<input id="sbp_settings[lazy_load]" name="sbp_settings[lazy_load]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['lazy_load'] ) ); ?> />
-<label for="sbp_settings[lazy_load]"><?php _e( 'Lazy load images to improve speed', 'sb-pack' ); ?></label>
+ <p>
+     <?php if ( is_plugin_active('crazy-lazy/crazy-lazy.php') ) { ?>
+         <input id="sbp_settings[lazy_load]" name="sbp_settings[lazy_load]" type="hidden" value="<?php echo(isset( $sbp_options['lazy_load'] )? '1' : '0' ); ?>" />
+         <label for="sbp_settings[lazy_load]"><?php _e( 'Lazy loading already handled by CrazyLazy plugin', 'sb-pack' ); ?></label>
+     <?php } else {?>
+        <input id="sbp_settings[lazy_load]" name="sbp_settings[lazy_load]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['lazy_load'] ) ); ?> />
+        <label for="sbp_settings[lazy_load]"><?php _e( 'Lazy load images to improve speed', 'sb-pack' ); ?></label>
+     <?php } ?>
 </p>
+
 
 <p>
 <input id="sbp_settings[font_awesome]" name="sbp_settings[font_awesome]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['font_awesome'] ) ); ?> />
@@ -64,11 +70,11 @@
 
 
 <div class="welcome-panel-column">
-<h4> <?php _e( 'Remove junk header tags', 'sb-pack' ); ?></h4>
+<h4> <?php _e( 'Other plugin settings', 'sb-pack' ); ?></h4>
 
 <p>
-<input id="sbp_settings[remove_rsd_link]" name="sbp_settings[remove_rsd_link]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['remove_rsd_link'] ) ); ?> />
-<label for="sbp_settings[remove_rsd_link]"><?php _e( 'Remove RSD Link', 'sb-pack' ); ?></label>
+<input id="sbp_settings[minify_html_js]" name="sbp_settings[minify_html_js]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['minify_html_js'] ) ); ?> />
+<label for="sbp_settings[minify_html_js]"><?php _e( 'Minify HTML and JS', 'sb-pack' ); ?></label>
 </p>
 
 <p>
@@ -82,8 +88,8 @@
 </p>
 
 <p>
-<input id="sbp_settings[wml_link]" name="sbp_settings[wml_link]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['wml_link'] ) ); ?> />
-<label for="sbp_settings[wml_link]"><?php _e( 'Remove Windows Manifest', 'sb-pack' ); ?></label>
+    <input id="sbp_settings[wml_link]" name="sbp_settings[wml_link]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['wml_link'] ) ); ?> />
+    <label for="sbp_settings[wml_link]"><?php _e( 'Remove Windows Manifest', 'sb-pack' ); ?></label>
 </p>
 
 <p>
@@ -289,15 +295,17 @@ var jpegCompression = '<?php echo $this->image_compression; ?>';
 <?php _e( 'Note that any changes you make will only affect new images uploaded to your site. A specialized plugin can optimize all your present images and will also optimize new ones as they are added. ', 'sb-pack' ); ?>
 </strong></p>
 <br>
-<p class="description"><strong>
-<?php _e( 'We recommend using ShortPixel Plugin to optimize your images.', 'sb-pack' ); ?>
+<p class="description sp-link"><strong>
+   <a href="https://shortpixel.com/h/af/U3NQVWK31472" target="_blank">
+       <?php _e( 'Test your website with  ShortPixel for free to see how much you could gain by optimizing your images.', 'sb-pack' ); ?>
+   </a>
 </strong></p>
-<a href="https://shortpixel.com/booster/af/KQD2XAB28044" target="_blank"><img src="<?php echo $this->plugin_url . "img/sp.png"; ?>" class="sbp-sp"/></a>
+<a href="https://shortpixel.com/h/af/U3NQVWK31472" target="_blank"><img src="<?php echo $this->plugin_url . "inc/images/sp.png"; ?>" class="sbp-sp"/></a>
 <p class="description">
     <?php _e( 'ShortPixel is an easy to use, comprehensive, stable and frequently updated image optimization plugin supported by the friendly team that created it. Using a powerful set of specially tuned algorithms, it squeezes the most of each image striking the best balance between image size and quality. Current images can be all optimized with a single click. Newly added images are automatically resized/rescaled and optimized on the fly, in the background.', 'sb-pack' ); ?>
 </p>
 <p class="description-link">
-    <a href="https://shortpixel.com/booster/af/KQD2XAB28044" target="_blank">&gt;&gt; <?php _e( 'More info', 'sb-pack' ); ?></a>
+    <a href="https://shortpixel.com/h/af/U3NQVWK31472" target="_blank">&gt;&gt; <?php _e( 'More info', 'sb-pack' ); ?></a>
 </p>
 </div>
 
@@ -389,6 +397,26 @@ var jpegCompression = '<?php echo $this->image_compression; ?>';
 
 </div> <!-- END welcome-panel -->
 
+<div class="col-fulwidth feedback-box">
+  <h3>
+    <?php esc_html_e( 'Lend a hand & share your thoughts', 'saboxplugin' ); ?>
+    <img src="<?php echo $this->plugin_url . "inc/images/handshake.png"; ?>"> 
+  </h3>
+  <p>
+    <?php
+    echo vsprintf(
+      // Translators: 1 is Theme Name, 2 is opening Anchor, 3 is closing.
+      __( 'We\'ve been working hard on making %1$s the best one out there. We\'re interested in hearing your thoughts about %1$s and what we could do to <u>make it even better</u>.<br/> <br/> %2$sHave your say%3$s', 'sb-pack' ),
+      array(
+        'Speed Booster Pack',
+        '<a class="button button-feedback" target="_blank" href="http://bit.ly/feedback-speed-booster-pack">',
+        '</a>',
+      )
+    );
+    ?>
+  </p>
+</div>
+
 <!-- START docs and version areas -->
 
 <div class="sbp-title-div">
@@ -406,34 +434,6 @@ var jpegCompression = '<?php echo $this->image_compression; ?>';
 <p><a href="http://tiguandesign.com/docs/speed-booster/" target="_blank" title="Documentation"><?php _e( 'Read online plugin documentation', 'sb-pack' ); ?></a><?php _e( ' with guidelines to enhance your website performance.', 'sb-pack' ); ?></p>
 
 </div> <!-- end sbp-box div 1-->
-
-<div class="sbp-title-div">
-<div class="sbp-title">
-<?php _e( 'Version Information', 'sb-pack' ); ?>
-</div>
-</div>
-
-<div class="sbp-box"><!-- start sbp-box div 2 -->
-
-<div class="sbp-box-version">
-<i class="sbp-icon-version"></i>
-</div>
-
-<div class="sbp-infos">
-<?php _e( 'Installed Version:', 'sb-pack' ); ?>
-<span>
-<?php echo SPEED_BOOSTER_PACK_VERSION; ?>
-</span>
-</div>
-
-<div class="sbp-infos">
-<?php _e( 'Released date:', 'sb-pack' ); ?>
-<span>
-<?php echo SPEED_BOOSTER_PACK_RELEASE_DATE; ?>
-</span>
-</div>
-
-</div> <!-- end sbp-box div 2 -->
 
 <!-- END docs and version areas -->
           </div>

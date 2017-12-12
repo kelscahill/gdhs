@@ -240,9 +240,15 @@ class Util_Rule {
 		if ( $data === false )
 			$data = '';
 
-		$rules_missing = !empty( $rules ) && ( strstr( Util_Rule::clean_rules( $data ), Util_Rule::clean_rules( $rules ) ) === false );
-		if ( !$rules_missing )
-			return;
+		if ( empty( $rules ) ) {
+			$rules_present = ( strpos( $data, $start ) !==  false );
+			if ( !$rules_present )
+				return;
+		} else {
+			$rules_missing = ( strstr( Util_Rule::clean_rules( $data ), Util_Rule::clean_rules( $rules ) ) === false );
+			if ( !$rules_missing )
+				return;
+		}
 
 		$replace_start = strpos( $data, $start );
 		$replace_end = strpos( $data, $end );
@@ -385,7 +391,10 @@ class Util_Rule {
 	 * @return bool
 	 */
 	static public function can_check_rules() {
-		return Util_Environment::is_apache() || Util_Environment::is_litespeed() || Util_Environment::is_nginx();
+		return Util_Environment::is_apache() ||
+			Util_Environment::is_litespeed() ||
+			Util_Environment::is_nginx() ||
+			Util_Environment::is_iis();
 	}
 
 	/**

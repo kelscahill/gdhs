@@ -31,7 +31,7 @@ class Minify_ContentMinifier {
 
 		'css' => array( 'Minify_CSS', 'minify' ),
 		'yuicss' => array( 'Minify_YUICompressor', 'minifyCss' ),
-		'cssmin' => array( 'Minify0_CSSmin', 'minify' ),
+		'cssmin' => array( 'w3tc_tubalmartin\CssMin\Minifier', 'minify' ),
 		'csstidy' => array( 'Minify_CSSTidy', 'minify' ),
 
 		'html' => array( 'Minify_HTML', 'minify' ),
@@ -203,10 +203,12 @@ class Minify_ContentMinifier {
 				'lowercase_s' => $this->_config->get_boolean( 'minify.csstidy.options.lowercase_s' ),
 				'optimise_shorthands' => $this->_config->get_integer( 'minify.csstidy.options.optimise_shorthands' ),
 				'remove_last_;' => $this->_config->get_boolean( 'minify.csstidy.options.remove_last_;' ),
+				'space_before_important' => !$this->_config->get_boolean( 'minify.csstidy.options.remove_space_before_important' ),
 				'case_properties' => $this->_config->get_integer( 'minify.csstidy.options.case_properties' ),
 				'sort_properties' => $this->_config->get_boolean( 'minify.csstidy.options.sort_properties' ),
 				'sort_selectors' => $this->_config->get_boolean( 'minify.csstidy.options.sort_selectors' ),
 				'merge_selectors' => $this->_config->get_integer( 'minify.csstidy.options.merge_selectors' ),
+				'discard_invalid_selectors' => $this->_config->get_boolean( 'minify.csstidy.options.discard_invalid_selectors' ),
 				'discard_invalid_properties' => $this->_config->get_boolean( 'minify.csstidy.options.discard_invalid_properties' ),
 				'css_level' => $this->_config->get_string( 'minify.csstidy.options.css_level' ),
 				'preserve_css' => $this->_config->get_boolean( 'minify.csstidy.options.preserve_css' ),

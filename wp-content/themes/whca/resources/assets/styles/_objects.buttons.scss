@@ -4,40 +4,48 @@
 
 .btn,
 button,
-input[type="submit"] {
-  display: table;
-  padding: $pad-half $pad;
-  vertical-align: middle;
+input[type="submit"],
+a.fasc-button {
   cursor: pointer;
-  color: $white;
-  background-color: $button-color;
   box-shadow: none;
-  border: none;
-  transition: all 0.3s ease-in-out;
-  border-radius: rem(50);
-  text-transform: uppercase;
-
-  @include media ('>medium') {
-    padding: rem(12) $pad;
-  }
+  transition: all 0.25s ease-in-out;
+  position: relative;
+  padding: $pad-half $pad-double $pad-half $pad;
+  margin: $space 0 0 0;
+  border: 1px solid $button-hover;
+  display: table;
+  vertical-align: middle;
+  text-align: center;
+  width: auto;
+  background: $button-color !important;
+  color: $button-hover !important;
 
   &:focus {
     outline: 0;
   }
 
   &:hover {
-    background-color: $button-hover;
-    color: $white;
+    background-color: $button-hover !important;
+    color: $white !important;
+
+    &::after {
+      background: url('../assets/images/icon--arrow--white.svg') center center no-repeat;
+      background-size: rem(15);
+    }
   }
 
   &::after {
     content: '';
-    display: inline-block;
-    width: rem(10);
-    height: rem(10);
+    display: block;
     margin-left: $space-half;
-    background: url('../../assets/images/icon--arrow.svg') no-repeat center center;
-    position: relative;
-    top: rem(-1);
+    background: url('../assets/images/icon--arrow.svg') center center no-repeat;
+    background-size: rem(15);
+    width: rem(20);
+    height: rem(20);
+    position: absolute;
+    right: $space-half;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.25s ease-in-out;
   }
 }

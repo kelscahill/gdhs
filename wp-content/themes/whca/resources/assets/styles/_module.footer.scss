@@ -1,3 +1,51 @@
 /* ------------------------------------*\
     $FOOTER
 \*------------------------------------ */
+
+.footer {
+  padding: $pad 0;
+}
+
+.footer--inner {
+  display: flex;
+  flex-direction: column;
+
+  @include media('>xlarge') {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.footer__nav {
+  ul {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-bottom: $pad-half;
+
+    @include media('>medium') {
+      flex-wrap: nowrap;
+    }
+
+    @include media('>xlarge') {
+      padding-bottom: 0;
+    }
+
+    li {
+      padding: 0 $pad-half;
+
+      a {
+        color: $black;
+
+        @include font--s;
+      }
+    }
+  }
+}
+
+.footer__copyright {
+  padding-left: $pad-half;
+}

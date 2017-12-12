@@ -3,13 +3,13 @@
 * Plugin Name: Speed Booster Pack
 * Plugin URI: http://wordpress.org/plugins/speed-booster-pack/
 * Description: Speed Booster Pack allows you to improve your page loading speed and get a higher score on the major speed testing services such as <a href="http://gtmetrix.com/">GTmetrix</a>, <a href="http://developers.google.com/speed/pagespeed/insights/">Google PageSpeed</a> or other speed testing tools.
-* Version: 2.9
-* Author: Tiguan
-* Author URI: http://tiguandesign.com
+* Version: 3.6.1
+* Author: Macho Themes
+* Author URI: https://www.machothemes.com/
 * License: GPLv2
 */
 
-/*  Copyright 2014 Tiguan (email : themesupport [at] tiguandesign [dot] com)
+/*  Copyright 2017 Macho Themes (email : support [at] machothemes [dot] com)
 
     THIS PROGRAM IS FREE SOFTWARE; YOU CAN REDISTRIBUTE IT AND/OR MODIFY
     IT UNDER THE TERMS OF THE GNU GENERAL PUBLIC LICENSE AS PUBLISHED BY
@@ -36,9 +36,9 @@ $sbp_options = get_option( 'sbp_settings' );	// retrieve the plugin settings fro
 	Define some useful plugin constants
 -----------------------------------------------------------------------------------------------------------*/
 
-define( 'SPEED_BOOSTER_PACK_RELEASE_DATE', date_i18n( 'F j, Y', '1400569200' ) );	// Defining plugin release date
+define( 'SPEED_BOOSTER_PACK_RELEASE_DATE', date_i18n( 'F j, Y', strtotime('2017-08-21')) );	// Defining plugin release date
 define( 'SPEED_BOOSTER_PACK_PATH', plugin_dir_path( __FILE__ ) );					// Defining plugin dir path
-define( 'SPEED_BOOSTER_PACK_VERSION', 'v2.8');										// Defining plugin version
+define( 'SPEED_BOOSTER_PACK_VERSION', 'v3.6.1');										// Defining plugin version
 define( 'SPEED_BOOSTER_PACK_NAME', 'Speed Booster Pack Plugin');					// Defining plugin name
 define( 'SBP_FOOTER', 10 );															// Defining css position
 define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
@@ -57,7 +57,7 @@ define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
 -----------------------------------------------------------------------------------------------------------*/
 
 	public function __construct() {
-
+		global $sbp_options;
 
 		// Enqueue admin scripts
 		add_action( 'admin_enqueue_scripts', array( $this, 'sbp_admin_enqueue_scripts' ) );
@@ -66,8 +66,8 @@ define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
 		// load plugin textdomain
 		add_action('plugins_loaded', array( $this, 'sbp_load_translation' ) );
 
-                add_action('admin_notices', array( &$this, 'sbp_display_notices'));
-                add_action('wp_ajax_sbp_dismiss_notices', array(&$this, 'sbp_dismiss_notices'));
+        add_action('admin_notices', array( &$this, 'sbp_display_notices'));
+        add_action('wp_ajax_sbp_dismiss_notices', array(&$this, 'sbp_dismiss_notices'));
 
 		// Load plugin settings page
 		require_once( SPEED_BOOSTER_PACK_PATH . 'inc/settings.php' );
@@ -80,8 +80,9 @@ define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
 		// Enqueue admin style
 		add_action( 'admin_enqueue_scripts',  array( $this, 'sbp_enqueue_styles' ) );
 
-		// Enqueue frontend scripts
-		add_action( 'wp_enqueue_scripts', array( $this, 'sbp_enqueue_scripts' ) );
+		if ( isset( $sbp_options['lazy_load'] ) ) {
+			add_action('wp_head', array( $this, 'sbp_fade_in_style' ), 100);
+		}
 
 		// Render debugging information
 		add_action( 'wp_footer', array( $this, 'sbp_debugg' ), SBP_FOOTER_LAST );
@@ -117,7 +118,8 @@ define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
 		}
 
 		function sbp_dismiss_notices() {
-                    update_option( 'sbp_news', true);
+			update_option( 'sbp_news', true);
+			return json_encode(array("Status" => 0));
 		}
 
 /*----------------------------------------------------------------------------------------------------------
@@ -177,6 +179,15 @@ define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
 		}
 
 
+/*-----------------------------------------------------------------------------------------------------------------------------------------
+    Add a small css to activate a fade-in effect on lazy load images & wll be also used to output some frontend css in future development
+--------------------------------------------------------------------------------------------------------------------------------------------*/
+
+	public function sbp_fade_in_style() {
+		echo "<style>img.crazy_lazy {opacity:0}</style>";
+	}
+
+
 /*----------------------------------------------------------------------------------------------------------
 	CSS style of the plugin options page
 -----------------------------------------------------------------------------------------------------------*/
@@ -203,8 +214,8 @@ define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
             if ( $hook_sbp != $sbp_settings_page )
                 return;
             wp_enqueue_script( 'jquery-ui-slider' );
-            wp_enqueue_script( 'sbp-slide', plugins_url('js/sbp-slide.js', __FILE__ ), array( 'jquery', 'jquery-ui-slider' ), SPEED_BOOSTER_PACK_VERSION, true );
-            wp_enqueue_script( 'sbp-hide', plugins_url('js/sbp-hide.js', __FILE__ ), array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
+            wp_enqueue_script( 'sbp-slide', plugins_url('inc/js/sbp-slide.js', __FILE__ ), array( 'jquery', 'jquery-ui-slider' ), SPEED_BOOSTER_PACK_VERSION, true );
+            wp_enqueue_script( 'sbp-hide', plugins_url('inc/js/sbp-hide.js', __FILE__ ), array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
 
         }
 
@@ -218,28 +229,9 @@ define( 'SBP_FOOTER_LAST', 99999 );													// Defining css last position
             if ( $sbp_suffix != $sbp_settings_page )
                 return;
                 wp_enqueue_script( 'postbox' );
-                wp_enqueue_script( 'postbox-edit', plugins_url('js/post-tabs-edit.js', __FILE__ ), array( 'jquery', 'postbox' ) );
+                wp_enqueue_script( 'postbox-edit', plugins_url('inc/js/post-tabs-edit.js', __FILE__ ), array( 'jquery', 'postbox' ) );
         }
 
-
-/*----------------------------------------------------------------------------------------------------------
-	Enqueue front end scripts
------------------------------------------------------------------------------------------------------------*/
-
-static function sbp_enqueue_scripts() {
-
-	global $sbp_options;
-
-	if ( !is_admin() and isset( $sbp_options['lazy_load'] ) ) {
-
-			// We combined 'jquery.sonar.js' and 'lazy-load.js' (commented out below) in a single minified file to reduce the number of js files.
-		wp_enqueue_script( 'sbp-lazy-load-images',  plugin_dir_url( __FILE__ ) . 'js/sbp-lazy-load.min.js', array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
-
-			// wp_enqueue_script( 'sbp-lazy-load-images',  plugin_dir_url( __FILE__ ) . 'js/lazy-load.js', array( 'jquery', 'sbp-jquery-sonar' ), SPEED_BOOSTER_PACK_VERSION, true );
-			// wp_enqueue_script( 'sbp-jquery-sonar',  plugin_dir_url( __FILE__ ) . 'js/jquery.sonar.js', array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
-	}
-
-}
 
 /*----------------------------------------------------------------------------------------------------------
 	Add settings link on plugins page

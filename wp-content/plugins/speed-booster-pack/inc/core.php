@@ -33,10 +33,16 @@ if( !class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				$this->sbp_use_google_libraries();
 			}
 
-			//	Use Google Libraries
+			// Lazy Load
 			if ( !is_admin() and isset( $sbp_options['lazy_load'] ) ) {
 				$this->sbp_lazy_load_for_images();
 			}
+
+			// Minifier
+			if ( !is_admin() and isset( $sbp_options['minify_html_js'] ) ) {
+				$this->sbp_minifier();
+			}
+
 
 			//	Defer parsing of JavaScript
 			if ( !is_admin() and isset( $sbp_options['defer_parsing'] ) ) {
@@ -369,9 +375,21 @@ function sbp_use_google_libraries() {
 
 function sbp_lazy_load_for_images() {
 
-	require_once( SPEED_BOOSTER_PACK_PATH . 'inc/lazy-load.php' );
-
+	if ( !class_exists( 'CrazyLazy' ) ) {
+		require_once(SPEED_BOOSTER_PACK_PATH . 'inc/crazy-lazy.php');
+	}
 }	//	End function sbp_lazy_load_for_images()
+
+
+
+/*--------------------------------------------------------------------------------------------------------
+    Minify HTML and Javascripts
+---------------------------------------------------------------------------------------------------------*/
+
+function sbp_minifier() {
+
+	require_once( SPEED_BOOSTER_PACK_PATH . 'inc/sbp-minifier.php' );
+} 	//	End function sbp_minifier()
 
 
 /*--------------------------------------------------------------------------------------------------------
@@ -486,11 +504,6 @@ function sbp_no_more_fontawesome() {
 public function sbp_junk_header_tags() {
 
 	global $sbp_options;
-
-	//	Remove RSD Link from header
-	if ( isset( $sbp_options['remove_rsd_link'] ) ) {
-		remove_action( 'wp_head', 'rsd_link' );
-	}
 
 	//	Remove Adjacent Posts links PREV/NEXT
 	if ( isset( $sbp_options['remove_adjacent'] ) ) {

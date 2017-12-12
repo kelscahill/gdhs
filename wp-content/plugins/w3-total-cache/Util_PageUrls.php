@@ -500,7 +500,9 @@ class Util_PageUrls {
 
 		$base = trailingslashit( get_bloginfo( 'url' ) );
 
-		if ( $wp_rewrite->using_index_permalinks() && ( $pagenum > 1 || '' != $request ) )
+		if ( !is_null( $wp_rewrite ) &&
+			$wp_rewrite->using_index_permalinks() &&
+			( $pagenum > 1 || '' != $request ) )
 			$base .= 'index.php/';
 
 		if ( $pagenum > 1 ) {
@@ -740,21 +742,21 @@ class Util_PageUrls {
 		$home_urls = $config->get_array( 'pgcache.mirrors.home_urls' );
 
 		$url_prefix = trailingslashit( get_home_url() );
-		$urls = array_keys( $queued_urls );
+		$mirror_urls = array();
 
-		foreach ( $urls as $url ) {
+		foreach ( $queued_urls as $url ) {
 			if ( substr( $url, 0, strlen( $url_prefix ) ) != $url_prefix )
 				continue;
 
 			foreach ( $home_urls as $home ) {
 				if ( !empty( $home ) ) {
-					$mirror_url = $home . substr( $url, strlen( $url_prefix ) );
-					$queued_urls[$mirror_url] = '*';
+					$mirror_urls[] = trailingslashit( $home ) .
+						substr( $url, strlen( $url_prefix ) );
 				}
 			}
 		}
 
-		return $queued_urls;
+		return array_merge( $queued_urls, $mirror_urls );
 	}
 
 	static private function _term_hash( $terms ) {
