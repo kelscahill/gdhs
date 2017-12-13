@@ -165,14 +165,14 @@ sage()->bindIf('config', Config::class, true);
 // Featured crop.
 add_image_size('featured__hero--s', 500, 400, array('center', 'center'));
 add_image_size('featured__hero--m', 800, 500, array('center', 'center'));
-add_image_size('featured__hero--l', 1100, 500, array('center', 'center'));
-add_image_size('featured__hero--xl', 1600, 600, array('center', 'center'));
+add_image_size('featured__hero--l', 1100, 600, array('center', 'center'));
+add_image_size('featured__hero--xl', 1600, 800, array('center', 'center'));
 
 // 16:9 crop.
 add_image_size('horiz__16x9--s', 500, 280, array('center', 'center'));
 add_image_size('horiz__16x9--m', 800, 450, array('center', 'center'));
 add_image_size('horiz__16x9--l', 1100, 620, array('center', 'center'));
-//add_image_size('horiz__16x9--xl', 1600, 900, array('center', 'center'));
+add_image_size('horiz__16x9--xl', 1600, 900, array('center', 'center'));
 
 // 4:3 crop.
 add_image_size('horiz__4x3--s', 500, 375, array('center', 'center'));

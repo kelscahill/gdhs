@@ -1,3 +1,135 @@
 /* ------------------------------------*\
     $NAVIGATION
 \*------------------------------------ */
+
+@keyframes fade-in {
+  to {
+    background-position: left center;
+  }
+}
+
+.nav__primary {
+  display: flex;
+
+  &.this-is-active {
+    .primary-nav__list {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .primary-nav__list {
+      @for $i from 1 through 5 {
+        .primary-nav__list-item:nth-child(#{$i}) .primary-nav__list-link span {
+          animation: fade-in 1s ease-in-out forwards;
+          animation-delay: #{$i * 0.1s};
+        }
+      }
+
+      @for $i from 1 through 5 {
+        .primary-nav__list-item:nth-child(#{$i})::before {
+          animation: fade-in 0.15s ease-in-out forwards;
+          animation-delay: #{$i * 0.15s};
+        }
+      }
+    }
+  }
+
+  &-branding {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-logo {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-toggle {
+    cursor: pointer;
+  }
+}
+
+.primary-nav__list {
+  position: relative;
+  padding-left: $pad-half;
+  opacity: 0;
+  visibility: hidden;
+
+  &-item {
+    position: relative;
+    border-left: 2px solid $border-color;
+
+    &::before,
+    &:last-child::after {
+      content: "";
+      position: absolute;
+      height: rem(2);
+      width: 100%;
+      display: block;
+      top: rem(-1);
+      left: rem(5);
+      background-image: linear-gradient(to right, $border-color 50%, white 50%);
+      background-position: left center;
+      background-size: 200% 100%;
+      background-repeat: no-repeat;
+    }
+
+    &:last-child::after {
+      top: auto;
+      bottom: rem(-1);
+    }
+
+    &.active,
+    &.this-is-active {
+      .primary-nav__list-link {
+        border-top-color: $black;
+        color: $black;
+      }
+
+      .subnav__list {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    .subnav__list {
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      left: rem(230);
+      top: 0;
+      padding-left: $pad;
+
+      &-item {
+        padding-left: rem(5);
+        border-left: 2px solid $border-color;
+
+        &.active,
+        &:hover {
+          .subnav__link {
+            color: $black;
+          }
+        }
+      }
+    }
+  }
+
+  &-link {
+    display: block;
+    width: rem(230);
+    margin-left: rem(5);
+    position: relative;
+
+    span {
+      position: absolute;
+      left: 0;
+      height: 100%;
+      width: calc(100% + 5px);
+      display: block;
+      background-image: linear-gradient(to right, transparent 50%, white 50%);
+      background-position: right center;
+      background-size: 200% 100%;
+      background-repeat: no-repeat;
+    }
+  }
+}

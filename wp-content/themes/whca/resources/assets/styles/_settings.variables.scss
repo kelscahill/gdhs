@@ -36,16 +36,16 @@ $link-hover: darken($tertiary-color, 10%);
 $button-color: $white;
 $button-hover: $black;
 $body-color: $black;
-$border-color: #e5e5e5;
+$border-color: #bbbcba;
 $overlay: rgba(25, 25, 25, 0.6);
 
 /**
  * Typography
  */
-$font: "questa-sans", "Helvetica", sans-serif;
-$font-primary: "millerdisplayroman", "Arial", sans-serif;
-$font-secondary: "questa-sans", "Helvetica", sans-serif;
-$sans-serif: "Helvetica", "Arial", sans-serif;
+$font: "Helvetica", sans-serif;
+$font-primary: "din-condensed", "Helvetica", sans-serif;
+$font-secondary: "Helvetica", "Helvetica", sans-serif;
+$sans-serif: "Helvetica", sans-serif;
 $serif: Georgia, Times, "Times New Roman", serif;
 $monospace: Menlo, Monaco, "Courier New", "Courier", monospace;
 

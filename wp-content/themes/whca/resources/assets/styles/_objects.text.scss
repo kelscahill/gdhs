@@ -9,6 +9,7 @@
   font-size: rem(52);
   line-height: rem(54);
   font-family: $font-primary;
+  text-transform: uppercase;
 
   @include media ('>large') {
     font-size: rem(60);
@@ -30,6 +31,7 @@ h1 {
   font-size: rem(36);
   line-height: rem(42);
   font-family: $font-primary;
+  text-transform: uppercase;
 
   @include media ('>large') {
     font-size: rem(44);
@@ -51,6 +53,7 @@ h2 {
   font-size: rem(26);
   line-height: rem(34);
   font-family: $font-primary;
+  text-transform: uppercase;
 
   @include media ('>large') {
     font-size: rem(28);
@@ -144,4 +147,12 @@ h4 {
 
 .font-weight--900 {
   font-weight: 900;
+}
+
+.caption {
+  color: $gray;
+  font-style: italic;
+  padding-top: rem(10);
+
+  @include font--s;
 }

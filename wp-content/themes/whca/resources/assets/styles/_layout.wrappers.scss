@@ -47,12 +47,5 @@
 }
 
 .narrow--xl {
-  max-width: rem(1260);
-  padding-left: $pad-half;
-  padding-right: $pad-half;
-
-  @include media ('>large') {
-    padding-left: $pad;
-    padding-right: $pad;
-  }
+  max-width: rem(1300);
 }
