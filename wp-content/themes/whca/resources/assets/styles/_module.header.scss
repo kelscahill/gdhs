@@ -2,13 +2,37 @@
     $HEADER
 \*------------------------------------ */
 
-.header {
-  display: flex;
-  justify-content: space-between;
-}
+.nav__primary-logo {
+  flex: 0 0 auto;
+  padding-left: rem(5);
+  border-left: 2px solid $black;
 
-.logo {
-  &-text {
+  span {
+    color: $black;
+    border-bottom: 2px solid $black;
+    line-height: 1;
+    width: rem(188);
+
+    &:first-child {
+      border-top: 2px solid $black;
+    }
+
     @include font--primary--m;
   }
+}
+
+.nav__primary-toggle {
+  padding-top: $pad-half;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: rem(14);
+  display: block;
+
+  @include media('>medium') {
+    display: none;
+  }
+}
+
+.home .nav__primary-toggle {
+  display: block;
 }

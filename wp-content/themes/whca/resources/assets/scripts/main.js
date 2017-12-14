@@ -38,23 +38,26 @@
         // Add active class the menu-nav link
         var url = window.location.toString();
 
-        $('.main-nav a').each(function() {
+        $('.primary-nav__list a').each(function() {
            var myHref = $(this).attr('href');
            if (url == myHref) {
-              $(this).addClass('active');
-              $(this).parents().parents().parents().addClass('primary-nav__list-item-is-active');
+              $(this).parent().addClass('active');
+              $('.header').addClass('this-is-active nav-is-active');
            }
         });
 
-        /**
-         * Main class toggling function
-         */
-        $('.nav__toggle').click(function() {
-         $('body').toggleClass('main-nav-is-active');
+        $('.subnav__list a').each(function() {
+           var myHref = $(this).attr('href');
+           if (url == myHref) {
+              $(this).parent().addClass('active');
+              $(this).parent().parent().addClass('active');
+              $(this).parent().parent().parent().addClass('active');
+              $('.header').addClass('this-is-active nav-is-active');
+           }
         });
-        $('.main').click(function() {
-         $('body').removeClass('main-nav-is-active');
-        });
+
+        // $('.primary-nav__list a[href^="' + window.location.href + '"]').parent().addClass('active');
+        // $('.primary-nav__list a[href^="' + window.location.href + '"]').parent().parent().parent().parent().parent().addClass('this-is-active');
 
         var $toggled = '';
         var toggleClasses = function(element) {

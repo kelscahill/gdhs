@@ -5,33 +5,85 @@
 @keyframes fade-in {
   to {
     background-position: left center;
+    left: 0;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  height: rem($large-header-height);
+  transition: all 0.25s ease;
+  overflow: hidden;
+  z-index: 999;
+  padding-bottom: $pad;
+
+  @include media('>medium') {
+    flex-direction: row;
+    height: 100%;
+    padding-bottom: 0;
+  }
+}
+
+.header.this-is-active {
+  height: 100%;
+  // 
+  // &.nav-is-active {
+  //   .primary-nav__list::before,
+  //   .primary-nav__list-item .primary-nav__list-link span,
+  //   .primary-nav__list-item:last-child::after {
+  //     transition: none !important;
+  //   }
+  // }
+
+  .primary-nav__list {
+    opacity: 1;
+    visibility: visible;
+
+    &::before {
+      background-color: $border-color;
+      height: 100%;
+      transition: all 1s ease;
+      transition-delay: 0.15s;
+    }
+
+    @for $i from 1 through 5 {
+      .primary-nav__list-item:nth-child(#{$i}) .primary-nav__list-link span {
+        animation: fade-in 1s ease-in-out forwards;
+        animation-delay: #{$i * 0.075s};
+      }
+    }
+
+    @for $i from 1 through 6 {
+      .primary-nav__list-item:nth-child(#{$i})::before {
+        background-color: $border-color;
+        width: 100%;
+        transition-delay: #{$i * 0.15s};
+      }
+    }
+
+    .primary-nav__list-item:last-child::after {
+      background-color: $border-color;
+      width: 100%;
+      transition-delay: 0.9s;
+    }
+  }
+
+  .nav__secondary {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 1.05s;
   }
 }
 
 .nav__primary {
   display: flex;
+  flex-direction: column;
+  padding: $pad 0;
 
-  &.this-is-active {
-    .primary-nav__list {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .primary-nav__list {
-      @for $i from 1 through 5 {
-        .primary-nav__list-item:nth-child(#{$i}) .primary-nav__list-link span {
-          animation: fade-in 1s ease-in-out forwards;
-          animation-delay: #{$i * 0.1s};
-        }
-      }
-
-      @for $i from 1 through 5 {
-        .primary-nav__list-item:nth-child(#{$i})::before {
-          animation: fade-in 0.15s ease-in-out forwards;
-          animation-delay: #{$i * 0.15s};
-        }
-      }
-    }
+  @include media('>medium') {
+    flex-direction: row;
   }
 
   &-branding {
@@ -49,41 +101,73 @@
   }
 }
 
+.nav__secondary {
+  @include media('<=medium') {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+  }
+}
+
 .primary-nav__list {
   position: relative;
+  margin-top: $space;
   padding-left: $pad-half;
   opacity: 0;
   visibility: hidden;
 
+  @include media('>medium') {
+    flex-direction: row;
+    height: 100%;
+    margin-left: $space-half;
+    margin-top: 0;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: rem(2);
+    height: 0;
+    display: block;
+    top: 0;
+    left: 0;
+    background-color: white;
+  }
+
   &-item {
     position: relative;
-    border-left: 2px solid $border-color;
 
     &::before,
     &:last-child::after {
       content: "";
       position: absolute;
       height: rem(2);
-      width: 100%;
       display: block;
-      top: rem(-1);
-      left: rem(5);
-      background-image: linear-gradient(to right, $border-color 50%, white 50%);
-      background-position: left center;
-      background-size: 200% 100%;
-      background-repeat: no-repeat;
+      top: 0;
+      width: 0;
+      left: 0;
+      background-color: white;
+      transition: all 1s ease;
+      z-index: 999;
     }
 
     &:last-child::after {
       top: auto;
-      bottom: rem(-1);
+      bottom: 0;
     }
 
     &.active,
     &.this-is-active {
+      transition: all 0.25s ease;
+
       .primary-nav__list-link {
-        border-top-color: $black;
         color: $black;
+      }
+
+      &::before {
+        background-color: $black !important;
+        transition-delay: 0s !important;
+        width: 100%;
       }
 
       .subnav__list {
@@ -96,9 +180,11 @@
       opacity: 0;
       visibility: hidden;
       position: absolute;
-      left: rem(230);
+      left: rem(200);
       top: 0;
-      padding-left: $pad;
+      padding-left: $pad-half;
+      transition: all 0.25s ease;
+      margin: 0;
 
       &-item {
         padding-left: rem(5);
@@ -116,20 +202,34 @@
 
   &-link {
     display: block;
-    width: rem(230);
-    margin-left: rem(5);
+    width: rem(200);
     position: relative;
 
     span {
       position: absolute;
       left: 0;
       height: 100%;
-      width: calc(100% + 5px);
+      width: 100%;
       display: block;
-      background-image: linear-gradient(to right, transparent 50%, white 50%);
+      background-image: linear-gradient(to right, transparent, white 50%);
       background-position: right center;
-      background-size: 200% 100%;
+      background-size: 500% 100%;
       background-repeat: no-repeat;
+    }
+  }
+}
+
+.subnav__list {
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .subnav__list-item {
+    &.active {
+      a {
+        color: $black;
+      }
     }
   }
 }

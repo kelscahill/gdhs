@@ -1,4 +1,4 @@
-<header class="header layout-container">
+<header class="header layout-container js-this">
   <div class="header--left">
     @include('partials.navigation')
   </div>
