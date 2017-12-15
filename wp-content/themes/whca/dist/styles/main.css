@@ -1588,6 +1588,8 @@ a.fasc-button::after {
 
 .section__hero {
   position: relative;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .section__hero-caption {
