@@ -28,6 +28,7 @@
           }
           return false;
         }
+        
         // Add class if is mobile
         if (isMobile()) {
           $('html').addClass(' touch');
