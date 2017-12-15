@@ -57,7 +57,6 @@
           }
         }
 
-
         var $toggled = '';
         var toggleClasses = function(element) {
           var $this = element,
