@@ -2,19 +2,11 @@
     $NAVIGATION
 \*------------------------------------ */
 
-@keyframes fade-in {
-  to {
-    background-position: left center;
-    left: 0;
-  }
-}
-
 .header {
   display: flex;
   justify-content: space-between;
   flex-direction: column;
   height: rem($large-header-height);
-  transition: all 0.25s ease;
   overflow: hidden;
   z-index: 999;
   padding-bottom: $pad;
@@ -28,38 +20,35 @@
 
 .header.this-is-active {
   height: 100%;
-  // 
-  // &.nav-is-active {
-  //   .primary-nav__list::before,
-  //   .primary-nav__list-item .primary-nav__list-link span,
-  //   .primary-nav__list-item:last-child::after {
-  //     transition: none !important;
-  //   }
-  // }
+
+  .has-fade-in-border::before {
+    background-color: $border-color;
+    height: 100%;
+  }
+
+  @for $i from 1 through 5 {
+    .has-fade-in-text:nth-child(#{$i}) a span {
+      animation: fade-in 1s ease-in-out forwards;
+      animation-delay: #{$i * 0.075s};
+    }
+  }
 
   .primary-nav__list {
     opacity: 1;
     visibility: visible;
-
-    &::before {
-      background-color: $border-color;
-      height: 100%;
-      transition: all 1s ease;
-      transition-delay: 0.15s;
-    }
-
-    @for $i from 1 through 5 {
-      .primary-nav__list-item:nth-child(#{$i}) .primary-nav__list-link span {
-        animation: fade-in 1s ease-in-out forwards;
-        animation-delay: #{$i * 0.075s};
-      }
-    }
 
     @for $i from 1 through 6 {
       .primary-nav__list-item:nth-child(#{$i})::before {
         background-color: $border-color;
         width: 100%;
         transition-delay: #{$i * 0.15s};
+      }
+
+      .primary-nav__list-item.active:nth-child(#{$i})::before,
+      .primary-nav__list-item.this-is-active:nth-child(#{$i})::before {
+        background-color: $black;
+        transition-delay: 0s;
+        width: 100%;
       }
     }
 
@@ -68,12 +57,35 @@
       width: 100%;
       transition-delay: 0.9s;
     }
+
+    .primary-nav__list-item.active,
+    .primary-nav__list-item.this-is-active {
+      .primary-nav__list-link {
+        color: $black;
+      }
+
+      .sub-nav__list {
+        opacity: 1;
+        visibility: visible;
+        position: relative;
+
+        @include media('>medium') {
+          position: absolute;
+        }
+      }
+    }
+  }
+
+  .sub-nav__list-item.active,
+  .sub-nav__list-item:hover {
+    .sub-nav__list-link {
+      color: $black;
+    }
   }
 
   .nav__secondary {
     opacity: 1;
     visibility: visible;
-    transition-delay: 1.05s;
   }
 }
 
@@ -112,30 +124,18 @@
 .primary-nav__list {
   position: relative;
   margin-top: $space;
-  padding-left: $pad-half;
   opacity: 0;
   visibility: hidden;
 
   @include media('>medium') {
     flex-direction: row;
     height: 100%;
-    margin-left: $space-half;
     margin-top: 0;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    width: rem(2);
-    height: 0;
-    display: block;
-    top: 0;
-    left: 0;
-    background-color: white;
   }
 
   &-item {
     position: relative;
+    padding: rem(4) 0 rem(1) 0;
 
     &::before,
     &:last-child::after {
@@ -147,56 +147,13 @@
       width: 0;
       left: 0;
       background-color: white;
-      transition: all 1s ease;
       z-index: 999;
+      transition: all 1s ease;
     }
 
     &:last-child::after {
       top: auto;
       bottom: 0;
-    }
-
-    &.active,
-    &.this-is-active {
-      transition: all 0.25s ease;
-
-      .primary-nav__list-link {
-        color: $black;
-      }
-
-      &::before {
-        background-color: $black !important;
-        transition-delay: 0s !important;
-        width: 100%;
-      }
-
-      .subnav__list {
-        opacity: 1;
-        visibility: visible;
-      }
-    }
-
-    .subnav__list {
-      opacity: 0;
-      visibility: hidden;
-      position: absolute;
-      left: rem(200);
-      top: 0;
-      padding-left: $pad-half;
-      transition: all 0.25s ease;
-      margin: 0;
-
-      &-item {
-        padding-left: rem(5);
-        border-left: 2px solid $border-color;
-
-        &.active,
-        &:hover {
-          .subnav__link {
-            color: $black;
-          }
-        }
-      }
     }
   }
 
@@ -204,32 +161,82 @@
     display: block;
     width: rem(200);
     position: relative;
+    transition: all 0.25s ease;
+    line-height: 1;
+    color: $border-color;
+  }
+}
 
-    span {
-      position: absolute;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      display: block;
-      background-image: linear-gradient(to right, transparent, white 50%);
-      background-position: right center;
-      background-size: 500% 100%;
-      background-repeat: no-repeat;
+.sub-nav__list {
+  width: rem(200);
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: all 0.25s ease;
+  margin: $space-half 0;
+
+  @include media('>medium') {
+    left: rem(200);
+    margin: 0;
+  }
+
+  &-item {
+    line-height: 1;
+    padding: rem(4) 0 rem(1) 0;
+  }
+
+  &-link {
+    line-height: 1;
+    color: $border-color;
+  }
+}
+
+@keyframes fade-in {
+  to {
+    background-position: left center;
+    left: 0;
+  }
+}
+
+.has-fade-in-border {
+  padding-left: rem(10);
+
+  @include media('>medium') {
+    padding-left: rem(20);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: rem(2);
+    height: 0;
+    display: block;
+    top: 0;
+    left: 0;
+    background-color: white;
+    transition: all 1s ease;
+    transition-delay: 0.15s;
+
+    @include media('>medium') {
+      left: rem(10);
     }
   }
 }
 
-.subnav__list {
-  &.active {
-    opacity: 1;
-    visibility: visible;
-  }
+.has-fade-in-text {
+  position: relative;
 
-  .subnav__list-item {
-    &.active {
-      a {
-        color: $black;
-      }
-    }
+  span {
+    position: absolute;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: block;
+    background-image: linear-gradient(to right, transparent, white 50%);
+    background-position: right center;
+    background-size: 500% 100%;
+    background-repeat: no-repeat;
   }
 }

@@ -36,28 +36,27 @@
         }
 
         // Add active class the menu-nav link
-        var url = window.location.toString();
+        if (!$('body').hasClass('home')) {
+          var url = window.location.pathname;
+          if (url == '/') {
+            $('nav li > a[href="/"]').parent().addClass('active');
+            setTimeout(function() {
+              $('.header').addClass('this-is-active');
+            }, 500); // set the time here
+          } else {
+            var urlRegExp = new RegExp(url.replace(/\/$/, '') + "$");
+            $('nav li > a').each(function () {
+              if (urlRegExp.test(this.href.replace(/\/$/, ''))) {
+                $(this).parent().addClass('active');
+                $(this).parent().parent().parent().addClass('active');
+                setTimeout(function() {
+                  $('.header').addClass('this-is-active');
+                }, 500); // set the time here
+              }
+            });
+          }
+        }
 
-        $('.primary-nav__list a').each(function() {
-           var myHref = $(this).attr('href');
-           if (url == myHref) {
-              $(this).parent().addClass('active');
-              $('.header').addClass('this-is-active nav-is-active');
-           }
-        });
-
-        $('.subnav__list a').each(function() {
-           var myHref = $(this).attr('href');
-           if (url == myHref) {
-              $(this).parent().addClass('active');
-              $(this).parent().parent().addClass('active');
-              $(this).parent().parent().parent().addClass('active');
-              $('.header').addClass('this-is-active nav-is-active');
-           }
-        });
-
-        // $('.primary-nav__list a[href^="' + window.location.href + '"]').parent().addClass('active');
-        // $('.primary-nav__list a[href^="' + window.location.href + '"]').parent().parent().parent().parent().parent().addClass('this-is-active');
 
         var $toggled = '';
         var toggleClasses = function(element) {

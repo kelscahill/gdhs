@@ -23,10 +23,10 @@
             @if ($parent_id == $nav->menu_item_parent)
               @if (!$submenu)
                 @php($submenu = true)
-                <ul class="subnav__list">
+                <ul class="secondary-nav__list">
                 @endif
-                  <li class="subnav__list-item">
-                    <a href="{{ $nav->url }}" class="subnav__link">{{ $nav->title }}</a>
+                  <li class="secondary-nav__list-item">
+                    <a href="{{ $nav->url }}" class="secondary-nav__link">{{ $nav->title }}</a>
                   </li>
                 @if ($secondary_nav[$count + 1]->menu_item_parent != $parent_id && $submenu)
                 </ul>

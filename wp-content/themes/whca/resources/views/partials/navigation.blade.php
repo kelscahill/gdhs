@@ -15,21 +15,21 @@
       </a>
       <span class="nav__primary-toggle js-toggle" data-prefix="this" data-toggled="header">Menu</span>
     </div>
-    <ul class="primary-nav__list">
+    <ul class="primary-nav__list has-fade-in-border">
       @foreach ($primary_nav as $nav)
         @php
           if (!$nav->menu_item_parent) {
             $parent_id = $nav->ID;
-            echo '<li class="primary-nav__list-item js-hover js-toggle"><a href="'.$nav->url.'" title="'.$nav->title.'" class="primary-nav__list-link font--primary--m"><span></span>'.$nav->title.'</a>';
+            echo '<li class="primary-nav__list-item has-fade-in-text js-hover js-toggle"><a href="'.$nav->url.'" title="'.$nav->title.'" class="primary-nav__list-link font--primary--m"><span></span>'.$nav->title.'</a>';
           }
         @endphp
         @if ($parent_id == $nav->menu_item_parent)
           @if (!$submenu)
             @php($submenu = true)
-            <ul class="subnav__list">
+            <ul class="sub-nav__list has-fade-in-border">
             @endif
-              <li class="subnav__list-item">
-                <a href="{{ $nav->url }}" class="subnav__link font--primary--m"><span></span>{{ $nav->title }}</a>
+              <li class="sub-nav__list-item has-fade-in-text">
+                <a href="{{ $nav->url }}" class="sub-nav__list-link font--primary--m"><span></span>{{ $nav->title }}</a>
               </li>
             @if ($primary_nav[$count + 1]->menu_item_parent != $parent_id && $submenu)
             </ul>
