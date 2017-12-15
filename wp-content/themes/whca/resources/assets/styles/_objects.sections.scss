@@ -16,6 +16,22 @@
   position: relative;
   padding-top: 0;
   padding-bottom: 0;
+  min-height: rem(400);
+  margin-left: $space;
+  margin-right: $space;
+
+  @include media('>medium') {
+    min-height: rem(500);
+  }
+
+  @include media('>large') {
+    min-height: rem(600);
+    background-attachment: fixed;
+  }
+
+  @include media('>xlarge') {
+    min-height: rem(800);
+  }
 
   &-caption {
     position: absolute;

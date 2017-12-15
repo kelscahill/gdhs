@@ -3,15 +3,27 @@
   $caption = get_the_post_thumbnail_caption();
 @endphp
 @if ($thumb_id)
-<section class="section section__hero @if (get_field('hero_background') != 1) {{ 'overlay--full' }} @endif layout-container">
-  <picture class="section__hero-image">
-    <!--[if IE 9]><video style="display: none"><![endif]-->
-    <source srcset="{{ wp_get_attachment_image_src($thumb_id, "featured__hero--xl")[0] }}" media="(min-width: 1100px)">
-    <source srcset="{{ wp_get_attachment_image_src($thumb_id, "featured__hero--l")[0] }}" media="(min-width: 800px)">
-    <source srcset="{{ wp_get_attachment_image_src($thumb_id, "featured__hero--m")[0] }}" media="(min-width: 500px)">
-    <!--[if IE 9]></video><![endif]-->
-    <img src="{{ wp_get_attachment_image_src($thumb_id, "featured__hero--s")[0] }}" alt="{{ get_post_meta($thumb_id, '_wp_attachment_image_alt', true) }}" />
-  </picture>
+<section class="section section__hero @if (get_field('hero_background') != 1) {{ 'overlay--full' }} @endif layout-container @if ($thumb_id) {{ 'background--cover background-image--' . $thumb_id }} @endif">
+  <style>
+    .background-image--{{ $thumb_id }} {
+      background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--xl")[0] }});
+    }
+    @media (min-width: 800px) {
+      .background-image--{{ $thumb_id }} {
+        background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--xl")[0] }});
+      }
+    }
+    @media (min-width: 800px) {
+      .background-image--{{ $thumb_id }} {
+        background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--xl")[0] }});
+      }
+    }
+    @media (min-width: 1100px) {
+      .background-image--{{ $thumb_id }} {
+        background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--xl")[0] }});
+      }
+    }
+  </style>
   @if ($caption)
     <div class="section__hero-caption caption narrow narrow--l">
       {{ $caption }}
