@@ -1561,7 +1561,7 @@ a.fasc-button::after {
 
 .has-fade-in-text span {
   position: absolute;
-  left: 0;
+  left: -0.125rem;
   height: 100%;
   width: 100%;
   display: block;
