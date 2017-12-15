@@ -20,7 +20,6 @@
       @php
         $primary_nav = json_decode(json_encode($primary_nav), true);
       @endphp
-
       @foreach ($primary_nav as $nav)
         @if (isset($primary_nav[$count + 1]))
           @php

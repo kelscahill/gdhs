@@ -9,12 +9,19 @@
   height: rem($large-header-height);
   overflow: hidden;
   z-index: 999;
-  padding-bottom: $pad;
+  padding: $pad;
 
   @include media('>medium') {
     flex-direction: row;
     height: 100%;
-    padding-bottom: 0;
+  }
+}
+
+.header--right {
+  padding-top: $pad;
+
+  @include media('>medium') {
+    padding-top: 0;
   }
 }
 
@@ -92,7 +99,6 @@
 .nav__primary {
   display: flex;
   flex-direction: column;
-  padding: $pad 0;
 
   @include media('>medium') {
     flex-direction: row;
@@ -197,6 +203,18 @@
   to {
     background-position: left center;
     left: 0;
+  }
+}
+
+.secondary-nav__list {
+  a {
+    color: $black;
+
+    @include font--s;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 

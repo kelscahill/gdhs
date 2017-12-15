@@ -1186,7 +1186,7 @@ a.fasc-button::after {
   height: 11.25rem;
   overflow: hidden;
   z-index: 999;
-  padding-bottom: 1.25rem;
+  padding: 1.25rem;
 }
 
 @media (min-width: 701px) {
@@ -1196,7 +1196,6 @@ a.fasc-button::after {
         -ms-flex-direction: row;
             flex-direction: row;
     height: 100%;
-    padding-bottom: 0;
   }
 }
 
@@ -1370,7 +1369,6 @@ a.fasc-button::after {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  padding: 1.25rem 0;
 }
 
 @media (min-width: 701px) {
@@ -1505,6 +1503,14 @@ a.fasc-button::after {
     background-position: left center;
     left: 0;
   }
+}
+
+.secondary-nav__list a {
+  color: #191919;
+}
+
+.secondary-nav__list a:hover {
+  text-decoration: underline;
 }
 
 .has-fade-in-border {
