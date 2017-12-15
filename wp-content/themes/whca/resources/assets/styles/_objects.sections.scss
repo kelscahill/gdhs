@@ -2,6 +2,16 @@
     $PAGE SECTIONS
 \*------------------------------------ */
 
+.section {
+  padding-top: $pad*2;
+  padding-bottom: $pad*2;
+
+  @include media('>large') {
+    padding-top: $pad*3;
+    padding-bottom: $pad*3;
+  }
+}
+
 .section__hero {
   position: relative;
 

@@ -149,3 +149,52 @@ function cptui_register_my_cpts() {
 	register_post_type( "scholarships", $args );
 }
 add_action( 'init', 'cptui_register_my_cpts' );
+
+/**
+ * Custom taxonomy
+ */
+function cptui_register_my_taxes() {
+
+  /**
+   * Taxonomy: Locations.
+   */
+
+  $labels = array(
+    "name" => __( 'Scholarship Category', 'sage' ),
+    "singular_name" => __( 'Scholarship Category', 'sage' ),
+    "menu_name" => __( 'Scholarship Categories', 'sage' ),
+    "all_items" => __( 'All Scholarship Categories', 'sage' ),
+    "edit_item" => __( 'Edit Scholarship Categories', 'sage' ),
+    "view_item" => __( 'View Scholarship Categories', 'sage' ),
+    "update_item" => __( 'Update Scholarship Categories', 'sage' ),
+    "add_new_item" => __( 'Add New Scholarship Category', 'sage' ),
+    "new_item_name" => __( 'New Scholarship Category', 'sage' ),
+    "search_items" => __( 'Search Scholarship Categories', 'sage' ),
+    "popular_items" => __( 'Popular Scholarship Categories', 'sage' ),
+    "add_or_remove_items" => __( 'Add or Remove Scholarship Categories', 'sage' ),
+    "choose_from_most_used" => __( 'Choose from the most used Scholarship Categories', 'sage' ),
+    "not_found" => __( 'No Scholarship Categories Found', 'sage' ),
+    "items_list" => __( 'Scholarship Categories List', 'sage' ),
+  );
+
+  $args = array(
+    "label" => __( 'Category', 'sage' ),
+    "labels" => $labels,
+    "public" => true,
+    "hierarchical" => true,
+    "label" => "Scholarship Categories",
+    "show_ui" => true,
+    "show_in_menu" => true,
+    "show_in_nav_menus" => true,
+    "query_var" => true,
+    "rewrite" => array( "slug" => "scholarship_category", "with_front" => false ),
+    "has_archive" => false,
+    "show_admin_column" => true,
+    "show_in_rest" => false,
+    "rest_base" => "",
+    "show_in_quick_edit" => true,
+  );
+  register_taxonomy( "scholarship_category", array( "scholarships" ), $args );
+
+}
+add_action( 'init', 'cptui_register_my_taxes' );

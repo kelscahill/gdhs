@@ -87,12 +87,10 @@ h3 {
 }
 
 @mixin font--m() {
-  font-size: rem(14);
-  line-height: rem(20);
+  font-size: rem(18);
+  line-height: rem(24);
   font-family: $font;
   font-weight: 400;
-  letter-spacing: 2px;
-  text-transform: uppercase;
 }
 
 .font--m,

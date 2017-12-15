@@ -3,10 +3,8 @@
 \*------------------------------------ */
 
 .footer {
-  padding: $pad 0;
-}
-
-.footer--inner {
+  padding-top: $pad;
+  padding-bottom: $pad;
   display: flex;
   flex-direction: column;
 
@@ -35,7 +33,7 @@
     }
 
     li {
-      padding: 0 $pad-half;
+      padding-right: $pad;
 
       a {
         color: $black;
@@ -44,8 +42,4 @@
       }
     }
   }
-}
-
-.footer__copyright {
-  padding-left: $pad-half;
 }

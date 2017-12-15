@@ -965,6 +965,7 @@ h3 {
   line-height: 2.125rem;
   font-family: "din-condensed", "Helvetica", sans-serif;
   text-transform: uppercase;
+  font-weight: bold;
 }
 
 @media (min-width: 901px) {
@@ -996,12 +997,10 @@ h3 {
 
 .font--m,
 h4 {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 1.125rem;
+  line-height: 1.5rem;
   font-family: "Helvetica", sans-serif;
   font-weight: 400;
-  letter-spacing: 2px;
-  text-transform: uppercase;
 }
 
 .font--s {
@@ -1196,6 +1195,16 @@ a.fasc-button::after {
         -ms-flex-direction: row;
             flex-direction: row;
     height: 100%;
+  }
+}
+
+.header--right {
+  padding-top: 1.25rem;
+}
+
+@media (min-width: 701px) {
+  .header--right {
+    padding-top: 0;
   }
 }
 
@@ -1507,6 +1516,10 @@ a.fasc-button::after {
 
 .secondary-nav__list a {
   color: #191919;
+  font-size: 0.875rem;
+  line-height: 1rem;
+  font-family: "Helvetica", sans-serif;
+  font-weight: 400;
 }
 
 .secondary-nav__list a:hover {
@@ -1560,6 +1573,18 @@ a.fasc-button::after {
 
 /* ------------------------------------*    $PAGE SECTIONS
 \*------------------------------------ */
+
+.section {
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+@media (min-width: 901px) {
+  .section {
+    padding-top: 3.75rem;
+    padding-bottom: 3.75rem;
+  }
+}
 
 .section__hero {
   position: relative;
@@ -1817,6 +1842,7 @@ ul {
   line-height: 2.125rem;
   font-family: "din-condensed", "Helvetica", sans-serif;
   text-transform: uppercase;
+  font-weight: bold;
 }
 
 @media (min-width: 901px) {
@@ -1943,10 +1969,8 @@ ul {
 \*------------------------------------ */
 
 .footer {
-  padding: 1.25rem 0;
-}
-
-.footer--inner {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1957,7 +1981,7 @@ ul {
 }
 
 @media (min-width: 1101px) {
-  .footer--inner {
+  .footer {
     -webkit-box-orient: horizontal;
     -webkit-box-direction: normal;
         -ms-flex-direction: row;
@@ -2004,7 +2028,7 @@ ul {
 }
 
 .footer__nav ul li {
-  padding: 0 0.625rem;
+  padding-right: 1.25rem;
 }
 
 .footer__nav ul li a {
@@ -2013,10 +2037,6 @@ ul {
   line-height: 1rem;
   font-family: "Helvetica", sans-serif;
   font-weight: 400;
-}
-
-.footer__copyright {
-  padding-left: 0.625rem;
 }
 
 /* ------------------------------------*    $HEADER
@@ -2039,6 +2059,7 @@ ul {
   line-height: 2.125rem;
   font-family: "din-condensed", "Helvetica", sans-serif;
   text-transform: uppercase;
+  font-weight: bold;
 }
 
 .nav__primary-logo span:first-child {

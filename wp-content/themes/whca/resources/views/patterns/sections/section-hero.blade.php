@@ -3,7 +3,7 @@
   $caption = get_the_post_thumbnail_caption();
 @endphp
 @if ($thumb_id)
-<section class="section section__hero @if (get_field('hero_background') != 1) {{ 'overlay--full' }} @endif">
+<section class="section section__hero @if (get_field('hero_background') != 1) {{ 'overlay--full' }} @endif layout-container">
   <picture class="section__hero-image">
     <!--[if IE 9]><video style="display: none"><![endif]-->
     <source srcset="{{ wp_get_attachment_image_src($thumb_id, "featured__hero--xl")[0] }}" media="(min-width: 1100px)">
