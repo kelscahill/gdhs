@@ -17,8 +17,10 @@ $max-width: rem($max-width-px) !default;
  * Colors
  */
 $white: #fff;
-$black: #191919;
-$gray: #9b9b9b;
+$black: #000;
+$gray-dark: #808080;
+$gray: #7c7c7c;
+$gray-light: #c3c3c3;
 $error: #f00;
 $valid: #089e00;
 $warning: #fff664;
@@ -36,15 +38,15 @@ $link-hover: darken($tertiary-color, 10%);
 $button-color: $white;
 $button-hover: $black;
 $body-color: $black;
-$border-color: #bbbcba;
+$border-color: $gray;
 $overlay: rgba(25, 25, 25, 0.6);
 
 /**
  * Typography
  */
-$font: "Helvetica", sans-serif;
+$font: "gt-america-regular", "Helvetica", sans-serif;
 $font-primary: "din-condensed", "Helvetica", sans-serif;
-$font-secondary: "Helvetica", "Helvetica", sans-serif;
+$font-secondary: "gt-america-regular", "Helvetica", sans-serif;
 $sans-serif: "Helvetica", sans-serif;
 $serif: Georgia, Times, "Times New Roman", serif;
 $monospace: Menlo, Monaco, "Courier New", "Courier", monospace;
@@ -107,7 +109,8 @@ $breakpoints: (
 /**
  * Element Specific Dimensions
  */
-$article-max: rem(750);
+$nav-width: rem(260);
+$article-max: rem(1000);
 $sidebar-width: 320;
 $small-header-height: 70;
 $large-header-height: 180;

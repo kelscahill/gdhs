@@ -29,7 +29,7 @@
         @if (!$nav['menu_item_parent'])
           @php($parent_id = $nav['ID'])
           <li class="primary-nav__list-item has-fade-in-text js-hover js-toggle">
-            <a href="{{ $nav['url'] }}" title="{{ $nav['title'] }}" class="primary-nav__list-link font--primary--m"><span></span>{{ $nav['title'] }}</a>
+            <a href="{{ $nav['url'] }}" title="{{ $nav['title'] }}" class="primary-nav__list-link"><span></span>{{ $nav['title'] }}</a>
         @endif
         @if ($parent_id == $nav['menu_item_parent'])
           @if (!$submenu)
@@ -37,7 +37,7 @@
             <ul class="sub-nav__list has-fade-in-border">
           @endif
             <li class="sub-nav__list-item has-fade-in-text">
-              <a href="{{ $nav['url'] }}" class="sub-nav__list-link font--primary--m"><span></span>{{ $nav['title'] }}</a>
+              <a href="{{ $nav['url'] }}" class="sub-nav__list-link"><span></span>{{ $nav['title'] }}</a>
             </li>
             @if ($parent != $parent_id && $submenu)
               </ul>

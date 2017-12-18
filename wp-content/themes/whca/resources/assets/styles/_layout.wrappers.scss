@@ -11,6 +11,11 @@
   position: relative;
   padding-left: $pad;
   padding-right: $pad;
+
+  @include media('>xlarge') {
+    padding-left: $pad*2;
+    padding-right: $pad*2;
+  }
 }
 
 /**

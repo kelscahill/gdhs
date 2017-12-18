@@ -29,9 +29,9 @@
       {{ $caption }}
     </div>
   @endif
-  <div class="section__hero-content spacing--double text-align--center padding--double color--white @if (get_field('hero_background') == 1) {{ 'background-color--black' }} @endif">
+  <div class="section__hero-content spacing--double text-align--center color--white @if (get_field('hero_background') == 1) {{ 'background-color--black' }} @endif">
     @include('partials.page-title')
-    <span class="icon icon--m center-block">@include('patterns.icons.icon-arrow--down')</span>
+    <span class="section__hero-icon icon icon--l center-block">@include('patterns.icons.icon-arrow--down')</span>
   </div>
 </section>
 @else

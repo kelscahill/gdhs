@@ -5,71 +5,57 @@
 /**
  * Text Primary
  */
-@mixin font--primary--xl() {
-  font-size: rem(52);
-  line-height: rem(54);
-  font-family: $font-primary;
-  text-transform: uppercase;
-
-  @include media ('>large') {
-    font-size: rem(60);
-    line-height: rem(62);
-  }
-
-  @include media ('>xlarge') {
-    font-size: rem(80);
-    line-height: rem(82);
-  }
-}
-
-.font--primary--xl,
-h1 {
-  @include font--primary--xl;
-}
 
 @mixin font--primary--l() {
-  font-size: rem(36);
-  line-height: rem(42);
+  font-size: rem(30);
+  line-height: rem(28);
   font-family: $font-primary;
   text-transform: uppercase;
 
   @include media ('>large') {
-    font-size: rem(44);
-    line-height: rem(48);
-  }
-
-  @include media ('>xlarge') {
-    font-size: rem(52);
-    line-height: rem(56);
+    font-size: rem(40);
+    line-height: rem(38);
   }
 }
 
 .font--primary--l,
-h2 {
+h1 {
   @include font--primary--l;
 }
 
 @mixin font--primary--m() {
-  font-size: rem(26);
-  line-height: rem(34);
+  font-size: rem(23);
+  line-height: rem(38);
   font-family: $font-primary;
   text-transform: uppercase;
   font-weight: bold;
 
   @include media ('>large') {
-    font-size: rem(28);
-    line-height: rem(32);
-  }
-
-  @include media ('>xlarge') {
-    font-size: rem(30);
+    font-size: rem(33);
     line-height: rem(38);
   }
 }
 
 .font--primary--m,
-h3 {
+h2 {
   @include font--primary--m;
+}
+
+@mixin font--primary--s() {
+  font-size: rem(18);
+  line-height: rem(33);
+  font-family: $font-primary;
+  text-transform: uppercase;
+  font-weight: bold;
+
+  @include media ('>large') {
+    font-size: rem(22);
+    line-height: rem(37);
+  }
+}
+
+.font--primary--s {
+  @include font--primary--s;
 }
 
 /**
@@ -77,20 +63,31 @@ h3 {
  */
 @mixin font--l() {
   font-size: rem(24);
-  line-height: rem(30);
+  line-height: rem(32);
   font-family: $font-secondary;
   font-weight: 400;
+
+  @include media ('>large') {
+    font-size: rem(26);
+    line-height: rem(32);
+  }
 }
 
-.font--l {
+.font--l,
+h3 {
   @include font--l;
 }
 
 @mixin font--m() {
-  font-size: rem(18);
-  line-height: rem(24);
+  font-size: rem(16);
+  line-height: rem(22);
   font-family: $font;
   font-weight: 400;
+
+  @include media ('>large') {
+    font-size: rem(18);
+    line-height: rem(24);
+  }
 }
 
 .font--m,
@@ -100,13 +97,29 @@ h4 {
 
 @mixin font--s() {
   font-size: rem(14);
-  line-height: rem(16);
+  line-height: rem(20);
   font-family: $font;
   font-weight: 400;
+
+  @include media ('>large') {
+    font-size: rem(16);
+    line-height: rem(22);
+  }
 }
 
 .font--s {
   @include font--s;
+}
+
+@mixin font--xs() {
+  font-size: rem(13);
+  line-height: rem(19);
+  font-family: $font;
+  font-weight: 400;
+}
+
+.font--xs {
+  @include font--xs;
 }
 
 /**
@@ -149,9 +162,9 @@ h4 {
 }
 
 .caption {
-  color: $gray;
+  color: $gray-light;
   font-style: italic;
   padding-top: rem(10);
 
-  @include font--s;
+  @include font--xs;
 }

@@ -10,15 +10,20 @@ a.fasc-button {
   box-shadow: none;
   transition: all 0.25s ease-in-out;
   position: relative;
-  padding: $pad-half $pad-double $pad-half $pad;
+  padding: $pad/2 $pad*2 $pad/2 $pad;
   margin: $space 0 0 0;
-  border: 1px solid $button-hover;
+  border: 1px solid $gray-dark;
   display: table;
   vertical-align: middle;
   text-align: center;
   width: auto;
   background: $button-color !important;
   color: $button-hover !important;
+  font-size: rem(18);
+
+  @include media('>large') {
+    padding: $pad/1.5 $pad*2 $pad/1.5 $pad;
+  }
 
   &:focus {
     outline: 0;
@@ -27,6 +32,7 @@ a.fasc-button {
   &:hover {
     background-color: $button-hover !important;
     color: $white !important;
+    border-color: $button-hover;
 
     &::after {
       background: url('../assets/images/icon--arrow--white.svg') center center no-repeat;

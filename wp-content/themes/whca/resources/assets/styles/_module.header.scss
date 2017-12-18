@@ -10,14 +10,16 @@
   span {
     color: $black;
     border-bottom: 2px solid $black;
+    width: $nav-width;
     line-height: 1;
-    width: rem(188);
+    font-size: rem(38);
+    font-family: $font-primary;
+    text-transform: uppercase;
+    font-weight: bold;
 
     &:first-child {
       border-top: 2px solid $black;
     }
-
-    @include font--primary--m;
   }
 }
 
@@ -28,7 +30,7 @@
   font-size: rem(14);
   display: block;
 
-  @include media('>medium') {
+  @include media('>xlarge') {
     display: none;
   }
 }
