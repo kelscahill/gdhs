@@ -103,6 +103,11 @@ function cc_mime_types($mimes) {
 add_filter('upload_mimes', 'cc_mime_types');
 
 /**
+ * Excerpt for pages
+ */
+add_post_type_support( 'page', 'excerpt' );
+
+/**
  * Custom fields
  */
 function cptui_register_my_cpts() {
