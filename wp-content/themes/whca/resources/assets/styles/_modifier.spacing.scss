@@ -1,222 +1,266 @@
 /* ------------------------------------*\
     $SPACING
 \*------------------------------------ */
-// For more information on this spacing technique, please see:
-// http://alistapart.com/article/axiomatic-css-and-lobotomized-owls.
-
-.spacing {
-  & > * + * {
-    margin-top: $space;
-  }
-}
-
-.spacing--quarter {
-  & > * + * {
-    margin-top: $space /4;
-  }
-}
-
-.spacing--half {
-  & > * + * {
-    margin-top: $space /2;
-  }
-}
-
-.spacing--one-and-half {
-  & > * + * {
-    margin-top: $space *1.5;
-  }
-}
-
-.spacing--double {
-  & > * + * {
-    margin-top: $space *2;
-  }
-}
-
-.spacing--triple {
-  & > * + * {
-    margin-top: $space *3;
-  }
-}
-
-.spacing--quad {
-  & > * + * {
-    margin-top: $space *4;
-  }
-}
-
-.spacing--zero {
-  & > * + * {
-    margin-top: 0;
-  }
-}
-
-.space--top {
-  margin-top: $space;
-}
-
-.space--bottom {
-  margin-bottom: $space;
-}
-
-.space--left {
-  margin-left: $space;
-}
-
-.space--right {
-  margin-right: $space;
-}
-
-.space--half-top {
-  margin-top: $space-half;
-}
-
-.space--half-bottom {
-  margin-bottom: $space-half;
-}
-
-.space--half-left {
-  margin-left: $space-half;
-}
-
-.space--half-right {
-  margin-right: $space-half;
-}
-
-.space--double-bottom {
-  margin-bottom: $space-double;
-}
-
-.space--double-top {
-  margin-top: $space-double;
-}
-
-.space--double-left {
-  margin-left: $space-double;
-}
-
-.space--double-right {
-  margin-right: $space-double;
-}
-
-.space--zero {
-  margin: 0;
-}
 
 /**
  * Padding
  */
-.padding {
+
+.u-padding {
   padding: $pad;
+
+  &--top {
+    padding-top: $pad;
+  }
+
+  &--bottom {
+    padding-bottom: $pad;
+  }
+
+  &--left {
+    padding-left: $pad;
+  }
+
+  &--right {
+    padding-right: $pad;
+  }
+
+  &--quarter {
+    padding: $pad/4;
+
+    &--top {
+      padding-top: $pad/4;
+    }
+
+    &--bottom {
+      padding-bottom: $pad/4;
+    }
+  }
+
+  &--half {
+    padding: $pad/2;
+
+    &--top {
+      padding-top: $pad/2;
+    }
+
+    &--bottom {
+      padding-bottom: $pad/2;
+    }
+  }
+
+  &--and-half {
+    padding: $pad*1.5;
+
+    &--top {
+      padding-top: $pad*1.5;
+    }
+
+    &--bottom {
+      padding-bottom: $pad*1.5;
+    }
+  }
+
+  &--double {
+    padding: $pad*2;
+
+    &--top {
+      padding-top: $pad*2;
+    }
+
+    &--bottom {
+      padding-bottom: $pad*2;
+    }
+  }
+
+  &--triple {
+    padding: $pad*3;
+  }
+
+  &--quad {
+    padding: $pad*4;
+  }
+
+  &--zero {
+    padding: 0;
+
+    &--top {
+      padding-top: 0;
+    }
+
+    &--bottom {
+      padding-bottom: 0;
+    }
+  }
 }
 
-.padding--quarter {
-  padding: $pad /4;
+/**
+ * Space
+ */
+
+.u-space {
+  margin: $space;
+
+  &--top {
+    margin-top: $space;
+  }
+
+  &--bottom {
+    margin-bottom: $space;
+  }
+
+  &--left {
+    margin-left: $space;
+  }
+
+  &--right {
+    margin-right: $space;
+  }
+
+  &--quarter {
+    margin: $space/4;
+
+    &--top {
+      margin-top: $space/4;
+    }
+
+    &--bottom {
+      margin-bottom: $space/4;
+    }
+
+    &--left {
+      margin-left: $space/4;
+    }
+
+    &--right {
+      margin-right: $space/4;
+    }
+  }
+
+  &--half {
+    margin: $space/2;
+
+    &--top {
+      margin-top: $space/2;
+    }
+
+    &--bottom {
+      margin-bottom: $space/2;
+    }
+
+    &--left {
+      margin-left: $space/2;
+    }
+
+    &--right {
+      margin-right: $space/2;
+    }
+  }
+
+  &--and-half {
+    margin: $space*1.5;
+
+    &--top {
+      margin-top: $space*1.5;
+    }
+
+    &--bottom {
+      margin-bottom: $space*1.5;
+    }
+  }
+
+  &--double {
+    margin: $space*2;
+
+    &--top {
+      margin-top: $space*2;
+    }
+
+    &--bottom {
+      margin-bottom: $space*2;
+    }
+  }
+
+  &--triple {
+    margin: $space*3;
+  }
+
+  &--quad {
+    margin: $space*4;
+  }
+
+  &--zero {
+    margin: 0;
+
+    &--top {
+      margin-top: 0;
+    }
+
+    &--bottom {
+      margin-bottom: 0;
+    }
+  }
 }
 
-.padding--half {
-  padding: $pad /2;
-}
+/**
+ * Spacing
+ */
 
-.padding--one-and-half {
-  padding: $pad *1.5;
-}
+// For more information on this spacing technique, please see:
+// http://alistapart.com/article/axiomatic-css-and-lobotomized-owls.
 
-.padding--double {
-  padding: $pad *2;
-}
+.u-spacing {
+  & > * + * {
+    margin-top: $space;
+  }
 
-.padding--triple {
-  padding: $pad *3;
-}
+  &--until-large {
+    & > * + * {
+      @include media('<=large') {
+        margin-top: $space;
+      }
+    }
+  }
 
-.padding--quad {
-  padding: $pad *4;
-}
+  &--quarter {
+    & > * + * {
+      margin-top: $space/4;
+    }
+  }
 
-// Padding Top
-.padding--top {
-  padding-top: $pad;
-}
+  &--half {
+    & > * + * {
+      margin-top: $space/2;
+    }
+  }
 
-.padding--quarter-top {
-  padding-top: $pad /4;
-}
+  &--one-and-half {
+    & > * + * {
+      margin-top: $space*1.5;
+    }
+  }
 
-.padding--half-top {
-  padding-top: $pad /2;
-}
+  &--double {
+    & > * + * {
+      margin-top: $space*2;
+    }
+  }
 
-.padding--one-and-half-top {
-  padding-top: $pad *1.5;
-}
+  &--triple {
+    & > * + * {
+      margin-top: $space*3;
+    }
+  }
 
-.padding--double-top {
-  padding-top: $pad *2;
-}
+  &--quad {
+    & > * + * {
+      margin-top: $space*4;
+    }
+  }
 
-.padding--triple-top {
-  padding-top: $pad *3;
-}
-
-.padding--quad-top {
-  padding-top: $pad *4;
-}
-
-// Padding Bottom
-.padding--bottom {
-  padding-bottom: $pad;
-}
-
-.padding--quarter-bottom {
-  padding-bottom: $pad /4;
-}
-
-.padding--half-bottom {
-  padding-bottom: $pad /2;
-}
-
-.padding--one-and-half-bottom {
-  padding-bottom: $pad *1.5;
-}
-
-.padding--double-bottom {
-  padding-bottom: $pad *2;
-}
-
-.padding--triple-bottom {
-  padding-bottom: $pad *3;
-}
-
-.padding--quad-bottom {
-  padding-bottom: $pad *4;
-}
-
-.padding--right {
-  padding-right: $pad;
-}
-
-.padding--half-right {
-  padding-right: $pad /2;
-}
-
-.padding--double-right {
-  padding-right: $pad *2;
-}
-
-.padding--left {
-  padding-right: $pad;
-}
-
-.padding--half-left {
-  padding-right: $pad /2;
-}
-
-.padding--double-left {
-  padding-left: $pad *2;
-}
-
-.padding--zero {
-  padding: 0;
+  &--zero {
+    & > * + * {
+      margin-top: 0;
+    }
+  }
 }

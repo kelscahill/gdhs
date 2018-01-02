@@ -1,5 +1,5 @@
 @if (has_nav_menu('primary_navigation'))
-  <nav class="nav__primary" role="navigation">
+  <nav class="c-nav__primary" role="navigation">
     @php
       $menu_name = 'primary_navigation';
       $menu_locations = get_nav_menu_locations();
@@ -8,15 +8,15 @@
       $count = 0;
       $submenu = false;
     @endphp
-    <div class="nav__primary-branding">
-      <a href="/" class="nav__primary-logo">
-        <span class="logo-text">White House</span>
-        <span class="logo-text">Correspondents'</span>
-        <span class="logo-text">Assocation</span>
+    <div class="c-nav__primary-branding">
+      <a href="/" class="c-nav__primary-logo">
+        <span class="o-logo-text">White House</span>
+        <span class="o-logo-text">Correspondents'</span>
+        <span class="o-logo-text">Assocation</span>
       </a>
-      <span class="nav__primary-toggle js-toggle" data-prefix="this" data-toggled="header">Menu</span>
+      <span class="c-nav__primary-toggle js-toggle" data-prefix="this" data-toggled="c-header">Menu</span>
     </div>
-    <ul class="primary-nav__list has-fade-in-border">
+    <ul class="c-primary-nav__list has-fade-in-border">
       @php
         $primary_nav = json_decode(json_encode($primary_nav), true);
       @endphp
@@ -28,16 +28,16 @@
         @endif
         @if (!$nav['menu_item_parent'])
           @php($parent_id = $nav['ID'])
-          <li class="primary-nav__list-item has-fade-in-text js-hover js-toggle">
-            <a href="{{ $nav['url'] }}" title="{{ $nav['title'] }}" class="primary-nav__list-link"><span></span>{{ $nav['title'] }}</a>
+          <li class="c-primary-nav__list-item has-fade-in-text js-hover js-toggle">
+            <a href="{{ $nav['url'] }}" title="{{ $nav['title'] }}" class="c-primary-nav__list-link"><span></span>{{ $nav['title'] }}</a>
         @endif
         @if ($parent_id == $nav['menu_item_parent'])
           @if (!$submenu)
             @php($submenu = true)
-            <ul class="sub-nav__list has-fade-in-border">
+            <ul class="c-sub-nav__list has-fade-in-border">
           @endif
-            <li class="sub-nav__list-item has-fade-in-text">
-              <a href="{{ $nav['url'] }}" class="sub-nav__list-link"><span></span>{{ $nav['title'] }}</a>
+            <li class="c-sub-nav__list-item has-fade-in-text">
+              <a href="{{ $nav['url'] }}" class="c-sub-nav__list-link"><span></span>{{ $nav['title'] }}</a>
             </li>
             @if ($parent != $parent_id && $submenu)
               </ul>

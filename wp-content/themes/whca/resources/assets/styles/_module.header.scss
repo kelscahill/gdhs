@@ -2,7 +2,7 @@
     $HEADER
 \*------------------------------------ */
 
-.nav__primary-logo {
+.c-nav__primary-logo {
   flex: 0 0 auto;
   padding-left: rem(5);
   border-left: 2px solid $black;
@@ -16,6 +16,7 @@
     font-family: $font-primary;
     text-transform: uppercase;
     font-weight: bold;
+    padding: rem(4) 0 rem(1) 0;
 
     &:first-child {
       border-top: 2px solid $black;
@@ -23,7 +24,7 @@
   }
 }
 
-.nav__primary-toggle {
+.c-nav__primary-toggle {
   padding-top: $pad-half;
   text-transform: uppercase;
   font-weight: bold;
@@ -35,6 +36,6 @@
   }
 }
 
-.home .nav__primary-toggle {
+.home .c-nav__primary-toggle {
   display: block;
 }

@@ -28,7 +28,7 @@
           }
           return false;
         }
-        
+
         // Add class if is mobile
         if (isMobile()) {
           $('html').addClass(' touch');
@@ -42,7 +42,7 @@
           if (url == '/') {
             $('nav li > a[href="/"]').parent().addClass('active');
             setTimeout(function() {
-              $('.header').addClass('this-is-active');
+              $('.c-header').addClass('this-is-active');
             }, 500); // set the time here
           } else {
             var urlRegExp = new RegExp(url.replace(/\/$/, '') + "$");
@@ -51,7 +51,7 @@
                 $(this).parent().addClass('active');
                 $(this).parent().parent().parent().addClass('active');
                 setTimeout(function() {
-                  $('.header').addClass('this-is-active');
+                  $('.c-header').addClass('this-is-active');
                 }, 500); // set the time here
               }
             });

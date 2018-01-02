@@ -2,15 +2,15 @@
     $ARTICLE
 \*------------------------------------ */
 
-.kicker {
+.o-kicker {
   display: flex;
   align-items: center;
 }
 
-// Article Body list styles from font--styles.scss
+// Article Body list styles from u-font--styles.scss
 ol,
 ul {
-  .article__body & {
+  .c-article__body & {
     margin-left: 0;
     margin-top: $space-half;
 
@@ -33,7 +33,7 @@ ul {
 }
 
 ol {
-  .article__body & {
+  .c-article__body & {
     counter-reset: item;
 
     li {
@@ -55,7 +55,7 @@ ol {
 }
 
 ul {
-  .article__body & {
+  .c-article__body & {
     li {
       &::before {
         content: "\002022";
@@ -70,10 +70,10 @@ ul {
   }
 }
 
-.article {
+.c-article {
   margin-left: auto;
   margin-right: auto;
-  padding: $pad*3 0;
+  padding: $pad*4 0;
 
   p,
   ul,
@@ -102,8 +102,7 @@ ul {
   > h2,
   > h3,
   > h4 {
-    margin-top: rem(50);
-    margin-bottom: rem(-5);
+    margin-top: $space*3;
 
     &:first-child {
       margin-top: 0;
@@ -111,20 +110,19 @@ ul {
   }
 
   > h1 {
-    @include font--primary--l;
+    @include u-font--primary--l;
   }
 
   > h2 {
-    @include font--primary--m;
+    @include u-font--primary--m;
   }
 
   > h3 {
-    @include font--l;
+    @include u-font--l;
   }
 
   > h4 {
     color: $black;
-    margin-bottom: rem(-10);
   }
 
   > h5 {
@@ -147,7 +145,7 @@ ul {
   }
 
   figcaption {
-    @include font--s;
+    @include u-font--s;
   }
 
   figure {

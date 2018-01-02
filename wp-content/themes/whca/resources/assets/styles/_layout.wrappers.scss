@@ -6,7 +6,7 @@
  * Layout containers - keep content centered and within a maximum width. Also
  * adjusts left and right padding as the viewport widens.
  */
-.layout-container {
+.l-container {
   margin: 0 auto;
   position: relative;
   padding-left: $pad;
@@ -21,7 +21,7 @@
 /**
  * Wrapping element to keep content contained and centered.
  */
-.wrap {
+.l-wrap {
   max-width: $max-width;
   margin: 0 auto;
 }
@@ -29,27 +29,27 @@
 /**
  * Wrapping element to keep content contained and centered at narrower widths.
  */
-.narrow {
+.l-narrow {
   max-width: rem(800);
   margin: 0 auto;
 }
 
-.narrow--xs {
+.l-narrow--xs {
   max-width: rem(500);
 }
 
-.narrow--s {
+.l-narrow--s {
   max-width: rem(600);
 }
 
-.narrow--m {
+.l-narrow--m {
   max-width: rem(700);
 }
 
-.narrow--l {
+.l-narrow--l {
   max-width: $article-max;
 }
 
-.narrow--xl {
+.l-narrow--xl {
   max-width: rem(1300);
 }

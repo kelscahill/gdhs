@@ -4,7 +4,7 @@
   @include('partials.page-header')
 
   @if (!have_posts())
-    <div class="alert alert-warning">
+    <div class="o-alert o-alert-warning">
       {{ __('Sorry, but the page you were trying to view does not exist.', 'sage') }}
     </div>
     {!! get_search_form(false) !!}

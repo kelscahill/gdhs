@@ -6,7 +6,7 @@
  * Text Primary
  */
 
-@mixin font--primary--l() {
+@mixin u-font--primary--l() {
   font-size: rem(30);
   line-height: rem(28);
   font-family: $font-primary;
@@ -18,12 +18,12 @@
   }
 }
 
-.font--primary--l,
+.u-font--primary--l,
 h1 {
-  @include font--primary--l;
+  @include u-font--primary--l;
 }
 
-@mixin font--primary--m() {
+@mixin u-font--primary--m() {
   font-size: rem(23);
   line-height: rem(38);
   font-family: $font-primary;
@@ -36,12 +36,12 @@ h1 {
   }
 }
 
-.font--primary--m,
+.u-font--primary--m,
 h2 {
-  @include font--primary--m;
+  @include u-font--primary--m;
 }
 
-@mixin font--primary--s() {
+@mixin u-font--primary--s() {
   font-size: rem(18);
   line-height: rem(33);
   font-family: $font-primary;
@@ -54,14 +54,14 @@ h2 {
   }
 }
 
-.font--primary--s {
-  @include font--primary--s;
+.u-font--primary--s {
+  @include u-font--primary--s;
 }
 
 /**
  * Text Main
  */
-@mixin font--l() {
+@mixin u-font--l() {
   font-size: rem(24);
   line-height: rem(32);
   font-family: $font-secondary;
@@ -73,12 +73,12 @@ h2 {
   }
 }
 
-.font--l,
+.u-font--l,
 h3 {
-  @include font--l;
+  @include u-font--l;
 }
 
-@mixin font--m() {
+@mixin u-font--m() {
   font-size: rem(16);
   line-height: rem(22);
   font-family: $font;
@@ -90,12 +90,12 @@ h3 {
   }
 }
 
-.font--m,
+.u-font--m,
 h4 {
-  @include font--m;
+  @include u-font--m;
 }
 
-@mixin font--s() {
+@mixin u-font--s() {
   font-size: rem(14);
   line-height: rem(20);
   font-family: $font;
@@ -107,40 +107,40 @@ h4 {
   }
 }
 
-.font--s {
-  @include font--s;
+.u-font--s {
+  @include u-font--s;
 }
 
-@mixin font--xs() {
+@mixin u-font--xs() {
   font-size: rem(13);
   line-height: rem(19);
   font-family: $font;
   font-weight: 400;
 }
 
-.font--xs {
-  @include font--xs;
+.u-font--xs {
+  @include u-font--xs;
 }
 
 /**
  * Text Transforms
  */
-.text-transform--upper {
+.u-text-transform--upper {
   text-transform: uppercase;
 }
 
-.text-transform--lower {
+.u-text-transform--lower {
   text-transform: lowercase;
 }
 
-.text-transform--capitalize {
+.u-text-transform--capitalize {
   text-transform: capitalize;
 }
 
 /**
  * Text Decorations
  */
-.text-decoration--underline {
+.u-text-decoration--underline {
   &:hover {
     text-decoration: underline;
   }
@@ -149,22 +149,21 @@ h4 {
 /**
  * Font Weights
  */
-.font-weight--400 {
+.u-font-weight--400 {
   font-weight: 400;
 }
 
-.font-weight--700 {
+.u-font-weight--700 {
   font-weight: 700;
 }
 
-.font-weight--900 {
+.u-font-weight--900 {
   font-weight: 900;
 }
 
-.caption {
-  color: $gray-light;
-  font-style: italic;
+.u-caption {
+  color: $gray;
   padding-top: rem(10);
 
-  @include font--xs;
+  @include u-font--xs;
 }

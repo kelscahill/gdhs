@@ -2,7 +2,7 @@
     $FOOTER
 \*------------------------------------ */
 
-.footer {
+.c-footer {
   padding-top: $pad;
   padding-bottom: $pad;
   display: flex;
@@ -15,7 +15,7 @@
   }
 }
 
-.footer__nav {
+.c-footer__nav {
   ul {
     display: flex;
     justify-content: flex-start;
@@ -42,7 +42,7 @@
       a {
         color: $black;
 
-        @include font--s;
+        @include u-font--s;
       }
     }
   }

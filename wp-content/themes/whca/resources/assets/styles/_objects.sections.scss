@@ -2,7 +2,7 @@
     $PAGE SECTIONS
 \*------------------------------------ */
 
-.section {
+.c-section {
   padding-top: $pad*2;
   padding-bottom: $pad*2;
 
@@ -12,7 +12,7 @@
   }
 }
 
-.section__hero {
+.c-section__hero {
   position: relative;
   padding-top: 0;
   padding-bottom: 0;
@@ -37,7 +37,7 @@
 
   &-caption {
     position: absolute;
-    bottom: rem(-30);
+    bottom: rem(-40);
     left: 0;
     right: 0;
     max-width: $article-max;
@@ -65,7 +65,7 @@
     }
   }
 
-  .hero__content-title {
+  .c-hero__content-title {
     position: relative;
     top: rem(-30);
 

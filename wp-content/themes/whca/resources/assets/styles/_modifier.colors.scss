@@ -5,65 +5,65 @@
 /**
  * Text Colors
  */
-.color--black {
+.u-color--black {
   color: $black;
 }
 
-.color--white {
+.u-color--white {
   color: $white;
   -webkit-font-smoothing: antialiased;
 }
 
-.color--gray {
+.u-color--gray {
   color: $gray;
 }
 
 /**
  * Background Colors
  */
-.no-bg {
+.u-background-color--none {
   background: none;
 }
 
-.background-color--white {
+.u-background-color--white {
   background-color: $white;
 }
 
-.background-color--black {
+.u-background-color--black {
   background-color: $black;
 }
 
-.background-color--primary {
+.u-background-color--primary {
   background-color: $primary-color;
 }
 
-.background-color--secondary {
+.u-background-color--secondary {
   background-color: $secondary-color;
 }
 
-.background-color--tertiary {
+.u-background-color--tertiary {
   background-color: $tertiary-color;
 }
 
 /**
  * Path Fills
  */
-.path-fill--white {
+.u-path-u-fill--white {
   path {
     fill: $white;
   }
 }
 
-.path-fill--black {
+.u-path-u-fill--black {
   path {
     fill: $black;
   }
 }
 
-.fill--white {
+.u-fill--white {
   fill: $white;
 }
 
-.fill--black {
+.u-fill--black {
   fill: $black;
 }

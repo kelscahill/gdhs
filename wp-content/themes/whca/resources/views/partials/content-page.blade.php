@@ -1,11 +1,11 @@
-@include('patterns.sections.section-hero')
-<div class="layout-container">
-  <article @php(post_class('article narrow narrow--l spacing'))>
+@include('patterns.sections.c-section-hero')
+<div class="l-container">
+  <article @php(post_class('c-article l-narrow l-narrow--l u-spacing--double'))>
     @php(the_content())
   </article>
 </div>
-@include('patterns.sections.section-officers')
-@include('patterns.sections.section-promotion')
+@include('patterns.sections.c-section-officers')
+@include('patterns.sections.c-section-promotion')
 @if (is_page('scholarships'))
-  @include('patterns.sections.section-scholarships')
+  @include('patterns.sections.c-section-scholarships')
 @endif

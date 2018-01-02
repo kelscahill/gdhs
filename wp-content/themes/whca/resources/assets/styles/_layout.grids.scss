@@ -6,7 +6,7 @@
  * Simple grid - keep adding more elements to the row until the max is hit
  * (based on the flex-basis for each item), then start new row.
  */
-.grid {
+.l-grid {
   display: flex;
   display: inline-flex;
   flex-flow: row wrap;
@@ -20,36 +20,36 @@
   padding-right: $pad;
 
   @include media ('>xlarge') {
-    &.left-gutter--l {
+    &.u-left-gutter--l {
       padding-left: rem(30);
     }
 
-    &.right-gutter--l {
+    &.u-right-gutter--l {
       padding-right: rem(30);
     }
 
-    &.left-gutter--xl {
+    &.u-left-gutter--xl {
       padding-left: rem(60);
     }
 
-    &.right-gutter--xl {
+    &.u-right-gutter--xl {
       padding-right: rem(60);
     }
   }
 }
 
 [class*="grid--"] {
-  &.no-gutters {
+  &.u-no-gutters {
     margin-left: 0;
     margin-right: 0;
 
-    > .grid-item {
+    > .l-grid-item {
       padding-left: 0;
       padding-right: 0;
     }
   }
 
-  > .grid-item {
+  > .l-grid-item {
     box-sizing: border-box;
 
     @include column-gutters();
@@ -66,11 +66,11 @@
   }
 }
 
-[class*="grid--"] {
+[class*="l-grid--"] {
   @include layout-in-column;
 }
 
-.grid-item {
+.l-grid-item {
   width: 100%;
   box-sizing: border-box;
 }
@@ -78,7 +78,7 @@
 /**
 * 1 to 2 column grid at 50% each.
 */
-.grid--50-50 {
+.l-grid--50-50 {
   @include media ('>medium') {
     width: 100%;
 
@@ -91,7 +91,7 @@
 /**
  * 3 column grid
  */
-.grid--3-col {
+.l-grid--3-col {
   @include media ('>medium') {
     width: 100%;
 
@@ -104,7 +104,7 @@
 /**
  * 4 column grid
  */
-.grid--4-col {
+.l-grid--4-col {
   width: 100%;
 
   @include media ('>medium') {
