@@ -17,8 +17,8 @@ a.fasc-button {
   vertical-align: middle;
   text-align: center;
   width: auto;
-  background: $button-color !important;
-  color: $button-hover !important;
+  background: $button-color;
+  color: $button-hover;
   font-size: rem(18);
 
   @include media('>large') {
@@ -30,8 +30,8 @@ a.fasc-button {
   }
 
   &:hover {
-    background-color: $button-hover !important;
-    color: $white !important;
+    background-color: $button-hover;
+    color: $white;
     border-color: $button-hover;
 
     &::after {
@@ -53,5 +53,31 @@ a.fasc-button {
     top: 50%;
     transform: translateY(-50%);
     transition: all 0.25s ease-in-out;
+  }
+}
+
+.u-button--white {
+  color: $white;
+  background-color: transparent;
+
+  &:hover {
+    background-color: $white;
+    color: $black;
+
+    &::after {
+      background: url('../assets/images/icon--arrow.svg') center center no-repeat;
+      background-size: rem(15);
+    }
+  }
+}
+
+a.fasc-button {
+  background: $button-color !important;
+  color: $button-hover !important;
+
+  &:hover {
+    background-color: $button-hover !important;
+    color: $white !important;
+    border-color: $button-hover;
   }
 }
