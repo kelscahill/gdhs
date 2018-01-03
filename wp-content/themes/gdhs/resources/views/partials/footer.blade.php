@@ -9,6 +9,6 @@
     @endphp
   </div>
   <div class="c-footer__copyright u-font--s u-color--gray">
-    © 2017 White House Correspondents' Association.
+    © 2017 Greene-Dreher Historical Society.
   </div>
 </footer>

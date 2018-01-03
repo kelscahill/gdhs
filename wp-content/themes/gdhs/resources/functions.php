@@ -113,27 +113,27 @@ add_post_type_support( 'page', 'excerpt' );
 function cptui_register_my_cpts() {
 
 	/**
-	 * Post Type: Scholarships.
+	 * Post Type: Winners.
 	 */
-	$labels = array(
-		"name" => __( 'Scholarships', 'sage' ),
-		"singular_name" => __( 'Scholarship', 'sage' ),
-		"menu_name" => __( 'Scholarships', 'sage' ),
-		"all_items" => __( 'All Scholarships', 'sage' ),
-		"add_new" => __( 'Add New Scholarship', 'sage' ),
-		"edit_item" => __( 'Edit Scholarship', 'sage' ),
-		"new_item" => __( 'New Scholarship', 'sage' ),
-		"view_item" => __( 'View Scholarship', 'sage' ),
-		"view_items" => __( 'View Scholarships', 'sage' ),
-		"search_items" => __( 'Search Scholarships', 'sage' ),
-		"not_found" => __( 'No Scholarships Found', 'sage' ),
-		"not_found_in_trash" => __( 'No Scholarships found in Trash', 'sage' ),
+	$winner_labels = array(
+		"name" => __( 'Winners', 'sage' ),
+		"singular_name" => __( 'Winner', 'sage' ),
+		"menu_name" => __( 'Winners', 'sage' ),
+		"all_items" => __( 'All Winners', 'sage' ),
+		"add_new" => __( 'Add New Winner', 'sage' ),
+		"edit_item" => __( 'Edit Winner', 'sage' ),
+		"new_item" => __( 'New Winner', 'sage' ),
+		"view_item" => __( 'View Winner', 'sage' ),
+		"view_items" => __( 'View Winners', 'sage' ),
+		"search_items" => __( 'Search Winners', 'sage' ),
+		"not_found" => __( 'No Winners Found', 'sage' ),
+		"not_found_in_trash" => __( 'No Winners found in Trash', 'sage' ),
 	);
 
-	$args = array(
-		"label" => __( 'Scholarships', 'sage' ),
-		"labels" => $labels,
-		"description" => "WHCA Scholarships",
+	$winner_args = array(
+		"label" => __( 'Winners', 'sage' ),
+		"labels" => $winner_labels,
+		"description" => "WHCA Winners",
 		"public" => true,
 		"publicly_queryable" => true,
 		"show_ui" => true,
@@ -143,15 +143,56 @@ function cptui_register_my_cpts() {
 		"exclude_from_search" => false,
 		"capability_type" => "post",
 		"hierarchical" => true,
-		"rewrite" => array( "slug" => "scholarship", "with_front" => true ),
+		"rewrite" => array( "slug" => "winner", "with_front" => true ),
     'has_archive' => false,
 		"query_var" => true,
-		"menu_position" => 3,
+		"menu_position" => 4,
 		"menu_icon" => "dashicons-awards",
 		"supports" => array( "title", "editor", "thumbnail" ),
 	);
 
-	register_post_type( "scholarships", $args );
+	register_post_type( "winners", $winner_args );
+
+  /**
+	 * Post Type: Officers.
+	 */
+  $officer_labels = array(
+		"name" => __( 'Officers', 'sage' ),
+		"singular_name" => __( 'Officer', 'sage' ),
+		"menu_name" => __( 'Officers', 'sage' ),
+		"all_items" => __( 'All Officers', 'sage' ),
+		"add_new" => __( 'Add New Officer', 'sage' ),
+		"edit_item" => __( 'Edit Officer', 'sage' ),
+		"new_item" => __( 'New Officer', 'sage' ),
+		"view_item" => __( 'View Officer', 'sage' ),
+		"view_items" => __( 'View Officers', 'sage' ),
+		"search_items" => __( 'Search Officers', 'sage' ),
+		"not_found" => __( 'No Winners Found', 'sage' ),
+		"not_found_in_trash" => __( 'No Officers found in Trash', 'sage' ),
+	);
+
+	$officer_args = array(
+		"label" => __( 'Officers', 'sage' ),
+		"labels" => $officer_labels,
+		"description" => "WHCA Officers",
+		"public" => true,
+		"publicly_queryable" => true,
+		"show_ui" => true,
+		"show_in_rest" => false,
+		"rest_base" => "",
+		"show_in_menu" => true,
+		"exclude_from_search" => false,
+		"capability_type" => "post",
+		"hierarchical" => true,
+		"rewrite" => array( "slug" => "officer", "with_front" => true ),
+    'has_archive' => false,
+		"query_var" => true,
+		"menu_position" => 5,
+		"menu_icon" => "dashicons-groups",
+		"supports" => array( "title", "editor", "thumbnail" ),
+	);
+
+	register_post_type( "Officers", $officer_args );
 }
 add_action( 'init', 'cptui_register_my_cpts' );
 
@@ -165,21 +206,21 @@ function cptui_register_my_taxes() {
    */
 
   $labels = array(
-    "name" => __( 'Scholarship Category', 'sage' ),
-    "singular_name" => __( 'Scholarship Category', 'sage' ),
-    "menu_name" => __( 'Scholarship Categories', 'sage' ),
-    "all_items" => __( 'All Scholarship Categories', 'sage' ),
-    "edit_item" => __( 'Edit Scholarship Categories', 'sage' ),
-    "view_item" => __( 'View Scholarship Categories', 'sage' ),
-    "update_item" => __( 'Update Scholarship Categories', 'sage' ),
-    "add_new_item" => __( 'Add New Scholarship Category', 'sage' ),
-    "new_item_name" => __( 'New Scholarship Category', 'sage' ),
-    "search_items" => __( 'Search Scholarship Categories', 'sage' ),
-    "popular_items" => __( 'Popular Scholarship Categories', 'sage' ),
-    "add_or_remove_items" => __( 'Add or Remove Scholarship Categories', 'sage' ),
-    "choose_from_most_used" => __( 'Choose from the most used Scholarship Categories', 'sage' ),
-    "not_found" => __( 'No Scholarship Categories Found', 'sage' ),
-    "items_list" => __( 'Scholarship Categories List', 'sage' ),
+    "name" => __( 'Winner Category', 'sage' ),
+    "singular_name" => __( 'Winner Category', 'sage' ),
+    "menu_name" => __( 'Winner Categories', 'sage' ),
+    "all_items" => __( 'All Winner Categories', 'sage' ),
+    "edit_item" => __( 'Edit Winner Categories', 'sage' ),
+    "view_item" => __( 'View Winner Categories', 'sage' ),
+    "update_item" => __( 'Update Winner Categories', 'sage' ),
+    "add_new_item" => __( 'Add New Winner Category', 'sage' ),
+    "new_item_name" => __( 'New Winner Category', 'sage' ),
+    "search_items" => __( 'Search Winner Categories', 'sage' ),
+    "popular_items" => __( 'Popular Winner Categories', 'sage' ),
+    "add_or_remove_items" => __( 'Add or Remove Winner Categories', 'sage' ),
+    "choose_from_most_used" => __( 'Choose from the most used Winner Categories', 'sage' ),
+    "not_found" => __( 'No Winner Categories Found', 'sage' ),
+    "items_list" => __( 'Winner Categories List', 'sage' ),
   );
 
   $args = array(
@@ -187,19 +228,19 @@ function cptui_register_my_taxes() {
     "labels" => $labels,
     "public" => true,
     "hierarchical" => true,
-    "label" => "Scholarship Categories",
+    "label" => "Winner Categories",
     "show_ui" => true,
     "show_in_menu" => true,
     "show_in_nav_menus" => true,
     "query_var" => true,
-    "rewrite" => array( "slug" => "scholarship_category", "with_front" => false ),
+    "rewrite" => array( "slug" => "winner_category", "with_front" => false ),
     "has_archive" => false,
     "show_admin_column" => true,
     "show_in_rest" => false,
     "rest_base" => "",
     "show_in_quick_edit" => true,
   );
-  register_taxonomy( "scholarship_category", array( "scholarships" ), $args );
+  register_taxonomy( "winner_category", array( "winners" ), $args );
 
 }
 add_action( 'init', 'cptui_register_my_taxes' );

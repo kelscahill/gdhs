@@ -7,5 +7,5 @@
 @include('patterns.sections.c-section-officers')
 @include('patterns.sections.c-section-promotion')
 @if (is_page('scholarships'))
-  @include('patterns.sections.c-section-scholarships')
+  @include('patterns.sections.c-section-winners')
 @endif

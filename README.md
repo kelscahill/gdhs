@@ -1,2 +1,2 @@
 # whca
-Website for White House Correspondents' Association
+Website for Greene-Dreher Historical Society

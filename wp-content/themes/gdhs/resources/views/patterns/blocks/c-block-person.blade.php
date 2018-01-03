@@ -5,6 +5,8 @@
         <span class="o-kicker u-font u-color--white">{{ $kicker }}</span>
         <hr class="u-border--white u-border--thick" />
       </div>
+    @else
+      <hr class="u-border--gray-light u-border--thick" />
     @endif
     @if (!empty($thumb_id))
       <picture class="c-block__thumb">
