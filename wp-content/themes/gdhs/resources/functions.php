@@ -108,32 +108,39 @@ add_filter('upload_mimes', 'cc_mime_types');
 add_post_type_support( 'page', 'excerpt' );
 
 /**
+ * ACF Options Page
+ */
+if( function_exists('acf_add_options_page') ) {
+	acf_add_options_page();
+}
+
+/**
  * Custom fields
  */
 function cptui_register_my_cpts() {
 
 	/**
-	 * Post Type: Winners.
+	 * Post Type: Events.
 	 */
-	$winner_labels = array(
-		"name" => __( 'Winners', 'sage' ),
-		"singular_name" => __( 'Winner', 'sage' ),
-		"menu_name" => __( 'Winners', 'sage' ),
-		"all_items" => __( 'All Winners', 'sage' ),
-		"add_new" => __( 'Add New Winner', 'sage' ),
-		"edit_item" => __( 'Edit Winner', 'sage' ),
-		"new_item" => __( 'New Winner', 'sage' ),
-		"view_item" => __( 'View Winner', 'sage' ),
-		"view_items" => __( 'View Winners', 'sage' ),
-		"search_items" => __( 'Search Winners', 'sage' ),
-		"not_found" => __( 'No Winners Found', 'sage' ),
-		"not_found_in_trash" => __( 'No Winners found in Trash', 'sage' ),
+	$event_labels = array(
+		"name" => __( 'Events', 'sage' ),
+		"singular_name" => __( 'Event', 'sage' ),
+		"menu_name" => __( 'Events', 'sage' ),
+		"all_items" => __( 'All Events', 'sage' ),
+		"add_new" => __( 'Add New Event', 'sage' ),
+		"edit_item" => __( 'Edit Event', 'sage' ),
+		"new_item" => __( 'New Event', 'sage' ),
+		"view_item" => __( 'View Event', 'sage' ),
+		"view_items" => __( 'View Events', 'sage' ),
+		"search_items" => __( 'Search Events', 'sage' ),
+		"not_found" => __( 'No Events Found', 'sage' ),
+		"not_found_in_trash" => __( 'No Events found in Trash', 'sage' ),
 	);
 
-	$winner_args = array(
-		"label" => __( 'Winners', 'sage' ),
-		"labels" => $winner_labels,
-		"description" => "WHCA Winners",
+	$event_args = array(
+		"label" => __( 'Events', 'sage' ),
+		"labels" => $event_labels,
+		"description" => "GDHS Events",
 		"public" => true,
 		"publicly_queryable" => true,
 		"show_ui" => true,
@@ -143,38 +150,38 @@ function cptui_register_my_cpts() {
 		"exclude_from_search" => false,
 		"capability_type" => "post",
 		"hierarchical" => true,
-		"rewrite" => array( "slug" => "winner", "with_front" => true ),
+		"rewrite" => array( "slug" => "event", "with_front" => true ),
     'has_archive' => false,
 		"query_var" => true,
 		"menu_position" => 4,
-		"menu_icon" => "dashicons-awards",
+		"menu_icon" => "dashicons-calendar-alt",
 		"supports" => array( "title", "editor", "thumbnail" ),
 	);
 
-	register_post_type( "winners", $winner_args );
+	register_post_type( "events", $event_args );
 
   /**
-	 * Post Type: Officers.
+	 * Post Type: Exhibits.
 	 */
-  $officer_labels = array(
-		"name" => __( 'Officers', 'sage' ),
-		"singular_name" => __( 'Officer', 'sage' ),
-		"menu_name" => __( 'Officers', 'sage' ),
-		"all_items" => __( 'All Officers', 'sage' ),
-		"add_new" => __( 'Add New Officer', 'sage' ),
-		"edit_item" => __( 'Edit Officer', 'sage' ),
-		"new_item" => __( 'New Officer', 'sage' ),
-		"view_item" => __( 'View Officer', 'sage' ),
-		"view_items" => __( 'View Officers', 'sage' ),
-		"search_items" => __( 'Search Officers', 'sage' ),
-		"not_found" => __( 'No Winners Found', 'sage' ),
-		"not_found_in_trash" => __( 'No Officers found in Trash', 'sage' ),
+  $exhibit_labels = array(
+		"name" => __( 'Exhibits', 'sage' ),
+		"singular_name" => __( 'Exhibit', 'sage' ),
+		"menu_name" => __( 'Exhibits', 'sage' ),
+		"all_items" => __( 'All Exhibits', 'sage' ),
+		"add_new" => __( 'Add New Exhibit', 'sage' ),
+		"edit_item" => __( 'Edit Exhibit', 'sage' ),
+		"new_item" => __( 'New Exhibit', 'sage' ),
+		"view_item" => __( 'View Exhibit', 'sage' ),
+		"view_items" => __( 'View Exhibits', 'sage' ),
+		"search_items" => __( 'Search Exhibits', 'sage' ),
+		"not_found" => __( 'No Events Found', 'sage' ),
+		"not_found_in_trash" => __( 'No Exhibits found in Trash', 'sage' ),
 	);
 
-	$officer_args = array(
-		"label" => __( 'Officers', 'sage' ),
-		"labels" => $officer_labels,
-		"description" => "WHCA Officers",
+	$exhibit_args = array(
+		"label" => __( 'Exhibits', 'sage' ),
+		"labels" => $exhibit_labels,
+		"description" => "GDHS Exhibits",
 		"public" => true,
 		"publicly_queryable" => true,
 		"show_ui" => true,
@@ -184,15 +191,56 @@ function cptui_register_my_cpts() {
 		"exclude_from_search" => false,
 		"capability_type" => "post",
 		"hierarchical" => true,
-		"rewrite" => array( "slug" => "officer", "with_front" => true ),
+		"rewrite" => array( "slug" => "exhibit", "with_front" => true ),
     'has_archive' => false,
 		"query_var" => true,
 		"menu_position" => 5,
-		"menu_icon" => "dashicons-groups",
+		"menu_icon" => "dashicons-format-gallery",
 		"supports" => array( "title", "editor", "thumbnail" ),
 	);
 
-	register_post_type( "Officers", $officer_args );
+	register_post_type( "exhibits", $exhibit_args );
+
+  /**
+	 * Post Type: Research Library.
+	 */
+  $research_labels = array(
+		"name" => __( 'Research Library', 'sage' ),
+		"singular_name" => __( 'Research Library', 'sage' ),
+		"menu_name" => __( 'Research Library', 'sage' ),
+		"all_items" => __( 'All Items', 'sage' ),
+		"add_new" => __( 'Add New Item', 'sage' ),
+		"edit_item" => __( 'Edit Item', 'sage' ),
+		"new_item" => __( 'New Item', 'sage' ),
+		"view_item" => __( 'View Item', 'sage' ),
+		"view_items" => __( 'View Items', 'sage' ),
+		"search_items" => __( 'Search Items', 'sage' ),
+		"not_found" => __( 'No Items Found', 'sage' ),
+		"not_found_in_trash" => __( 'No Items found in Trash', 'sage' ),
+	);
+
+	$research_args = array(
+		"label" => __( 'Research Library', 'sage' ),
+		"labels" => $research_labels,
+		"description" => "GDHS Research Library",
+		"public" => true,
+		"publicly_queryable" => true,
+		"show_ui" => true,
+		"show_in_rest" => false,
+		"rest_base" => "",
+		"show_in_menu" => true,
+		"exclude_from_search" => false,
+		"capability_type" => "post",
+		"hierarchical" => true,
+		"rewrite" => array( "slug" => "research-library", "with_front" => true ),
+    'has_archive' => false,
+		"query_var" => true,
+		"menu_position" => 5,
+		"menu_icon" => "dashicons-book-alt",
+		"supports" => array( "title", "editor", "thumbnail" ),
+	);
+
+	register_post_type( "library", $research_args );
 }
 add_action( 'init', 'cptui_register_my_cpts' );
 
@@ -202,45 +250,127 @@ add_action( 'init', 'cptui_register_my_cpts' );
 function cptui_register_my_taxes() {
 
   /**
-   * Taxonomy: Locations.
+   * Taxonomy: Event Category.
    */
 
-  $labels = array(
-    "name" => __( 'Winner Category', 'sage' ),
-    "singular_name" => __( 'Winner Category', 'sage' ),
-    "menu_name" => __( 'Winner Categories', 'sage' ),
-    "all_items" => __( 'All Winner Categories', 'sage' ),
-    "edit_item" => __( 'Edit Winner Categories', 'sage' ),
-    "view_item" => __( 'View Winner Categories', 'sage' ),
-    "update_item" => __( 'Update Winner Categories', 'sage' ),
-    "add_new_item" => __( 'Add New Winner Category', 'sage' ),
-    "new_item_name" => __( 'New Winner Category', 'sage' ),
-    "search_items" => __( 'Search Winner Categories', 'sage' ),
-    "popular_items" => __( 'Popular Winner Categories', 'sage' ),
-    "add_or_remove_items" => __( 'Add or Remove Winner Categories', 'sage' ),
-    "choose_from_most_used" => __( 'Choose from the most used Winner Categories', 'sage' ),
-    "not_found" => __( 'No Winner Categories Found', 'sage' ),
-    "items_list" => __( 'Winner Categories List', 'sage' ),
+  $event_cat_labels = array(
+    "name" => __( 'Event Category', 'sage' ),
+    "singular_name" => __( 'Event Category', 'sage' ),
+    "menu_name" => __( 'Event Categories', 'sage' ),
+    "all_items" => __( 'All Event Categories', 'sage' ),
+    "edit_item" => __( 'Edit Event Categories', 'sage' ),
+    "view_item" => __( 'View Event Categories', 'sage' ),
+    "update_item" => __( 'Update Event Categories', 'sage' ),
+    "add_new_item" => __( 'Add New Event Category', 'sage' ),
+    "new_item_name" => __( 'New Event Category', 'sage' ),
+    "search_items" => __( 'Search Event Categories', 'sage' ),
+    "popular_items" => __( 'Popular Event Categories', 'sage' ),
+    "add_or_remove_items" => __( 'Add or Remove Event Categories', 'sage' ),
+    "choose_from_most_used" => __( 'Choose from the most used Event Categories', 'sage' ),
+    "not_found" => __( 'No Event Categories Found', 'sage' ),
+    "items_list" => __( 'Event Categories List', 'sage' ),
   );
 
-  $args = array(
+  $event_cat_args = array(
     "label" => __( 'Category', 'sage' ),
-    "labels" => $labels,
+    "labels" => $event_cat_labels,
     "public" => true,
     "hierarchical" => true,
-    "label" => "Winner Categories",
+    "label" => "Event Categories",
     "show_ui" => true,
     "show_in_menu" => true,
     "show_in_nav_menus" => true,
     "query_var" => true,
-    "rewrite" => array( "slug" => "winner_category", "with_front" => false ),
+    "rewrite" => array( "slug" => "event_category", "with_front" => false ),
     "has_archive" => false,
     "show_admin_column" => true,
     "show_in_rest" => false,
     "rest_base" => "",
     "show_in_quick_edit" => true,
   );
-  register_taxonomy( "winner_category", array( "winners" ), $args );
+  register_taxonomy( "event_category", array( "events" ), $event_cat_args );
+
+  /**
+   * Taxonomy: Exhibit Category.
+   */
+
+  $exhibit_cat_labels = array(
+    "name" => __( 'Exhibit Category', 'sage' ),
+    "singular_name" => __( 'Exhibit Category', 'sage' ),
+    "menu_name" => __( 'Exhibit Categories', 'sage' ),
+    "all_items" => __( 'All Exhibit Categories', 'sage' ),
+    "edit_item" => __( 'Edit Exhibit Categories', 'sage' ),
+    "view_item" => __( 'View Exhibit Categories', 'sage' ),
+    "update_item" => __( 'Update Exhibit Categories', 'sage' ),
+    "add_new_item" => __( 'Add New Exhibit Category', 'sage' ),
+    "new_item_name" => __( 'New Exhibit Category', 'sage' ),
+    "search_items" => __( 'Search Exhibit Categories', 'sage' ),
+    "popular_items" => __( 'Popular Exhibit Categories', 'sage' ),
+    "add_or_remove_items" => __( 'Add or Remove Exhibit Categories', 'sage' ),
+    "choose_from_most_used" => __( 'Choose from the most used Exhibit Categories', 'sage' ),
+    "not_found" => __( 'No Exhibit Categories Found', 'sage' ),
+    "items_list" => __( 'Exhibit Categories List', 'sage' ),
+  );
+
+  $exhibit_cat_args = array(
+    "label" => __( 'Category', 'sage' ),
+    "labels" => $exhibit_cat_labels,
+    "public" => true,
+    "hierarchical" => true,
+    "label" => "Exhibit Categories",
+    "show_ui" => true,
+    "show_in_menu" => true,
+    "show_in_nav_menus" => true,
+    "query_var" => true,
+    "rewrite" => array( "slug" => "exhibit_category", "with_front" => false ),
+    "has_archive" => false,
+    "show_admin_column" => true,
+    "show_in_rest" => false,
+    "rest_base" => "",
+    "show_in_quick_edit" => true,
+  );
+  register_taxonomy( "exhibit_category", array( "exhibits" ), $exhibit_cat_args );
+
+  /**
+   * Taxonomy: Research Library Category.
+   */
+
+  $research_cat_labels = array(
+    "name" => __( 'Library Category', 'sage' ),
+    "singular_name" => __( 'Library Category', 'sage' ),
+    "menu_name" => __( 'Library Categories', 'sage' ),
+    "all_items" => __( 'All Library Categories', 'sage' ),
+    "edit_item" => __( 'Edit Library Categories', 'sage' ),
+    "view_item" => __( 'View Library Categories', 'sage' ),
+    "update_item" => __( 'Update Library Categories', 'sage' ),
+    "add_new_item" => __( 'Add New Library Category', 'sage' ),
+    "new_item_name" => __( 'New Library Category', 'sage' ),
+    "search_items" => __( 'Search Library Categories', 'sage' ),
+    "popular_items" => __( 'Popular Library Categories', 'sage' ),
+    "add_or_remove_items" => __( 'Add or Remove Library Categories', 'sage' ),
+    "choose_from_most_used" => __( 'Choose from the most used Library Categories', 'sage' ),
+    "not_found" => __( 'No Library Categories Found', 'sage' ),
+    "items_list" => __( 'Library Categories List', 'sage' ),
+  );
+
+  $research_cat_args = array(
+    "label" => __( 'Category', 'sage' ),
+    "labels" => $research_cat_labels,
+    "public" => true,
+    "hierarchical" => true,
+    "label" => "Library Categories",
+    "show_ui" => true,
+    "show_in_menu" => true,
+    "show_in_nav_menus" => true,
+    "query_var" => true,
+    "rewrite" => array( "slug" => "library_category", "with_front" => false ),
+    "has_archive" => false,
+    "show_admin_column" => true,
+    "show_in_rest" => false,
+    "rest_base" => "",
+    "show_in_quick_edit" => true,
+  );
+  register_taxonomy( "library_category", array( "library" ), $research_cat_args );
 
 }
 add_action( 'init', 'cptui_register_my_taxes' );

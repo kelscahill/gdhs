@@ -1,2 +1,1 @@
-# whca
-Website for Greene-Dreher Historical Society
+# Greene-Dreher Historical Society
