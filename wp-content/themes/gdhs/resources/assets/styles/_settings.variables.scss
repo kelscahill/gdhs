@@ -17,26 +17,28 @@ $max-width: rem($max-width-px) !default;
  * Colors
  */
 $white: #fff;
-$black: #000;
-$gray-dark: #808080;
-$gray: #7c7c7c;
-$gray-light: #c3c3c3;
+$black: #31302e;
+$gray: #b2adaa;
 $error: #f00;
 $valid: #089e00;
 $warning: #fff664;
 $information: #000db5;
+$green: #8d9b86;
+$blue: #24374d;
+$red: #f53d31;
+$tan: #f5f4ed;
 
 /**
  * Style Colors
  */
-$primary-color: $black;
-$secondary-color: $white;
-$tertiary-color: $gray;
+$primary-color: $green;
+$secondary-color: $blue;
+$tertiary-color: $red;
 $background-color: $white;
-$link-color: $tertiary-color;
-$link-hover: darken($tertiary-color, 10%);
-$button-color: $white;
-$button-hover: $black;
+$link-color: $secondary-color;
+$link-hover: darken($secondary-color, 10%);
+$button-color: $tertiary-color;
+$button-hover: darken($tertiary-color, 10%);
 $body-color: $black;
 $border-color: $gray;
 $overlay: rgba(25, 25, 25, 0.6);
@@ -44,9 +46,9 @@ $overlay: rgba(25, 25, 25, 0.6);
 /**
  * Typography
  */
-$font: "gt-america-regular", "Helvetica", sans-serif;
-$font-primary: "din-condensed", "Helvetica", sans-serif;
-$font-secondary: "gt-america-regular", "Helvetica", sans-serif;
+$font: 'Esteban', serif;
+$font-primary: 'Raleway', sans-serif;
+$font-secondary: 'Esteban', serif;
 $sans-serif: "Helvetica", sans-serif;
 $serif: Georgia, Times, "Times New Roman", serif;
 $monospace: Menlo, Monaco, "Courier New", "Courier", monospace;

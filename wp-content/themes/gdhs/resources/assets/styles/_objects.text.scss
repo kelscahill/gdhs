@@ -6,51 +6,62 @@
  * Text Primary
  */
 
-@mixin u-font--primary--l() {
-  font-size: rem(30);
-  line-height: rem(28);
+@mixin u-font--primary--xl() {
+  font-size: rem(40);
+  line-height: rem(40);
   font-family: $font-primary;
-  text-transform: uppercase;
 
   @include media ('>large') {
-    font-size: rem(40);
-    line-height: rem(38);
+    font-size: rem(60);
+    line-height: rem(60);
+  }
+}
+
+.u-font--primary--xl,
+h1 {
+  @include u-font--primary--xl;
+}
+
+@mixin u-font--primary--l() {
+  font-size: rem(26);
+  line-height: rem(36);
+  font-family: $font-primary;
+
+  @include media ('>large') {
+    font-size: rem(36);
+    line-height: rem(46);
   }
 }
 
 .u-font--primary--l,
-h1 {
+h2 {
   @include u-font--primary--l;
 }
 
 @mixin u-font--primary--m() {
-  font-size: rem(23);
-  line-height: rem(38);
+  font-size: rem(22);
+  line-height: rem(28);
   font-family: $font-primary;
-  text-transform: uppercase;
-  font-weight: bold;
 
   @include media ('>large') {
-    font-size: rem(33);
+    font-size: rem(32);
     line-height: rem(38);
   }
 }
 
 .u-font--primary--m,
-h2 {
+h3 {
   @include u-font--primary--m;
 }
 
 @mixin u-font--primary--s() {
   font-size: rem(18);
-  line-height: rem(33);
+  line-height: rem(22);
   font-family: $font-primary;
-  text-transform: uppercase;
-  font-weight: bold;
 
   @include media ('>large') {
     font-size: rem(22);
-    line-height: rem(37);
+    line-height: rem(28);
   }
 }
 
@@ -59,67 +70,93 @@ h2 {
 }
 
 /**
+ * Text Secondary
+ */
+
+@mixin u-font--secondary--s() {
+  font-size: rem(14);
+  line-height: rem(18);
+  font-family: $font-primary;
+  letter-spacing: rem(3);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.u-font--secondary--s,
+h4 {
+  @include u-font--secondary--s;
+}
+
+@mixin u-font--secondary--xs() {
+  font-size: rem(12);
+  line-height: rem(12);
+  font-family: $font-primary;
+  letter-spacing: rem(3);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.u-font--secondary--xs {
+  @include u-font--secondary--xs;
+}
+
+/**
  * Text Main
  */
-@mixin u-font--l() {
-  font-size: rem(24);
-  line-height: rem(32);
-  font-family: $font-secondary;
+@mixin u-font--xl() {
+  font-size: rem(18);
+  line-height: rem(30);
+  font-family: $font;
   font-weight: 400;
+  font-style: italic;
 
   @include media ('>large') {
-    font-size: rem(26);
-    line-height: rem(32);
+    font-size: rem(22);
+    line-height: rem(34);
   }
 }
 
-.u-font--l,
-h3 {
+.u-font--xl {
+  @include u-font--xl;
+}
+
+@mixin u-font--l() {
+  font-size: rem(16);
+  line-height: rem(26);
+  font-family: $font;
+  font-weight: 400;
+  font-style: italic;
+
+  @include media ('>large') {
+    font-size: rem(20);
+    line-height: rem(30);
+  }
+}
+
+.u-font--l {
   @include u-font--l;
 }
 
 @mixin u-font--m() {
-  font-size: rem(16);
-  line-height: rem(22);
+  font-size: rem(18);
+  line-height: rem(28);
   font-family: $font;
-  font-weight: 400;
-
-  @include media ('>large') {
-    font-size: rem(18);
-    line-height: rem(24);
-  }
+  font-style: italic;
 }
 
-.u-font--m,
-h4 {
+.u-font--m {
   @include u-font--m;
 }
 
 @mixin u-font--s() {
   font-size: rem(14);
-  line-height: rem(20);
+  line-height: rem(16);
   font-family: $font;
-  font-weight: 400;
-
-  @include media ('>large') {
-    font-size: rem(16);
-    line-height: rem(22);
-  }
+  font-style: italic;
 }
 
 .u-font--s {
   @include u-font--s;
-}
-
-@mixin u-font--xs() {
-  font-size: rem(13);
-  line-height: rem(19);
-  font-family: $font;
-  font-weight: 400;
-}
-
-.u-font--xs {
-  @include u-font--xs;
 }
 
 /**
@@ -165,5 +202,5 @@ h4 {
   color: $gray;
   padding-top: rem(10);
 
-  @include u-font--xs;
+  @include u-font--s;
 }

@@ -8,22 +8,19 @@ input[type="submit"],
 a.fasc-button {
   cursor: pointer;
   box-shadow: none;
+  border: 0;
   transition: all 0.25s ease-in-out;
   position: relative;
   padding: $pad/2 $pad*2 $pad/2 $pad;
   margin: $space 0 0 0;
-  border: 1px solid $gray-dark;
   display: table;
   vertical-align: middle;
   text-align: center;
   width: auto;
   background: $button-color;
   color: $button-hover;
-  font-size: rem(18);
 
-  @include media('>large') {
-    padding: $pad/1.5 $pad*2 $pad/1.5 $pad;
-  }
+  @include u-font--secondary--s;
 
   &:focus {
     outline: 0;
@@ -32,11 +29,10 @@ a.fasc-button {
   &:hover {
     background-color: $button-hover;
     color: $white;
-    border-color: $button-hover;
 
     &::after {
-      background: url('../assets/images/icon--arrow--white.svg') center center no-repeat;
-      background-size: rem(15);
+      background: url('../assets/images/o-arrow--white--short.svg') center center no-repeat;
+      background-size: rem(30);
     }
   }
 
@@ -44,10 +40,10 @@ a.fasc-button {
     content: '';
     display: block;
     margin-left: $space-half;
-    background: url('../assets/images/icon--arrow.svg') center center no-repeat;
-    background-size: rem(15);
-    width: rem(20);
-    height: rem(20);
+    background: url('../assets/images/o-arrow--white--short.svg') center center no-repeat;
+    background-size: rem(30);
+    width: rem(30);
+    height: rem(30);
     position: absolute;
     right: $space-half;
     top: 50%;
@@ -56,18 +52,25 @@ a.fasc-button {
   }
 }
 
-.u-button--white {
+.u-button--green {
   color: $white;
-  background-color: transparent;
+  background-color: $primary-color;
 
   &:hover {
-    background-color: $white;
-    color: $black;
+    background-color: darken($primary-color, 10%);
+    color: $white;
+  }
+}
 
-    &::after {
-      background: url('../assets/images/icon--arrow.svg') center center no-repeat;
-      background-size: rem(15);
-    }
+.u-button--outline {
+  color: $white;
+  background-color: transparent;
+  border: 1px solid $white;
+
+  &:hover {
+    background-color: $button-color;
+    color: $white;
+    border: 1px solid $button-color;
   }
 }
 

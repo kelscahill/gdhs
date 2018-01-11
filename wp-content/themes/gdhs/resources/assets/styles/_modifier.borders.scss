@@ -6,10 +6,6 @@
   border: 1px solid $border-color;
 }
 
-.u-border--thick {
-  height: rem(3);
-}
-
 .u-border--white {
   background-color: $white;
   border-color: $white;
@@ -18,9 +14,4 @@
 .u-border--black {
   background-color: $black;
   border-color: $black;
-}
-
-.u-border--gray-light {
-  background-color: $gray-light;
-  border-color: $gray-light;
 }

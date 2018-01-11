@@ -30,19 +30,8 @@
  */
 @mixin p {
   font-family: $font;
-  font-weight: 400;
-  font-size: rem(18);
+  font-size: rem(16);
   line-height: rem(26);
-
-  @include media('>large') {
-    font-size: rem(22);
-    line-height: rem(30);
-  }
-
-  @include media('>xxlarge') {
-    font-size: rem(26);
-    line-height: rem(34);
-  }
 }
 
 /**
