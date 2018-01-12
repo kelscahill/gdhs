@@ -88,12 +88,18 @@ h4 {
 }
 
 @mixin u-font--secondary--xs() {
-  font-size: rem(12);
-  line-height: rem(12);
+  font-size: rem(11);
+  line-height: rem(11);
   font-family: $font-primary;
-  letter-spacing: rem(3);
-  font-weight: 400;
+  letter-spacing: rem(2);
+  font-weight: 700;
   text-transform: uppercase;
+
+  @include media ('>large') {
+    font-size: rem(12);
+    line-height: rem(12);
+    letter-spacing: rem(3);
+  }
 }
 
 .u-font--secondary--xs {
@@ -107,7 +113,6 @@ h4 {
   font-size: rem(18);
   line-height: rem(30);
   font-family: $font;
-  font-weight: 400;
   font-style: italic;
 
   @include media ('>large') {
@@ -124,7 +129,6 @@ h4 {
   font-size: rem(16);
   line-height: rem(26);
   font-family: $font;
-  font-weight: 400;
   font-style: italic;
 
   @include media ('>large') {

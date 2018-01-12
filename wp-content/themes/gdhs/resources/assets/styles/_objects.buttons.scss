@@ -84,3 +84,16 @@ a.fasc-button {
     border-color: $button-hover;
   }
 }
+
+.u-button--search {
+  padding: rem(5);
+  background-color: transparent;
+
+  &:hover {
+    background-color: transparent;
+  }
+
+  &::after {
+    display: none;
+  }
+}

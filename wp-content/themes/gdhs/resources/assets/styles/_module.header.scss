@@ -1,3 +1,75 @@
 /* ------------------------------------*\
     $HEADER
 \*------------------------------------ */
+
+.c-utility {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: rem(40);
+}
+
+.c-utility__search {
+  form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    input,
+    button {
+      height: rem(40);
+      margin: 0;
+      border: 0;
+      padding: 0;
+    }
+
+    input {
+      width: 100%;
+      text-align: right;
+      max-width: rem(120);
+
+      @include media('>small') {
+        max-width: none;
+        min-width: rem(250);
+      }
+    }
+
+    input::placeholder {
+      @include u-font--secondary--xs;
+
+      color: $gray;
+      text-align: right;
+    }
+
+    button {
+      padding-right: 0;
+      padding-left: $pad;
+    }
+  }
+}
+
+.c-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: rem($small-header-height);
+  overflow: hidden;
+
+  @include media('>medium') {
+    height: rem($large-header-height);
+  }
+}
+
+.c-logo {
+  display: block;
+  height: auto;
+  width: rem(190);
+  position: relative;
+  left: rem(-10);
+
+  @include media('>medium') {
+    height: rem(70);
+    width: rem(295);
+    left: 0;
+  }
+}

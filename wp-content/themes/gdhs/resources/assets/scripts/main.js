@@ -36,6 +36,31 @@
           $('html').addClass(' no-touch');
         }
 
+        /**
+         * Slick sliders
+         */
+        $('.slick').slick({
+          prevArrow: '<span class="u-icon--arrow u-icon--arrow-prev"></span>',
+          nextArrow: '<span class="u-icon--arrow u-icon--arrow-next"></span>',
+          dots: false,
+          autoplay: false,
+          arrows: true,
+          infinite: true,
+          speed: 250,
+          fade: true,
+          cssEase: 'linear',
+        });
+
+        /**
+         * Fixto
+         */
+        $('.js-sticky').fixTo('body', {
+          className: 'sticky-is-active',
+          useNativeSticky: false,
+          zIndex: 9999,
+          mind: 'c-utility',
+        });
+
         // Add active class the menu-nav link
         if (!$('body').hasClass('home')) {
           var url = window.location.pathname;

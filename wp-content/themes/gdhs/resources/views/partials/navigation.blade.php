@@ -8,13 +8,13 @@
       $count = 0;
       $submenu = false;
     @endphp
-    <div class="c-nav__primary-branding">
-      <a href="/" class="c-nav__primary-logo">
-        <span class="o-logo-text">White House</span>
-        <span class="o-logo-text">Correspondents'</span>
-        <span class="o-logo-text">Assocation</span>
-      </a>
-      <span class="c-nav__primary-toggle js-toggle" data-prefix="this" data-toggled="c-header">Menu</span>
+    <div class="c-nav__primary-toggle">
+      <div class="c-nav__toggle toggle js-toggle-parent">
+        <span class="c-nav__toggle-span c-nav__toggle-span--1"></span>
+        <span class="c-nav__toggle-span c-nav__toggle-span--2"></span>
+        <span class="c-nav__toggle-span c-nav__toggle-span--3"></span>
+        <span class="c-nav__toggle-span c-nav__toggle-span--4 u-font-weight--800"></span>
+      </div>
     </div>
     <ul class="c-primary-nav__list has-fade-in-border">
       @php
