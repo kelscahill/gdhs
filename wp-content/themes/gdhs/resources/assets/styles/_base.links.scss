@@ -16,3 +16,34 @@ a {
     color: $body-color;
   }
 }
+
+.u-link--cta {
+  @include u-font--secondary--s;
+
+  color: $link-color;
+
+  .u-icon {
+    transition: margin-left 0.25s ease;
+    margin-left: $space;
+  }
+
+  &:hover {
+    .u-icon {
+      margin-left: rem(23);
+    }
+  }
+}
+
+.u-link--white {
+  color: $white;
+
+  &:hover {
+    color: $gray;
+
+    .u-icon {
+      path {
+        fill: $gray;
+      }
+    }
+  }
+}

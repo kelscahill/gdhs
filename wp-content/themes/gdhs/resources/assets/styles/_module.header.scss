@@ -52,11 +52,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: rem($small-header-height);
-  overflow: hidden;
+  position: relative;
+  height: $small-header-height;
 
-  @include media('>medium') {
-    height: rem($large-header-height);
+  @include media('>xlarge') {
+    height: $large-header-height;
   }
 }
 
@@ -67,9 +67,9 @@
   position: relative;
   left: rem(-10);
 
-  @include media('>medium') {
-    height: rem(70);
-    width: rem(295);
+  @include media('>xlarge') {
+    height: auto;
+    width: rem(250);
     left: 0;
   }
 }

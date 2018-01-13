@@ -10,7 +10,7 @@
 $fontpx: 16; // Font size (px) baseline applied to <body> and converted to %.
 $defaultpx: 16; // Browser default px used for media queries
 $rembase: 16; // 16px = 1.00rem
-$max-width-px: 1300;
+$max-width-px: 1200;
 $max-width: rem($max-width-px) !default;
 
 /**
@@ -83,9 +83,9 @@ $verticalspacing: (mobile: 20, desktop: 30);
  */
 $icon-xsmall: rem(10);
 $icon-small: rem(20);
-$icon-medium: rem(40);
-$icon-large: rem(50);
-$icon-xlarge: rem(80);
+$icon-medium: rem(25);
+$icon-large: rem(60);
+$icon-xlarge: rem(60);
 
 /**
  * Common Breakpoints
@@ -112,7 +112,7 @@ $breakpoints: (
  * Element Specific Dimensions
  */
 $nav-width: rem(260);
-$article-max: rem(1000);
+$article-max: rem(1200);
 $sidebar-width: 320;
-$small-header-height: 60;
-$large-header-height: 100;
+$small-header-height: rem(60);
+$large-header-height: rem(80);

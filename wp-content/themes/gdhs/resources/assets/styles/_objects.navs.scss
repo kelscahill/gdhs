@@ -1,3 +1,226 @@
 /* ------------------------------------*\
     $NAVIGATION
 \*------------------------------------ */
+
+.c-nav__primary {
+  position: absolute;
+  top: $small-header-height;
+  left: 0;
+  width: 100%;
+  background-color: $tan;
+  box-shadow: 0 2px 0 rgba($gray, 0.4);
+
+  @include media('>xlarge') {
+    position: relative;
+    top: 0;
+    background-color: transparent;
+    box-shadow: none;
+    width: auto;
+  }
+
+  &.is-active {
+    .c-primary-nav__list {
+      display: block;
+    }
+
+    .c-nav__toggle {
+      .c-nav__toggle-span--1 {
+        opacity: 0;
+      }
+
+      .c-nav__toggle-span--2 {
+        transform: rotate(45deg);
+        top: rem(-4);
+        right: rem(-2);
+      }
+
+      .c-nav__toggle-span--3 {
+        transform: rotate(-45deg);
+        top: rem(-10);
+        right: rem(-2);
+      }
+
+      .c-nav__toggle-span--4::after {
+        content: "Close";
+      }
+    }
+  }
+}
+
+.c-nav__toggle {
+  position: absolute;
+  padding: $pad;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: $small-header-height;
+  width: $small-header-height;
+  top: -$small-header-height;
+  right: 0;
+
+  @include media('>xlarge') {
+    display: none;
+  }
+
+  .c-nav__toggle-span {
+    display: block;
+    background-color: $white;
+    width: rem(30);
+    height: rem(2);
+    margin-bottom: rem(5);
+    transition: transform 0.25s ease;
+    position: relative;
+  }
+
+  .c-nav__toggle-span--4 {
+    content: "Menu";
+    margin: 0;
+    background-color: transparent;
+    height: auto;
+    color: $white;
+    display: block;
+
+    &::after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      text-align: center;
+      content: "Menu";
+      padding-top: rem(3);
+      font-family: $font-primary;
+      text-transform: uppercase;
+      font-weight: 700;
+      line-height: rem(3);
+      letter-spacing: rem(1);
+      font-size: rem(3);
+    }
+  }
+}
+
+.c-primary-nav__list {
+  height: auto;
+  width: 100%;
+  display: none;
+
+  @include media('>xlarge') {
+    display: flex;
+    flex-direction: row;
+  }
+
+  &-toggle {
+    border-bottom: 1px solid rgba($border-color, 0.4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+
+    @include media('>xlarge') {
+      border: 0;
+      height: $large-header-height;
+    }
+
+    a {
+      width: auto;
+      padding: $pad/2 $pad/2;
+      font-weight: 700;
+
+      @include media('>xxlarge') {
+        padding: $pad $pad;
+      }
+    }
+
+    span {
+      display: none;
+      position: relative;
+      height: 100%;
+      width: rem(50);
+      padding: $pad/4 $pad/2;
+      text-align: right;
+
+      svg {
+        width: rem(15);
+        height: rem(15);
+        right: 0;
+        top: rem(3);
+        position: relative;
+      }
+    }
+  }
+
+  &-item {
+    position: relative;
+
+    &.this-is-active {
+      .c-primary-nav__list-toggle span {
+        transform: rotate(90deg);
+        top: rem(-7);
+        right: rem(-4);
+      }
+
+      .c-sub-nav__list {
+        display: block;
+      }
+    }
+
+    &.has-sub-nav {
+      .c-primary-nav__list-link {
+        @include media('>xlarge') {
+          font-size: rem(16);
+        }
+      }
+
+      .c-primary-nav__list-toggle span {
+        display: block;
+
+        @include media('>xlarge') {
+          display: none;
+        }
+      }
+    }
+
+    &:last-child {
+      .c-primary-nav__list-link {
+        @include media('>xlarge') {
+          padding-right: 0;
+        }
+      }
+    }
+  }
+
+  &-link {
+    @include media('>xlarge') {
+      font-size: rem(12);
+      letter-spacing: rem(2);
+      white-space: nowrap;
+      color: $white;
+    }
+  }
+}
+
+.c-sub-nav__list {
+  background-color: $white;
+  display: none;
+
+  @include media('>xlarge') {
+    position: absolute;
+    left: 0;
+    width: rem(250);
+    box-shadow: 0 1px 2px rgba($gray, 0.5);
+  }
+
+  &-link {
+    @include p;
+
+    padding: $pad/4 $pad;
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid rgba($border-color, 0.4);
+
+    &:hover {
+      background-color: $tan;
+    }
+  }
+}
