@@ -21,19 +21,21 @@
       <a href="https://www.facebook.com/peggybancrofthall/" target="_blank"><span class="u-icon u-icon--s u-path-fill--white u-link--white">@include('patterns.icons.o-icon--facebook')<span></a>
     </div>
     <div class="c-footer__copyright">
-      <div class="c-footer__annual-report">
-        @if (get_field('footer_annual_report', 'option'))
-          <a href="{{ the_field('footer_annual_report', 'option') }}" class="u-link--white u-font--secondary--xs">Annual Report</a>
-        @endif
-      </div>
+      @if (get_field('footer_annual_report', 'option'))
+        <div class="c-footer__annual-report">
+            <a href="{{ the_field('footer_annual_report', 'option') }}" class="u-link--white u-font--secondary--xs">Annual Report</a>
+        </div>
+      @endif
       <div class="c-footer__rights u-font--secondary--xs u-color--gray">
-        All Rights Reserved / Copyright 2017
+        All Rights Reserved / Copyright {{ date("Y") }}
       </div>
       <div class="c-footer__credit u-font--secondary--xs u-color--gray">
         Design & Code: <a class="u-link--white" href="http://cahillscreative.com" target="_blank">Cahill's Creative</a>
       </div>
-      <div class="c-footer__affiliate u-path-fill--gray">
-        @include('patterns.icons.c-logo--amazon-smile')
+      <div class="c-footer__affiliate">
+        <a href="https://smile.amazon.com/" class="u-path-fill--gray" target="_blank">
+          @include('patterns.icons.c-logo--amazon-smile')
+        </a>
       </div>
     </div>
     <div class="c-footer__scroll">

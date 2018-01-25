@@ -155,7 +155,7 @@ function cptui_register_my_cpts() {
 		"query_var" => true,
 		"menu_position" => 4,
 		"menu_icon" => "dashicons-calendar-alt",
-		"supports" => array( "title", "editor", "thumbnail" ),
+		"supports" => array( "title", "editor", "thumbnail", "excerpt" ),
 	);
 
 	register_post_type( "events", $event_args );

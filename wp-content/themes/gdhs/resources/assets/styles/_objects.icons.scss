@@ -3,6 +3,10 @@
 \*------------------------------------ */
 .u-icon {
   display: inline-block;
+
+  path {
+    transition: all 0.25s ease-in-out;
+  }
 }
 
 .u-icon--xs {
@@ -28,4 +32,16 @@
 .u-icon--xl {
   width: $icon-xlarge;
   height: $icon-xlarge;
+}
+
+.u-icon--arrow-prev {
+  background: url('../assets/images/o-arrow--carousel--prev.svg') center center no-repeat;
+  left: 0;
+  background-size: rem(15) auto;
+}
+
+.u-icon--arrow-next {
+  background: url('../assets/images/o-arrow--carousel--next.svg') center center no-repeat;
+  right: 0;
+  background-size: rem(15) auto;
 }

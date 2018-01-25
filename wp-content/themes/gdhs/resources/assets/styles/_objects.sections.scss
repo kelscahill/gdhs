@@ -1,3 +1,97 @@
 /* ------------------------------------*\
     $PAGE SECTIONS
 \*------------------------------------ */
+
+.c-section {
+  padding: $pad*2 0;
+
+  @include media('>medium') {
+    padding: $pad*4 0;
+  }
+}
+
+.c-page-header {
+  margin-top: rem(-100);
+
+  &__icon {
+    background: $white;
+    border-radius: 100%;
+    width: rem(150);
+    height: rem(150);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+  }
+}
+
+.c-hero {
+  &__image {
+    position: relative;
+    min-height: 70vh;
+    z-index: 0;
+
+    @include media('>medium') {
+      min-height: rem(450);
+    }
+
+    @include media('>xlarge') {
+      min-height: rem(600);
+    }
+  }
+
+  &__content {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.c-section-news {
+  .c-section-news__grid-item {
+    display: flex;
+    align-items: stretch;
+  }
+}
+
+.c-section-events {
+  background: $secondary-color url('../assets/images/o-texture--paper.svg') top rem(-2) center repeat-x;
+  background-size: 110%;
+  overflow: hidden;
+
+  &__title {
+    position: relative;
+    z-index: 1;
+
+    &::after {
+      content: "Happenings";
+      font-size: rem(144);
+      line-height: 1;
+      color: $white;
+      opacity: 0.1;
+      position: absolute;
+      z-index: 0;
+      top: rem(-72);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      display: none;
+
+      @include media('>medium') {
+        display: block;
+      }
+    }
+  }
+
+  &__feed {
+    z-index: 2;
+  }
+}

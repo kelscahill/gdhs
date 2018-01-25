@@ -1,17 +1,10 @@
 @extends('layouts.app')
 @section('content')
   @while(have_posts()) @php(the_post())
+    @include('patterns.sections.c-section-hero')
     @include('partials.content-page')
-
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse a sem vel lectus pharetra semper feugiat a nulla. Proin auctor interdum justo, sagittis feugiat turpis aliquet sed. Suspendisse vehicula enim nec odio tempus, sed pharetra sem dapibus. Sed gravida sapien consectetur, sagittis sem quis, feugiat ipsum. Mauris nec aliquet elit. Fusce vulputate elit sed diam porttitor, vel tincidunt nisi feugiat. Nam nisl lacus, blandit ut diam ut, volutpat iaculis velit. Vivamus facilisis tellus justo, vel feugiat leo suscipit et. Phasellus nec tempus quam, ut feugiat quam. Pellentesque ornare a ante nec fringilla. Morbi posuere dapibus risus, ut sollicitudin velit varius eu. Duis a metus venenatis, venenatis felis ac, interdum sem. Phasellus nec malesuada tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc ex arcu, sagittis in consectetur quis, hendrerit ut lorem.
-
-Duis pulvinar est est, vitae vulputate erat ultricies vel. Vestibulum sed diam nisi. Sed lacinia metus urna, eu efficitur ex fringilla vel. Etiam vehicula lobortis feugiat. Integer bibendum faucibus tortor ac pretium. Quisque sit amet ipsum sed arcu euismod accumsan ac eget mi. Sed imperdiet malesuada tempus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed accumsan magna velit, eget tincidunt neque mattis quis. Maecenas porttitor maximus feugiat. Aenean egestas turpis ac vestibulum finibus.
-
-Morbi scelerisque orci et risus imperdiet volutpat. Duis sit amet augue magna. Praesent varius ex efficitur neque lacinia, sed blandit sem ultricies. Sed id viverra dolor, non gravida felis. Vestibulum sed scelerisque eros. Cras ligula ex, cursus ut aliquet ac, posuere ut libero. In hac habitasse platea dictumst. Sed tempus magna et consequat mollis.
-
-Etiam sapien est, tincidunt a varius in, varius ac erat. Nulla condimentum ultrices pellentesque. Aliquam in luctus justo, at semper erat. Sed quis leo ullamcorper, hendrerit ex eget, condimentum tortor. Vivamus at orci suscipit, pellentesque lorem eget, viverra ipsum. Proin quis tristique odio. Cras quis ex eget eros sagittis eleifend. Praesent placerat erat auctor metus eleifend porta. Suspendisse eu ex convallis, facilisis ante nec, finibus mi. Fusce porttitor mauris eu porttitor placerat. Nulla malesuada est eget velit pretium, feugiat elementum justo lobortis. Proin tempor, turpis sed volutpat porttitor, leo enim faucibus ex, non varius nibh lectus non lectus. Praesent posuere porttitor mi, eu lacinia nulla lacinia a. Nulla mattis augue quis congue tempor.
-
-Vestibulum mauris arcu, tempor non quam eu, vehicula efficitur neque. Nulla commodo neque at egestas ornare. Pellentesque eget lacinia massa. Etiam sagittis augue sit amet felis ullamcorper, nec dictum nisl blandit. Phasellus nec nulla turpis. Curabitur vitae nisi in est lobortis elementum. Nulla fringilla est a interdum posuere. Curabitur vitae convallis ligula. Morbi id maximus eros. Proin nisi nunc, posuere lobortis nunc pellentesque, viverra aliquet enim. Curabitur sagittis nisl ac sagittis hendrerit. Cras id pretium nulla, in blandit tortor. Nulla nisl urna, tristique non tortor non, dignissim porta nisi. Pellentesque lacinia turpis arcu.
+    @include('patterns.sections.c-section-news')
+    @include('patterns.sections.c-section-events')
     @include('patterns.sections.c-section-featured-pages')
   @endwhile
 @endsection

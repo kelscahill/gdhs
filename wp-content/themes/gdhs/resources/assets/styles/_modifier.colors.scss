@@ -18,6 +18,14 @@
   color: $gray;
 }
 
+.u-color--primary {
+  color: $primary-color;
+}
+
+.u-color--secondary {
+  color: $secondary-color;
+}
+
 /**
  * Background Colors
  */
@@ -43,6 +51,10 @@
 
 .u-background-color--tertiary {
   background-color: $tertiary-color;
+}
+
+.u-background-color--tan {
+  background-color: $tan;
 }
 
 /**

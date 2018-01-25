@@ -11,7 +11,7 @@ a.fasc-button {
   border: 0;
   transition: all 0.25s ease-in-out;
   position: relative;
-  padding: $pad/2 $pad*2 $pad/2 $pad;
+  padding: $pad/1.5 $pad*3 $pad/1.5 $pad;
   margin: $space 0 0 0;
   display: table;
   vertical-align: middle;
@@ -19,6 +19,7 @@ a.fasc-button {
   width: auto;
   background: $button-color;
   color: $button-hover;
+  border-radius: rem(50);
 
   @include u-font--secondary--s;
 
@@ -33,6 +34,7 @@ a.fasc-button {
     &::after {
       background: url('../assets/images/o-arrow--white--short.svg') center center no-repeat;
       background-size: rem(30);
+      right: rem(15);
     }
   }
 
@@ -45,10 +47,20 @@ a.fasc-button {
     width: rem(30);
     height: rem(30);
     position: absolute;
-    right: $space-half;
+    right: $space;
     top: 50%;
     transform: translateY(-50%);
     transition: all 0.25s ease-in-out;
+  }
+}
+
+.u-button--red {
+  color: $white;
+  background-color: $tertiary-color;
+
+  &:hover {
+    background-color: darken($tertiary-color, 10%);
+    color: $white;
   }
 }
 

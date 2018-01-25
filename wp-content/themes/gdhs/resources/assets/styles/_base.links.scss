@@ -21,15 +21,17 @@ a {
   @include u-font--secondary--s;
 
   color: $link-color;
+  display: table;
 
   .u-icon {
-    transition: margin-left 0.25s ease;
-    margin-left: $space;
+    transition: all 0.25s ease;
+    left: $space;
+    position: relative;
   }
 
   &:hover {
     .u-icon {
-      margin-left: rem(23);
+      left: rem(23);
     }
   }
 }
