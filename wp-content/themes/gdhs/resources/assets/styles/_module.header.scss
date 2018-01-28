@@ -73,3 +73,21 @@
     left: 0;
   }
 }
+
+.c-page-header {
+  position: relative;
+  z-index: 1;
+  padding-top: $pad*2;
+  padding-bottom: $pad*2;
+
+  &__icon {
+    background: $white;
+    border-radius: 100%;
+    width: rem(150);
+    height: rem(150);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: rem(-100) auto 0 auto;
+  }
+}

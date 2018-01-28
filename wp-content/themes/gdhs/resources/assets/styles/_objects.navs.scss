@@ -67,14 +67,15 @@
     display: block;
     background-color: $white;
     width: rem(30);
-    height: rem(2);
+    height: rem(1);
     margin-bottom: rem(5);
     transition: transform 0.25s ease;
     position: relative;
+    border: 0;
+    outline: 0;
   }
 
   .c-nav__toggle-span--4 {
-    content: "Menu";
     margin: 0;
     background-color: transparent;
     height: auto;
@@ -90,11 +91,11 @@
       text-align: center;
       content: "Menu";
       padding-top: rem(3);
-      font-family: $font-primary;
+      font-family: $font-secondary;
       text-transform: uppercase;
       font-weight: 700;
       line-height: rem(3);
-      letter-spacing: rem(1);
+      letter-spacing: rem(1.25);
       font-size: rem(3);
     }
   }

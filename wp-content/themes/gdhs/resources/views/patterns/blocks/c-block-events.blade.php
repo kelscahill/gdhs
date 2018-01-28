@@ -1,3 +1,31 @@
+@php
+  $id = get_the_ID();
+  $title = get_the_title($id);
+  $body = strip_tags(get_the_content());
+  $body = strip_shortcodes($body);
+  $excerpt = get_the_excerpt($id);
+  $excerpt_length = 30;
+  $thumb_id = get_post_thumbnail_id($id);
+  $link = get_permalink($id);
+  $disable_link = get_field('disable_link', $id);
+  $location = get_field('event_location', $id);
+  $start_date = get_field('event_start_date', false, false);
+  $start_date = new DateTime($start_date);
+  $start_time = $start_date->format('g:ia');
+
+  $end_date = get_field('event_end_date', false, false);
+  if ($end_date) {
+    $end_date = new DateTime($end_date);
+    $end_time = $end_date->format('g:ia');
+  }
+
+  $date = $start_date->format('F j, Y');
+  $date_month = $start_date->format('M');
+  $date_day = $start_date->format('l');
+  $date_date = $start_date->format('d');
+
+  $kicker = 'Event';
+@endphp
 <div class="c-block c-block-events u-background-color--white u-border--black">
   <a href="{{ $link }}" class="c-block__link @if($disable_link == true){{ 'disable' }}@endif">
     <div class="c-block__day u-background-color--black u-color--gray" data-content="{{ $date_day }}"></div>

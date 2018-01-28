@@ -1,16 +1,20 @@
 @php($id = get_queried_object_id())
 @extends('layouts.app')
 @section('content')
-  @if (!have_posts())
-    <div class="alert alert-warning">
-      {{ __('Sorry, no results were found.', 'sage') }}
-    </div>
-    {!! get_search_form(false) !!}
-  @endif
-
-  @while (have_posts()) @php(the_post())
-    @include ('partials.content-'.(get_post_type() === 'post' ?: get_post_type()))
-  @endwhile
-
+  @include('partials.page-header')
+  <article @php(post_class('c-article l-container l-narrow l-narrow--l u-spacing--double'))>
+    @if (have_posts())
+      <div class="l-grid l-grid--4-col">
+        @while (have_posts()) @php(the_post())
+          <div class="l-grid-item">
+            @include ('partials.content')
+          </div>
+        @endwhile
+        @php(wp_reset_query())
+      </div>
+    @else
+      <p>Sorry there are no posts at this time.</p>
+    @endif
+  </article>
   {!! get_the_posts_navigation() !!}
 @endsection

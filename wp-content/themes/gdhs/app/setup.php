@@ -180,6 +180,10 @@ add_image_size('horiz__4x3--m', 800, 600, array('center', 'center'));
 add_image_size('horiz__4x3--l', 1100, 825, array('center', 'center'));
 //add_image_size('horiz__4x3--xl', 1600, 1200, array('center', 'center'));
 
+// 3:4 crop.
+add_image_size('vert__3x4--s', 375, 500, array('center', 'center'));
+add_image_size('vert__3x4--m', 600, 800, array('center', 'center'));
+
 // Flexible height
 add_image_size('flex-height--s', 350, 9999);
 add_image_size('flex-height--m', 700, 9999);

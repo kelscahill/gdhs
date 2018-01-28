@@ -63,18 +63,20 @@
   position: absolute;
   left: auto;
   right: rem(-110);
-  top: 0;
+  top: rem(-10);
   z-index: 4;
 
   @include media('>medium') {
-    top: rem(40);
+    top: rem(20);
     left: rem(-70);
-    margin: 0 auto !important;
     bottom: auto;
+    margin: 0 auto !important;
   }
 
   a {
-    padding: $pad;
+    width: 100%;
+    height: auto;
+    display: block;
   }
 }
 

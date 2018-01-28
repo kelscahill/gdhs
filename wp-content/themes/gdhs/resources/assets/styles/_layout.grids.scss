@@ -92,6 +92,8 @@
  * 3 column grid
  */
 .l-grid--3-col {
+  margin: 0;
+
   @include media ('>medium') {
     width: 100%;
 
@@ -107,12 +109,18 @@
 .l-grid--4-col {
   > * {
     margin-bottom: $space;
+    display: flex;
+    align-items: stretch;
   }
 
   @include media('>small') {
     > * {
       width: 50%;
     }
+  }
+
+  @include media('>medium') {
+    width: 100%;
   }
 
   @include media('>large') {

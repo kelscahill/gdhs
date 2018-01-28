@@ -10,22 +10,7 @@
   }
 }
 
-.c-page-header {
-  margin-top: rem(-100);
-
-  &__icon {
-    background: $white;
-    border-radius: 100%;
-    width: rem(150);
-    height: rem(150);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 auto;
-  }
-}
-
-.c-hero {
+.c-slideshow {
   &__image {
     position: relative;
     min-height: 70vh;
@@ -51,13 +36,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-}
-
-.c-section-news {
-  .c-section-news__grid-item {
-    display: flex;
-    align-items: stretch;
   }
 }
 

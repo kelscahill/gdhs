@@ -1,12 +1,42 @@
-<div class="c-block c-block-news u-background-color--tan u-border">
+@php
+  $id = get_the_ID();
+  $title = get_the_title($id);
+  $body = strip_tags(get_the_content());
+  $body = strip_shortcodes($body);
+  $excerpt = get_the_excerpt($id);
+  $excerpt_length = 14;
+  $thumb_id = get_post_thumbnail_id($id);
+  $link = get_permalink($id);
+  $date = get_the_date('F j, Y');
+  $date_formatted = get_the_date('c');
+
+  $category = get_the_category();
+  if ($category) {
+    $kicker = '';
+    if (class_exists('WPSEO_Primary_Term')) {
+      $wpseo_primary_term = new WPSEO_Primary_Term('category', get_the_id());
+      $wpseo_primary_term = $wpseo_primary_term->get_primary_term();
+      $term = get_term($wpseo_primary_term);
+      if (is_wp_error($term)) {
+        $kicker = $category[0]->name;
+      } else {
+        $kicker = $term->name;
+      }
+    }
+    else {
+      $kicker = $category[0]->name;
+    }
+  }
+@endphp
+<div class="c-block c-block-news u-background-color--tan u-border @if ($thumb_id){{ 'has-hover' }}@endif">
   <a href="{{ $link }}" class="c-block__link">
-    <div class="c-block__media">
-      @if (!empty($thumb_id))
+    @if ($thumb_id)
+      <div class="c-block__media">
         <picture class="c-block__thumb">
           <img src="{{ wp_get_attachment_image_src($thumb_id, "horiz__4x3--s")[0] }}" alt="{{ get_post_meta($thumb_id, '_wp_attachment_image_alt', true) }}">
         </picture>
-      @endif
-    </div>
+      </div>
+    @endif
     <div class="c-block__content u-padding--half u-spacing">
       <div class="c-block__header u-spacing--half">
         @if ($kicker)

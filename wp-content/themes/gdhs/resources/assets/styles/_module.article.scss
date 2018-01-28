@@ -68,7 +68,8 @@ ul {
 .c-article {
   margin-left: auto;
   margin-right: auto;
-  padding: $pad*2 0;
+  padding-top: $pad*2;
+  padding-bottom: $pad*4;
 
   p,
   ul,
