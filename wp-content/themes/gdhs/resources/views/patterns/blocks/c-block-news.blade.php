@@ -9,10 +9,8 @@
   $link = get_permalink($id);
   $date = get_the_date('F j, Y');
   $date_formatted = get_the_date('c');
-
   $category = get_the_category();
   if ($category) {
-    $kicker = '';
     if (class_exists('WPSEO_Primary_Term')) {
       $wpseo_primary_term = new WPSEO_Primary_Term('category', get_the_id());
       $wpseo_primary_term = $wpseo_primary_term->get_primary_term();
@@ -26,6 +24,16 @@
     else {
       $kicker = $category[0]->name;
     }
+  } elseif (is_page_template('views/template-shop.blade.php')) {
+    $kicker = 'Shop';
+  } elseif (is_page_template('views/template-exhibits.blade.php')) {
+    $kicker = 'Exhibit';
+  } elseif (is_page_template('views/template-research.blade.php')) {
+    $kicker = 'Research Library';
+  } elseif (is_page_template('views/template-events.blade.php')) {
+    $kicker = 'Event';
+  } else {
+    $kicker = 'Page';
   }
 @endphp
 <div class="c-block c-block-news u-background-color--tan u-border @if ($thumb_id){{ 'has-hover' }}@endif">
@@ -39,7 +47,7 @@
     @endif
     <div class="c-block__content u-padding--half u-spacing">
       <div class="c-block__header u-spacing--half">
-        @if ($kicker)
+        @if (!empty($kicker))
           <h4 class="c-block__kicker o-kicker u-font--secondary--s u-color--primary">{{ $kicker }}</h4>
         @endif
         <h3 class="c-block__title u-font--primary--s">

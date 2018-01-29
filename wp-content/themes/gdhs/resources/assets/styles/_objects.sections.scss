@@ -39,11 +39,47 @@
   }
 }
 
-.c-section-events {
-  background: $secondary-color url('../assets/images/o-texture--paper.svg') top rem(-2) center repeat-x;
-  background-size: 110%;
-  overflow: hidden;
+.c-section-hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
 
+  &::after {
+    z-index: 1 !important;
+  }
+
+  &--short {
+    min-height: rem(250);
+
+    @include media('>medium') {
+      min-height: rem(350);
+    }
+
+    @include media('>xlarge') {
+      min-height: rem(450);
+    }
+  }
+
+  &--tall {
+    min-height: rem(350);
+
+    @include media('>medium') {
+      min-height: rem(450);
+    }
+
+    @include media('>xlarge') {
+      min-height: rem(600);
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+.c-section-events {
   &__title {
     position: relative;
     z-index: 1;
@@ -71,5 +107,42 @@
 
   &__feed {
     z-index: 2;
+  }
+}
+
+.c-section-news {
+  &__title {
+    position: relative;
+    z-index: 1;
+    margin-top: $space*2;
+
+    @include media('>medium') {
+      margin-top: $space*4;
+    }
+
+    &::after {
+      content: "Stay in the Loop";
+      font-size: rem(144);
+      line-height: 1;
+      color: $white;
+      opacity: 0.1;
+      position: absolute;
+      z-index: 0;
+      top: rem(-72);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      display: none;
+
+      @include media('>medium') {
+        display: block;
+      }
+    }
+
+    + .c-section {
+      z-index: 2;
+      padding-top: $pad*2;
+    }
   }
 }

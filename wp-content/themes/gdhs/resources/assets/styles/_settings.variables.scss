@@ -36,7 +36,7 @@ $secondary-color: $blue;
 $tertiary-color: $red;
 $background-color: $white;
 $link-color: $secondary-color;
-$link-hover: darken($secondary-color, 10%);
+$link-hover: $primary-color;
 $button-color: $tertiary-color;
 $button-hover: darken($tertiary-color, 10%);
 $body-color: $black;

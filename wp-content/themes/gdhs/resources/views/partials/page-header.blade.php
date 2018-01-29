@@ -14,12 +14,17 @@
     $intro = get_field('intro', $id);
     $link = get_field('cta_link', $id);
     $nav = true;
-  } elseif (is_home() || is_page_template('views/template-events.blade.php')) {
+  } elseif (is_page_template('views/template-events.blade.php')) {
+    $icon = true;
+    $kicker = 'All Events';
+    $title = false;
+  } elseif (is_home() || is_page_template('views/template-exhibits.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php')) {
     $icon = true;
     $kicker = 'Refine ' . get_the_title($id);
     $title = false;
     $filter = true;
   } elseif (is_page()) {
+    $breadcrumbs = true;
     if ($post->post_parent == 0) {
       $kicker = '';
       $title = true;
@@ -28,9 +33,9 @@
       $title = true;
     }
   } elseif (is_single()) {
-    $icon = false;
     $breadcrumbs = true;
     $title = true;
+    $meta = true;
 
     // SHOW YOAST PRIMARY CATEGORY, OR FIRST CATEGORY
     $category = get_the_category($id);
@@ -54,25 +59,25 @@
             $kicker = $term->name;
           }
         }
-      }
-      else {
+      } else {
         // Default, display the first category in WP's list of assigned categories
         $kicker = $category[0]->name;
       }
     }
+  } elseif (is_author()) {
+    $title = get_the_author() ;
+    $kicker = 'Author';
   } elseif (is_archive()) {
     $title = single_cat_title("", false);
     $kicker = 'Category';
   }
 @endphp
 <header class="c-page-header l-container l-narrow u-text-align--center u-spacing--double">
-
   @if (isset($breadcrumbs))
-    <div class="c-page-header__breadcrumbs u-font--s">
-      Breadcrumbs
+    <div class="c-page-header__breadcrumbs">
+      @include('patterns.components.c-breadcrumbs')
     </div>
   @endif
-
   <div class="u-spacing--half">
     @if (isset($icon))
       <div class="c-page-header__icon">
@@ -84,12 +89,15 @@
         {{ $kicker }}
       </span>
     @endif
-    @if (!is_front_page() && !is_archive() && get_field('display_title', $id))
-      <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ the_field('display_title', $id) }}</h1>
-    @elseif ($title != false && !is_archive())
-      <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{!! App\title() !!}</h1>
+    @if (is_home() || is_page_template('views/template-events.blade.php') || is_page_template('views/template-exhibits.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
     @else
-      <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ $title }}</h1>
+      @if (!is_front_page() && !is_archive() && !is_author() && get_field('display_title', $id) && !is_author() )
+        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ the_field('display_title', $id) }}</h1>
+      @elseif ($title != false && !is_archive() && !is_author())
+        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{!! App\title() !!}</h1>
+      @else
+        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ $title }}</h1>
+      @endif
     @endif
     @if (isset($meta))
       <div class="c-page-header__meta u-font--s">
@@ -103,16 +111,20 @@
   @endif
 
   @if (isset($filter))
-    <div class="c-page-header__filter u-font--xl">Filter Goes Here.</div>
+    <div class="c-page-header__filter u-font--xl">
+      @include('patterns.components.c-filter')
+    </div>
   @endif
 
   @if (isset($nav))
-    <div class="c-page-header__filter u-font--xl">Landing Page nav goes here.</div>
+    <div class="c-page-header__filter u-font--xl">
+      @include('patterns.components.c-navigation-children')
+    </div>
     <hr class="u-hr--black u-hr--small"/>
   @endif
 
   @if (!empty($intro))
-    <div class="c-page-header__intro u-font--xl">{{ $intro }}</div>
+    <div class="c-page-header__intro u-font--l">{{ $intro }}</div>
   @endif
 
   @if (!empty($link))

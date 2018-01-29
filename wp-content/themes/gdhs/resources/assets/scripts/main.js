@@ -38,6 +38,46 @@
           $('html').addClass(' no-touch');
         }
 
+        // check window width
+        var getWidth = function() {
+          var width;
+          if (document.body && document.body.offsetWidth) {
+            width = document.body.offsetWidth;
+          }
+          if (document.compatMode === 'CSS1Compat' &&
+              document.documentElement &&
+              document.documentElement.offsetWidth ) {
+             width = document.documentElement.offsetWidth;
+          }
+          if (window.innerWidth) {
+             width = window.innerWidth;
+          }
+          return width;
+        };
+        window.onload = function() {
+          getWidth();
+        };
+        window.onresize = function() {
+          getWidth();
+        };
+
+        // Add active class the menu-nav link
+        var url = window.location.toString();
+
+        $('.c-primary-nav__list-item a').each(function() {
+           var myHref = $(this).attr('href');
+           if (url == myHref) {
+              $(this).parents().addClass('this-is-active');
+           }
+        });
+
+        // $('.c-secondary-nav__list-item').on('click', function() {
+        //   $('.c-secondary-nav__list-item a').removeClass('is-active');
+        //   $(this).addClass('is-active');
+        // });
+
+        $('.c-primary-nav__list-item > ul').parent().addClass('has-sub-nav');
+
         /**
          * Slick sliders
          */
@@ -59,9 +99,16 @@
          */
         $('.js-sticky').fixTo('body', {
           className: 'sticky-is-active',
-          useNativeSticky: false,
+          useNativeSticky: true,
           zIndex: 9999,
           mind: 'c-utility',
+        });
+
+        $('.js-sticky-social').fixTo('.js-sticky-parent', {
+          useNativeSticky: false,
+          zIndex: 2,
+          mind: 'c-header',
+          top: 70
         });
 
         // Add active class the menu-nav link
@@ -85,8 +132,6 @@
             });
           }
         }
-
-        $('.c-primary-nav__list-item > ul').parent().addClass('has-sub-nav');
 
         // Smooth scrolling on anchor clicks
         $(function() {
@@ -156,10 +201,12 @@
         });
 
         // Toggle hovered classes
-        $('.js-hover').on('mouseenter mouseleave', function(e) {
-          e.preventDefault();
-          toggleClasses($(this));
-        });
+        if (getWidth() >= 1100) {
+          $('.js-hover').on('mouseenter mouseleave', function(e) {
+            e.preventDefault();
+            toggleClasses($(this));
+          });
+        }
 
       },
       finalize: function() {

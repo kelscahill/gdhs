@@ -10,7 +10,7 @@
   visibility: hidden !important;
 }
 
-.hide {
+.u-hide {
   display: none;
 }
 
@@ -36,93 +36,89 @@
 /**
  * Display Classes
  */
-.display--inline-block {
+.u-display--inline-block {
   display: inline-block;
 }
 
-.display--flex {
+.u-display--flex {
   display: flex;
 }
 
-.display--table {
+.u-display--table {
   display: table;
 }
 
-.display--block {
+.u-display--block {
   display: block;
 }
 
-.flex-justify--space-between {
-  justify-content: space-between;
-}
-
-.hide-until--s {
+.u-hide-until--s {
   @include media ('<=small') {
     display: none;
   }
 }
 
-.hide-until--m {
+.u-hide-until--m {
   @include media ('<=medium') {
     display: none;
   }
 }
 
-.hide-until--l {
+.u-hide-until--l {
   @include media ('<=large') {
     display: none;
   }
 }
 
-.hide-until--xl {
+.u-hide-until--xl {
   @include media ('<=xlarge') {
     display: none;
   }
 }
 
-.hide-until--xxl {
+.u-hide-until--xxl {
   @include media ('<=xxlarge') {
     display: none;
   }
 }
 
-.hide-until--xxxl {
+.u-hide-until--xxxl {
   @include media ('<=xxxlarge') {
     display: none;
   }
 }
 
-.hide-after--s {
+.u-hide-after--s {
   @include media ('>small') {
     display: none;
   }
 }
 
-.hide-after--m {
+.u-hide-after--m {
   @include media ('>medium') {
     display: none;
   }
 }
 
-.hide-after--l {
+.u-hide-after--l {
   @include media ('>large') {
     display: none;
   }
 }
 
-.hide-after--xl {
+.u-hide-after--xl {
   @include media ('>xlarge') {
     display: none;
   }
 }
 
-.hide-after--xxl {
+.u-hide-after--xxl {
   @include media ('>xxlarge') {
     display: none;
   }
 }
 
-.hide-after--xxxl {
+.u-hide-after--xxxl {
   @include media ('>xxxlarge') {
     display: none;
   }

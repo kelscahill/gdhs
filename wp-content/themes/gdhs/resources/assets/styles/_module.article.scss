@@ -2,6 +2,72 @@
     $ARTICLE
 \*------------------------------------ */
 
+.c-article__content {
+  display: flex;
+  flex-direction: column-reverse;
+  flex-wrap: nowrap;
+
+  @include media('>small') {
+    flex-direction: row;
+
+    &--left {
+      width: rem(60);
+      flex: auto;
+      margin-right: $pad*2;
+    }
+
+    &--right {
+      width: calc(100% - 100px);
+    }
+  }
+}
+
+.c-article__share {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  margin-top: $space*2;
+  z-index: 1;
+
+  @include media('>small') {
+    margin-top: 0;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  &-link {
+    margin-left: $space/2;
+
+    @include media('>small') {
+      margin-left: 0;
+      margin-top: $space/2;
+    }
+  }
+}
+
+.c-article__nav {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  border-top: 1px solid $gray;
+  padding-top: $pad;
+
+  &--inner {
+    width: 50%;
+
+    &:first-child {
+      padding-right: $pad/2;
+    }
+
+    &:last-child {
+      padding-left: $pad/2;
+    }
+  }
+}
+
 // Article Body list styles from u-font--styles.scss
 ol,
 ul {

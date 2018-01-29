@@ -28,7 +28,7 @@
             }
           </style>
           <div class="c-slideshow__content">
-            <div class="c-slideshow__content--inner l-container u-color--white u-spacing u-text-align--center l-narrow l-narrow--s">
+            <div class="c-slideshow__content--inner l-container u-color--white u-spacing u-text-align--center l-narrow l-narrow--m">
               @if ($title)
                 <h1 class="c-slideshow__content-title u-font--primary--xl">
                   {{ $title }}

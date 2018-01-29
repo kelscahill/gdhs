@@ -109,6 +109,12 @@
   background-repeat: no-repeat;
 }
 
+.u-background--texture {
+  background: $secondary-color url('../assets/images/o-texture--paper.svg') top rem(-2) center repeat-x;
+  background-size: 110%;
+  overflow: hidden;
+}
+
 /**
  * Flexbox
  */

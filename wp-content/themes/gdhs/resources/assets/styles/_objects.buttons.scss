@@ -109,3 +109,20 @@ a.fasc-button {
     display: none;
   }
 }
+
+.ajax-load-more-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.alm-load-more-btn.done {
+  pointer-events: none;
+  opacity: 0.4;
+  background-color: $gray;
+  border-color: $gray;
+}
+
+.alm-btn-wrap {
+  width: 100%;
+}

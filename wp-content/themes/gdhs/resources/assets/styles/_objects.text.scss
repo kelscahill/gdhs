@@ -131,7 +131,6 @@ h4 {
   font-size: rem(16);
   line-height: rem(26);
   font-family: $font;
-  font-style: italic;
 
   @include media ('>large') {
     font-size: rem(20);
@@ -159,6 +158,11 @@ h4 {
   line-height: rem(20);
   font-family: $font;
   font-style: italic;
+
+  @include media ('>large') {
+    font-size: rem(16);
+    line-height: rem(22);
+  }
 }
 
 .u-font--s {

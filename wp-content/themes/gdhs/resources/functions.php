@@ -94,6 +94,14 @@ if ($sage_views !== get_option('stylesheet')) {
 }
 
 /**
+ * Load ajax script on news template
+ */
+function enqueue_ajax_load_more() {
+   wp_enqueue_script('ajax-load-more'); // Already registered, just needs to be enqueued
+}
+add_action('wp_enqueue_scripts', 'enqueue_ajax_load_more');
+
+/**
  * Allow SVG's through WP media uploader
  */
 function cc_mime_types($mimes) {
@@ -174,7 +182,7 @@ function cptui_register_my_cpts() {
 		"view_item" => __( 'View Exhibit', 'sage' ),
 		"view_items" => __( 'View Exhibits', 'sage' ),
 		"search_items" => __( 'Search Exhibits', 'sage' ),
-		"not_found" => __( 'No Events Found', 'sage' ),
+		"not_found" => __( 'No Exhibits Found', 'sage' ),
 		"not_found_in_trash" => __( 'No Exhibits found in Trash', 'sage' ),
 	);
 
@@ -232,7 +240,7 @@ function cptui_register_my_cpts() {
 		"exclude_from_search" => false,
 		"capability_type" => "post",
 		"hierarchical" => true,
-		"rewrite" => array( "slug" => "research-library", "with_front" => true ),
+		"rewrite" => array( "slug" => "library", "with_front" => true ),
     'has_archive' => false,
 		"query_var" => true,
 		"menu_position" => 5,
@@ -241,6 +249,47 @@ function cptui_register_my_cpts() {
 	);
 
 	register_post_type( "library", $research_args );
+
+  /**
+	 * Post Type: Products.
+	 */
+  $product_labels = array(
+		"name" => __( 'Product', 'sage' ),
+		"singular_name" => __( 'Product', 'sage' ),
+		"menu_name" => __( 'Products', 'sage' ),
+		"all_items" => __( 'All Products', 'sage' ),
+		"add_new" => __( 'Add New Product', 'sage' ),
+		"edit_item" => __( 'Edit Product', 'sage' ),
+		"new_item" => __( 'New Product', 'sage' ),
+		"view_item" => __( 'View Product', 'sage' ),
+		"view_items" => __( 'View Products', 'sage' ),
+		"search_items" => __( 'Search Products', 'sage' ),
+		"not_found" => __( 'No Products Found', 'sage' ),
+		"not_found_in_trash" => __( 'No Products found in Trash', 'sage' ),
+	);
+
+	$product_args = array(
+		"label" => __( 'Products', 'sage' ),
+		"labels" => $product_labels,
+		"description" => "GDHS Products",
+		"public" => true,
+		"publicly_queryable" => true,
+		"show_ui" => true,
+		"show_in_rest" => false,
+		"rest_base" => "",
+		"show_in_menu" => true,
+		"exclude_from_search" => false,
+		"capability_type" => "post",
+		"hierarchical" => true,
+		"rewrite" => array( "slug" => "product", "with_front" => true ),
+    'has_archive' => false,
+		"query_var" => true,
+		"menu_position" => 5,
+		"menu_icon" => "dashicons-cart",
+		"supports" => array( "title", "editor", "thumbnail" ),
+	);
+
+	register_post_type( "product", $product_args );
 }
 add_action( 'init', 'cptui_register_my_cpts' );
 
@@ -372,5 +421,45 @@ function cptui_register_my_taxes() {
   );
   register_taxonomy( "library_category", array( "library" ), $research_cat_args );
 
+  /**
+   * Taxonomy: Product Category.
+   */
+
+  $product_cat_labels = array(
+    "name" => __( 'Product Category', 'sage' ),
+    "singular_name" => __( 'Product Category', 'sage' ),
+    "menu_name" => __( 'Product Categories', 'sage' ),
+    "all_items" => __( 'All Product Categories', 'sage' ),
+    "edit_item" => __( 'Edit Product Categories', 'sage' ),
+    "view_item" => __( 'View Product Categories', 'sage' ),
+    "update_item" => __( 'Update Product Categories', 'sage' ),
+    "add_new_item" => __( 'Add New Product Category', 'sage' ),
+    "new_item_name" => __( 'New Product Category', 'sage' ),
+    "search_items" => __( 'Search Product Categories', 'sage' ),
+    "popular_items" => __( 'Popular Product Categories', 'sage' ),
+    "add_or_remove_items" => __( 'Add or Remove Product Categories', 'sage' ),
+    "choose_from_most_used" => __( 'Choose from the most used Product Categories', 'sage' ),
+    "not_found" => __( 'No Product Categories Found', 'sage' ),
+    "items_list" => __( 'Exhibit Categories List', 'sage' ),
+  );
+
+  $product_cat_args = array(
+    "label" => __( 'Category', 'sage' ),
+    "labels" => $product_cat_labels,
+    "public" => true,
+    "hierarchical" => true,
+    "label" => "Product Categories",
+    "show_ui" => true,
+    "show_in_menu" => true,
+    "show_in_nav_menus" => true,
+    "query_var" => true,
+    "rewrite" => array( "slug" => "product_category", "with_front" => false ),
+    "has_archive" => false,
+    "show_admin_column" => true,
+    "show_in_rest" => false,
+    "rest_base" => "",
+    "show_in_quick_edit" => true,
+  );
+  register_taxonomy( "product_category", array( "product" ), $product_cat_args );
 }
 add_action( 'init', 'cptui_register_my_taxes' );

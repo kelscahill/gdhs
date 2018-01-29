@@ -108,7 +108,7 @@
  */
 .l-grid--4-col {
   > * {
-    margin-bottom: $space;
+    margin-bottom: $space*1.5;
     display: flex;
     align-items: stretch;
   }

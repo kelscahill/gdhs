@@ -1,14 +1,14 @@
 @extends('layouts.app')
-
 @section('content')
-  @include('partials.page-header')
-
-  @if (!have_posts())
-    <div class="o-alert o-alert-warning">
-      {{ __('Sorry, but the page you were trying to view does not exist.', 'sage') }}
+  <header class="c-page-header l-container l-narrow u-text-align--center u-spacing--double">
+    <div class="u-spacing--half">
+      <span class="c-page-header__kicker o-kicker u-font--secondary--s u-color--primary">Something went wrong</span>
+      <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">Page {!! App\title() !!}</h1>
     </div>
-    {!! get_search_form(false) !!}
-  @endif
-
-  {!! get_the_posts_navigation() !!}
+    <hr class="u-hr--small u-hr--black"/>
+  </header>
+  <article @php(post_class('c-article l-container l-narrow l-narrow--l u-spacing--double u-text-align--center'))>
+    {{ __('Sorry, but the page you were trying to view does not exist.', 'sage') }}
+    <a href="/" class="o-button u-button--red u-center-block">Go Home</a>
+  </article>
 @endsection

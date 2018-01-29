@@ -19,6 +19,21 @@
     position: relative;
   }
 
+  .c-block__title,
+  .c-block__date,
+  .c-block__excerpt {
+    font-weight: normal;
+  }
+
+  .c-block__date,
+  .c-block__excerpt {
+    color: $black;
+  }
+
+  .c-block__title {
+    color: $secondary-color;
+  }
+
   .c-block__link,
   .c-block__content {
     display: flex;

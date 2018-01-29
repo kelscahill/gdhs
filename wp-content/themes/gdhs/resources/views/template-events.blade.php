@@ -3,7 +3,6 @@
 --}}
 @php
   // Display events by date greater than today
-
   // Find date time now
   $date_now = date('Y-m-d H:i:s');
 
@@ -27,6 +26,7 @@
 
 @extends('layouts.app')
 @section('content')
+  @include('patterns.sections.c-section-hero')
   @include('partials.page-header')
   <article @php(post_class('c-article l-container l-narrow l-narrow--l u-spacing--double'))>
     @if ($posts->have_posts())
@@ -34,10 +34,8 @@
         @include ('partials.content')
       @endwhile
       @php(wp_reset_query())
-      <a href="" class="o-button u-button--red u-center-block">Load More (Ajax)</a>
     @else
-      <p>Sorry there are no events at this time.</p>
+      <p>Sorry, there are no events at this time.</p>
     @endif
   </article>
-  {!! get_the_posts_navigation() !!}
 @endsection
