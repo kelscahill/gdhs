@@ -24,14 +24,8 @@
     else {
       $kicker = $category[0]->name;
     }
-  } elseif (is_page_template('views/template-shop.blade.php')) {
-    $kicker = 'Shop';
-  } elseif (is_page_template('views/template-exhibits.blade.php')) {
-    $kicker = 'Exhibit';
-  } elseif (is_page_template('views/template-research.blade.php')) {
-    $kicker = 'Research Library';
-  } elseif (is_page_template('views/template-events.blade.php')) {
-    $kicker = 'Event';
+  } elseif (get_post_type($id)) {
+    $kicker = get_post_type($id);
   } else {
     $kicker = 'Page';
   }

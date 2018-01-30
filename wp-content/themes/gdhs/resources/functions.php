@@ -204,10 +204,10 @@ function cptui_register_my_cpts() {
 		"query_var" => true,
 		"menu_position" => 5,
 		"menu_icon" => "dashicons-format-gallery",
-		"supports" => array( "title", "editor", "thumbnail" ),
+		"supports" => array( "title", "editor", "thumbnail", "excerpt" ),
 	);
 
-	register_post_type( "exhibits", $exhibit_args );
+	register_post_type( "exhibit", $exhibit_args );
 
   /**
 	 * Post Type: Research Library.
@@ -245,7 +245,7 @@ function cptui_register_my_cpts() {
 		"query_var" => true,
 		"menu_position" => 5,
 		"menu_icon" => "dashicons-book-alt",
-		"supports" => array( "title", "editor", "thumbnail" ),
+		"supports" => array( "title", "editor", "thumbnail", "excerpt" ),
 	);
 
 	register_post_type( "library", $research_args );
@@ -286,7 +286,7 @@ function cptui_register_my_cpts() {
 		"query_var" => true,
 		"menu_position" => 5,
 		"menu_icon" => "dashicons-cart",
-		"supports" => array( "title", "editor", "thumbnail" ),
+		"supports" => array( "title", "editor", "thumbnail", "excerpt" ),
 	);
 
 	register_post_type( "product", $product_args );
@@ -378,7 +378,7 @@ function cptui_register_my_taxes() {
     "rest_base" => "",
     "show_in_quick_edit" => true,
   );
-  register_taxonomy( "exhibit_category", array( "exhibits" ), $exhibit_cat_args );
+  register_taxonomy( "exhibit_category", array( "exhibit" ), $exhibit_cat_args );
 
   /**
    * Taxonomy: Research Library Category.

@@ -117,6 +117,7 @@
     justify-content: space-between;
     align-items: center;
     position: relative;
+    cursor: pointer;
 
     @include media('>xlarge') {
       border: 0;
@@ -158,6 +159,7 @@
 
   &-item {
     position: relative;
+    cursor: pointer;
 
     &.this-is-active {
       background-color: darken($tan, 10%);
@@ -189,14 +191,6 @@
 
         @include media('>xlarge') {
           display: none;
-        }
-      }
-    }
-
-    &:last-child {
-      .c-primary-nav__list-link {
-        @include media('>xlarge') {
-          padding-right: 0;
         }
       }
     }

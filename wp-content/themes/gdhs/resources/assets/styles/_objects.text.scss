@@ -8,13 +8,13 @@
 
 @mixin u-font--primary--xl() {
   font-size: rem(40);
-  line-height: rem(40);
+  line-height: rem(55);
   font-family: $font-primary;
   font-weight: 400;
 
   @include media ('>large') {
     font-size: rem(60);
-    line-height: rem(60);
+    line-height: rem(75);
   }
 }
 

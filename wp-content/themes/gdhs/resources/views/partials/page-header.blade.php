@@ -18,13 +18,14 @@
     $icon = true;
     $kicker = 'All Events';
     $title = false;
-  } elseif (is_home() || is_page_template('views/template-exhibits.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php')) {
+  } elseif (is_home() || is_page_template('views/template-exhibit.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php')) {
     $icon = true;
     $kicker = 'Refine ' . get_the_title($id);
     $title = false;
     $filter = true;
   } elseif (is_page()) {
     $breadcrumbs = true;
+    $hr = true;
     if ($post->post_parent == 0) {
       $kicker = '';
       $title = true;
@@ -32,6 +33,21 @@
       $kicker = get_the_title($post->post_parent);
       $title = true;
     }
+  } elseif (is_singular('events')) {
+    $kicker = 'Event';
+    $breadcrumbs = true;
+    $title = true;
+    $meta = true;
+  } elseif (is_singular('exhibit')) {
+    $kicker = 'Exhibit';
+    $breadcrumbs = true;
+    $title = true;
+    $meta = true;
+  } elseif (is_singular('library')) {
+    $kicker = 'Research Library';
+    $breadcrumbs = true;
+    $title = true;
+    $meta = true;
   } elseif (is_single()) {
     $breadcrumbs = true;
     $title = true;
@@ -72,7 +88,7 @@
     $kicker = 'Category';
   }
 @endphp
-<header class="c-page-header l-container l-narrow u-text-align--center u-spacing--double">
+<header class="c-page-header l-container l-narrow l-narrow--l u-text-align--center u-spacing--double">
   @if (isset($breadcrumbs))
     <div class="c-page-header__breadcrumbs">
       @include('patterns.components.c-breadcrumbs')
@@ -89,7 +105,7 @@
         {{ $kicker }}
       </span>
     @endif
-    @if (is_home() || is_page_template('views/template-events.blade.php') || is_page_template('views/template-exhibits.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
+    @if (is_home() || is_page_template('views/template-events.blade.php') || is_page_template('views/template-exhibit.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
     @else
       @if (!is_front_page() && !is_archive() && !is_author() && get_field('display_title', $id) && !is_author() )
         <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ the_field('display_title', $id) }}</h1>
@@ -107,7 +123,7 @@
   </div>
 
   @if (isset($hr))
-    <hr class="u-hr--small u-hr--black"/>
+    <hr class="u-hr--small u-hr--gray"/>
   @endif
 
   @if (isset($filter))
@@ -124,7 +140,7 @@
   @endif
 
   @if (!empty($intro))
-    <div class="c-page-header__intro u-font--l">{{ $intro }}</div>
+    <div class="c-page-header__intro u-font--l l-narrow">{{ $intro }}</div>
   @endif
 
   @if (!empty($link))

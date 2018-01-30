@@ -14,14 +14,14 @@
           </span>
         </span>
       </div>
-    @elseif (is_singular('exhibits'))
+    @elseif (is_singular('exhibit'))
       <div class="c-breadcrumb__item u-font--s">
         <span xmlns:v="http://rdf.data-vocabulary.org/#">
           <span typeof="v:Breadcrumb">
             <a href="<?php echo home_url(); ?>/" rel="v:url" property="v:title">Home</a>
             <span class="u-icon u-icon--xs u-icon--arrow--small"></span>
             <span rel="v:child" typeof="v:Breadcrumb">
-              <a href="<?php echo home_url(); ?>/exhibits" rel="v:url" property="v:title">Exhibits</a>
+              <a href="<?php echo home_url(); ?>/visit/exhibits" rel="v:url" property="v:title">Exhibits</a>
               <span class="u-icon u-icon--xs u-icon--arrow--small"></span>
               <span class="breadcrumb_last">{{ the_title() }}</span>
             </span>

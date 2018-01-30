@@ -152,3 +152,44 @@
     display: none !important;
   }
 }
+
+.slick-gallery .slick-dots {
+  height: rem(40);
+  line-height: rem(40);
+  width: 100%;
+  list-style: none;
+  text-align: center;
+
+  li {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    padding: 0 rem(5);
+    cursor: pointer;
+
+    button {
+      padding: 0;
+      border-radius: rem(50);
+      border: 0;
+      display: block;
+      height: rem(10);
+      width: rem(10);
+      outline: none;
+      line-height: 0;
+      font-size: 0;
+      color: transparent;
+      background: $gray;
+    }
+
+    &::before,
+    button::after {
+      display: none !important;
+    }
+
+    &.slick-active {
+      button {
+        background-color: $secondary-color;
+      }
+    }
+  }
+}

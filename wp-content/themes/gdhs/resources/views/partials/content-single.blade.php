@@ -11,7 +11,7 @@
   <picture class="c-article__image u-spacing--half">
     <source srcset="{{ $image_large }}" media="(min-width:800px)">
     <source srcset="{{ $image_medium }}" media="(min-width:500px)">
-    <img src="{{ $image_small }}" alt="{{ $image_alt }}" class="u-center-block u-display--block">
+    <img src="{{ $image_small }}" alt="{{ $image_alt }}" class="u-width--100p u-center-block u-display--block">
     @if ($caption)
       <div class="o-caption u-font--s">{{ $caption }}</div>
     @endif
@@ -20,7 +20,7 @@
     <div class="c-article__content--left js-sticky-social">
       @include('patterns.components.c-share-tools')
     </div>
-    <div class="c-article__content--right u-spacing--double">
+    <div class="c-article__content--right c-article__body u-spacing--double">
       @php(the_content())
     </div>
   </div>

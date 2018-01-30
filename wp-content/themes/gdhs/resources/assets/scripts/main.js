@@ -94,6 +94,16 @@
           cssEase: 'linear',
         });
 
+        $('.slick-gallery').slick({
+          dots: true,
+          autoplay: false,
+          arrows: false,
+          infinite: true,
+          speed: 250,
+          cssEase: 'linear',
+          adaptiveHeight: true
+        });
+
         /**
          * Fixto
          */
@@ -108,7 +118,7 @@
           useNativeSticky: false,
           zIndex: 2,
           mind: 'c-header',
-          top: 70
+          top: 90
         });
 
         // Add active class the menu-nav link
