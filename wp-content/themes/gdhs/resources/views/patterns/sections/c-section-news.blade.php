@@ -20,7 +20,7 @@
           @endwhile
           @php(wp_reset_query())
         </div>
-        <a href="/about/news" class="o-button u-button--red u-center-block">View All</a>
+        <a href="/about/news" class="o-button u-button--red u-center-block">View All News</a>
       </div><!-- ./l-narrow -->
     </div><!-- ./l-container -->
   </section>

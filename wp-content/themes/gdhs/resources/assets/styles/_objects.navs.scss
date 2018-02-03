@@ -9,6 +9,7 @@
   width: 100%;
   background-color: $tan;
   box-shadow: 0 2px 0 rgba($gray, 0.4);
+  transition: none;
 
   @include media('>xlarge') {
     position: relative;
@@ -161,6 +162,12 @@
     position: relative;
     cursor: pointer;
 
+    &.active {
+      @include media('>xlarge') {
+        background-color: lighten($primary-color, 5%);
+      }
+    }
+
     &.this-is-active {
       background-color: darken($tan, 10%);
 
@@ -168,10 +175,9 @@
         background-color: lighten($primary-color, 5%);
       }
 
-      .c-primary-nav__list-toggle span {
+      .c-primary-nav__list-toggle span svg {
         transform: rotate(90deg);
-        top: rem(-7);
-        right: rem(-4);
+        right: rem(22);
       }
 
       .c-sub-nav__list {
@@ -182,15 +188,33 @@
     &.has-sub-nav {
       .c-primary-nav__list-link {
         @include media('>xlarge') {
+          transition: none;
           font-size: rem(16);
         }
       }
 
-      .c-primary-nav__list-toggle span {
-        display: block;
+      .c-primary-nav__list-toggle {
+        position: relative;
 
-        @include media('>xlarge') {
-          display: none;
+        span {
+          display: block;
+          height: rem(38);
+          width: rem(60);
+          padding: 0;
+          position: absolute;
+          right: 0;
+          top: 0;
+          border-left: 1px solid rgba($border-color, 0.4);
+          z-index: 999;
+
+          svg {
+            right: rem(21);
+            top: rem(9);
+          }
+
+          @include media('>xlarge') {
+            display: none;
+          }
         }
       }
     }
@@ -219,6 +243,14 @@
     left: 0;
     width: rem(250);
     box-shadow: 0 1px 2px rgba($gray, 0.5);
+  }
+
+  &-item {
+    &.active {
+      @include media('>xlarge') {
+        background-color: $tan;
+      }
+    }
   }
 
   &-link {

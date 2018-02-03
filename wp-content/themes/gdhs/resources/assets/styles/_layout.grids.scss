@@ -129,3 +129,33 @@
     }
   }
 }
+
+.l-grid--photos {
+  column-count: 2;
+  -moz-column-gap: $space;
+  -webkit-column-gap: $space;
+  column-gap: $space;
+  display: block;
+  padding: 0;
+  margin: 0;
+
+  > .l-grid-item {
+    display: block;
+    margin: 0 auto;
+    padding: 0;
+    margin-bottom: $space;
+    width: 100%;
+  }
+
+  @include media('>small') {
+    column-count: 3;
+  }
+
+  @include media('>medium') {
+    column-count: 4;
+  }
+
+  @include media('>xxlarge') {
+    column-count: 5;
+  }
+}

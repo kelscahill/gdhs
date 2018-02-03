@@ -78,6 +78,6 @@
         </div><!-- ./c-article--right -->
       </div><!-- ./c-article__body -->
     </article>
-    @php related_posts() @endphp
+    @include('patterns.sections.c-section-related-posts')
   @endwhile
 @endsection

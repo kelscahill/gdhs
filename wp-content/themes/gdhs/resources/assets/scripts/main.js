@@ -61,13 +61,21 @@
           getWidth();
         };
 
+        // This will create a single gallery from all elements that have class "c-gallery__image"
+        $('.c-gallery__image-link').magnificPopup({
+          type: 'image',
+          gallery:{
+            enabled:true
+          }
+        });
+
         // Add active class the menu-nav link
         var url = window.location.toString();
 
         $('.c-primary-nav__list-item a').each(function() {
            var myHref = $(this).attr('href');
            if (url == myHref) {
-              $(this).parents().addClass('this-is-active');
+              $(this).parents().addClass('active');
            }
         });
 

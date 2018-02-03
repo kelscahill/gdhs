@@ -1,6 +1,7 @@
 /* ------------------------------------*\
     $MAIN CONTENT AREA
 \*------------------------------------ */
+
 .c-article .yarpp-related {
   display: none;
 }
@@ -12,5 +13,21 @@
 
   h3 {
     font-weight: normal;
+  }
+}
+
+.page.business-partners {
+  img {
+    width: calc(50% - 45px);
+    height: auto;
+    margin: $space;
+    display: inline-block;
+  }
+}
+
+.page.events {
+  .c-block,
+  .c-block__date {
+    background-color: $tan;
   }
 }

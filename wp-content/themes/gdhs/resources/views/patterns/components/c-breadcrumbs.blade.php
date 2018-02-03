@@ -21,7 +21,7 @@
             <a href="<?php echo home_url(); ?>/" rel="v:url" property="v:title">Home</a>
             <span class="u-icon u-icon--xs u-icon--arrow--small"></span>
             <span rel="v:child" typeof="v:Breadcrumb">
-              <a href="<?php echo home_url(); ?>/visit/exhibits" rel="v:url" property="v:title">Exhibits</a>
+              <a href="<?php echo home_url(); ?>/visit/exhibits" rel="v:url" property="v:title">Exhibitions</a>
               <span class="u-icon u-icon--xs u-icon--arrow--small"></span>
               <span class="breadcrumb_last">{{ the_title() }}</span>
             </span>

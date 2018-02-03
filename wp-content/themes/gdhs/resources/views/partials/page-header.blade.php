@@ -26,6 +26,8 @@
   } elseif (is_page()) {
     $breadcrumbs = true;
     $hr = true;
+    $intro = get_field('intro', $id);
+    $link = get_field('cta_link', $id);
     if ($post->post_parent == 0) {
       $kicker = '';
       $title = true;

@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "b3f1a8f102c75dfc783d"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "dcc33e13355baf203a23"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -706,11 +706,22 @@
 /******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return hotCreateRequire(30)(__webpack_require__.s = 30);
+/******/ 	return hotCreateRequire(34)(__webpack_require__.s = 34);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/* no static exports found */
+/* all exports used */
+/*!*************************!*\
+  !*** external "jQuery" ***!
+  \*************************/
+/***/ (function(module, exports) {
+
+module.exports = jQuery;
+
+/***/ }),
+/* 1 */
 /* no static exports found */
 /* all exports used */
 /*!***************************************************************************************************!*\
@@ -909,17 +920,6 @@ function createIndexes(alphaIndex, charIndex) {
 
 module.exports = Html5Entities;
 
-
-/***/ }),
-/* 1 */
-/* no static exports found */
-/* all exports used */
-/*!*************************!*\
-  !*** external "jQuery" ***!
-  \*************************/
-/***/ (function(module, exports) {
-
-module.exports = jQuery;
 
 /***/ }),
 /* 2 */
@@ -1428,8 +1428,8 @@ module.exports = function () {
 module.exports = {
   XmlEntities: __webpack_require__(/*! ./lib/xml-entities.js */ 8),
   Html4Entities: __webpack_require__(/*! ./lib/html4-entities.js */ 7),
-  Html5Entities: __webpack_require__(/*! ./lib/html5-entities.js */ 0),
-  AllHtmlEntities: __webpack_require__(/*! ./lib/html5-entities.js */ 0)
+  Html5Entities: __webpack_require__(/*! ./lib/html5-entities.js */ 1),
+  AllHtmlEntities: __webpack_require__(/*! ./lib/html5-entities.js */ 1)
 };
 
 
@@ -2294,7 +2294,7 @@ module.exports = function(module) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(/*! jquery */ 1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(/*! jquery */ 0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
 
 
@@ -2316,7 +2316,11 @@ wp.customize('blogname', function (value) {
 /* 27 */,
 /* 28 */,
 /* 29 */,
-/* 30 */
+/* 30 */,
+/* 31 */,
+/* 32 */,
+/* 33 */,
+/* 34 */
 /* no static exports found */
 /* all exports used */
 /*!*********************************************************************************************!*\

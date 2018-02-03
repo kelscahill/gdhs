@@ -2,6 +2,12 @@
     $BLOCKS
 \*------------------------------------ */
 
+.c-block__link {
+  &:hover {
+    color: inherit;
+  }
+}
+
 .c-block-news {
   display: flex;
   flex-direction: column;
