@@ -9,10 +9,19 @@
   $link = get_permalink($id);
   $date = get_the_date('F j, Y');
   $date_formatted = get_the_date('c');
-  $category = get_the_category();
+  if (is_search() || is_single()) {
+    $category = '';
+  } else {
+    if (get_post_type($id) != 'post') {
+      $cat_name = get_post_type($id) . '_category';
+    } else {
+      $cat_name = 'category';
+    }
+    $category = get_the_terms($id, $cat_name);
+  }
   if ($category) {
     if (class_exists('WPSEO_Primary_Term')) {
-      $wpseo_primary_term = new WPSEO_Primary_Term('category', get_the_id());
+      $wpseo_primary_term = new WPSEO_Primary_Term($cat_name, $id);
       $wpseo_primary_term = $wpseo_primary_term->get_primary_term();
       $term = get_term($wpseo_primary_term);
       if (is_wp_error($term)) {
@@ -24,12 +33,19 @@
     else {
       $kicker = $category[0]->name;
     }
+  } elseif (get_post_type($id) == 'post') {
+    $kicker = 'News';
+  } elseif (get_post_type($id) == 'exhibit') {
+    $kicker = 'Exhibition';
+  } elseif (get_post_type($id) == 'events') {
+    $kicker = 'Event';
   } elseif (get_post_type($id)) {
     $kicker = get_post_type($id);
   } else {
     $kicker = 'Page';
   }
 @endphp
+
 <div class="c-block c-block-news u-background-color--tan u-border @if ($thumb_id){{ 'has-hover' }}@endif">
   <a href="{{ $link }}" class="c-block__link">
     @if ($thumb_id)

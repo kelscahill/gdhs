@@ -2,6 +2,29 @@
     $BLOCKS
 \*------------------------------------ */
 
+.c-block__default {
+  .l-grid {
+    margin: 0;
+    display: flex;
+  }
+
+  .c-block__media {
+    min-height: rem(250);
+    background-color: $tan;
+
+    @include media('>large') {
+      min-height: rem(300);
+    }
+  }
+
+  .c-block__content {
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+  }
+}
+
 .c-block__link {
   &:hover {
     color: inherit;

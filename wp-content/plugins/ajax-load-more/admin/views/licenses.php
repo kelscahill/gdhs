@@ -3,7 +3,7 @@
       <header class="header-wrap">
          <h1>
             <?php echo ALM_TITLE; ?>: <strong><?php _e('Licenses', 'ajax-load-more'); ?></strong>
-            <em><?php _e('Enter your license keys to enable automatic <a href="admin.php?page=ajax-load-more-add-ons">add-on</a> updates', 'ajax-load-more'); ?>.</em>
+            <em><?php _e('Enter your license keys to enable <a href="admin.php?page=ajax-load-more-add-ons">add-on</a> updates from the plugins dashboard', 'ajax-load-more'); ?>.</em>
          </h1>
       </header>
       

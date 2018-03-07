@@ -20,13 +20,14 @@
 	if(alm_has_addon_shortcodes()) : ?>
 
 <div class="shortcode-parameter-wrap">
-   <h2 class="shortcode-title"><?php _e('Add-ons & Extensions', 'ajax-load-more'); ?></h2>
-
+   <h2 class="shortcode-title"><i class="fa fa-plus-circle"></i><?php _e('Add-ons & Extensions', 'ajax-load-more'); ?></h2>   
+   
    <?php 
 	   require_once('components/acf.php');
 	   require_once('components/cache.php');
 	   require_once('components/cta.php');
 	   require_once('components/comments.php');
+	   require_once('components/filters.php');
 	   require_once('components/nextpage.php');
 	   require_once('components/paging.php');
 	   require_once('components/preloaded.php');
@@ -42,8 +43,8 @@
 
 <!-- Display Settings -->
 <div class="shortcode-parameter-wrap">
-   <h2 class="shortcode-title"><?php _e('Display Settings', 'ajax-load-more'); ?></h2>
-
+   <h2 class="shortcode-title"><i class="fa fa-cog"></i><?php _e('Display Settings', 'ajax-load-more'); ?></h2>   
+   
    <!-- Template Selection -->
    <?php
    echo '<div class="row repeater" id="alm-repeaters">';
@@ -282,8 +283,8 @@
          <div class="wrap">
             <div class="inner">
 	            <select class="alm_element transition" name="transition">
-                  <option value="slide" selected="selected"><?php _e('Slide', 'ajax-load-more'); ?></option>
-                  <option value="fade"><?php _e('Fade', 'ajax-load-more'); ?></option>
+                  <option value="fade" selected="selected"><?php _e('Fade', 'ajax-load-more'); ?></option>
+                  <option value="slide"><?php _e('Slide', 'ajax-load-more'); ?></option>
                   <option value="masonry"><?php _e('Masonry', 'ajax-load-more'); ?></option>
                   <option value="none"><?php _e('None', 'ajax-load-more'); ?></option>
                </select>
@@ -547,18 +548,16 @@
    <!-- Destroy After -->
    <div class="row input alm-destroy-after" id="alm-destroy-after">
       <h3 class="heading"><?php _e('Destroy After', 'ajax-load-more'); ?></h3>
+      <!-- Destroy After -->
       <div class="expand-wrap">
-         <!-- Destroy After -->
-         <div class="expand-wrap">
-	         <div class="section-title">
-	   		 	<p><?php _e('Remove Ajax Load More functionality after {<em>n</em>} number of pages have been loaded.', 'ajax-load-more'); ?></p>
-	   		</div>
-	         <div class="wrap">
-	            <div class="inner">
-	               <input type="number" class="alm_element numbers-only" name="destroy-after" id="disable-after" step="1" min="0" value="">
-	            </div>
-	         </div>
-	      </div>
+         <div class="section-title">
+   		 	<p><?php _e('Remove Ajax Load More functionality after {<em>n</em>} number of pages have been loaded.', 'ajax-load-more'); ?></p>
+   		</div>
+         <div class="wrap">
+            <div class="inner">
+               <input type="number" class="alm_element numbers-only" name="destroy-after" id="disable-after" step="1" min="0" value="">
+            </div>
+         </div>
       </div>
    </div>
    <!-- End Destroy After -->
@@ -571,7 +570,7 @@
 
 <!-- Query Parameters -->
 <div class="shortcode-parameter-wrap">
-   <h2 class="shortcode-title"><?php _e('Query Parameters', 'ajax-load-more'); ?></h2>
+   <h2 class="shortcode-title"><i class="fa fa-database"></i><?php _e('Query Parameters', 'ajax-load-more'); ?></h2>
 
    <!-- Posts Per Page -->
    <div class="row input posts_per_page" id="alm-post-page">

@@ -52,7 +52,7 @@
         <div class="c-article--right u-spacing--double">
           @php(the_content())
           @if (have_rows('product_details'))
-            <h4 class="u-font--secondary--s u-color--secondary">Details</h4>
+            <span class="u-list__title u-font--secondary--s u-color--secondary u-display--block">Details</span>
             <ul class="u-list__details">
               @while (have_rows('product_details'))
                 @php(the_row())

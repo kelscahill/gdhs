@@ -3,8 +3,8 @@ Contributors: dcooney, connekthq
 Donate link: https://connekthq.com/donate/
 Tags: infinite scroll, infinite scrolling, scroll, infinite, lazy load, lazy loading, endless scroll, pagination, ajax pagination, ajax, ajax posts, ajax load posts, woocommerce, ajax load more
 Requires at least: 3.6
-Tested up to: 4.9.1
-Stable tag: 3.3.1
+Tested up to: 4.9.4
+Stable tag: 3.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,6 +38,7 @@ Check out the **[demo site](https://connekthq.com/plugins/ajax-load-more/)** for
 
 
 #### What's New 3.0
+* **[Filters](https://connekthq.com/plugins/ajax-load-more/add-ons/filters/)** - The Filters add-on provides front-end and admin functionality for building and managing Ajax filters.
 * **[User Query](https://connekthq.com/plugins/ajax-load-more/add-ons/users/)** - Query and display a list of WordPress users by role using a `WP_User_Query` and Ajax Load More.
 * **[Advanced Custom Fields](https://connekthq.com/plugins/ajax-load-more/examples/advanced-custom-fields/)** - Compatibility and integration added for infinite scrolling Flexible Content, Gallery, Relationship and Repeater fields for Advanced Custom Fields.
 * **[Masonry](https://connekthq.com/plugins/ajax-load-more/examples/masonry/)** - Built-in support and functionality for Masonry layouts.
@@ -139,7 +140,6 @@ Ajax Load More accepts a number of parameters that are passed to the WordPress q
 * **[Attachments](https://connekthq.com/plugins/ajax-load-more/examples/attachments/)** - Endless scroll post attachments.
 * **[Destroy After](https://connekthq.com/plugins/ajax-load-more/examples/destroy-after/)** - Remove Ajax Load More functionality after 'n' number of pages.
 * **[Event Listing](https://connekthq.com/plugins/ajax-load-more/examples/event-listing/)** - Ordering and listing events by custom field date.
-* **[Fade Transition](https://connekthq.com/plugins/ajax-load-more/examples/fade-transition/)** - Elements fade in as posts are loaded.
 * **[Filtering](https://connekthq.com/plugins/ajax-load-more/examples/filtering/)** - Reset and filter an Ajax Load More instance.
 * **[Flexbox](https://connekthq.com/plugins/ajax-load-more/examples/flexbox/)** - Creating a responsive Ajax Load More grid with Flexbox.
 * **[Infinite Scroll](https://connekthq.com/plugins/ajax-load-more/examples/infinite-scroll/)** - A look at the new loading functionality and styles.
@@ -172,6 +172,7 @@ The [Custom Repeater Add-On](https://connekthq.com/plugins/ajax-load-more/custom
 * **[Call to Actions](https://connekthq.com/plugins/ajax-load-more/add-ons/call-to-actions/)**: Extend Ajax Load More with advertisement and call to action content blocks.
 * **[Comments](https://connekthq.com/plugins/ajax-load-more/add-ons/comments/)**: Load and display WordPress blog comments using the core Ajax Load More infinite scroll functionality.
 * **[Custom Repeaters](https://connekthq.com/plugins/ajax-load-more/add-ons/custom-repeaters/)**: Create, modify and delete repeater templates as you need them with absolutely zero restrictions.
+* **[Filters](https://connekthq.com/plugins/ajax-load-more/add-ons/filters/)**: Front-end and admin functionality for creating, managing and displaying Ajax Load More filters.
 * **[Layouts](https://connekthq.com/plugins/ajax-load-more/add-ons/layouts/)**: Predefined responsive layouts for Ajax Load More repeater templates.
 * **[Next Page](https://connekthq.com/plugins/ajax-load-more/add-ons/next-page/)**: Infinite scroll multipage WordPress content with Ajax Load More and the Next Page add-on.
 * **[Paging](https://connekthq.com/plugins/ajax-load-more/add-ons/paging/)**: Replace the default lazy load/infinite scroll functionality of Ajax Load More with a numbered navigation system.
@@ -368,6 +369,24 @@ How to install Ajax Load More.
 
 
 == Changelog ==
+
+= 3.4.1 - February 22, 2018 =
+* UPDATE - Added compatibility for Filters + Paging add-ons.
+* UPDATE - Added compatibility for Filters + Preloaded add-ons.
+* UPDATE - Code clean up
+* FIX - Fixed issue with Shortcode Builder showing Add-on and Extensions section when add-ons not installed.
+* FIX - Fixed issue with almDone and almEmpty callbacks not firing with Preloaded and Paging add-ons.
+
+
+= 3.4.0 - February 13, 2018 =
+* NEW - Adding various functionality to support the new [`Filters`](https://connekthq.com/plugins/ajax-load-more/add-ons/filters/) add-on.
+* FIX - Fixed bug with passing search parameter to Preloaded add-on.
+* FIX - Fixed issue with license activation for Theme Repeaters, SEO and User add-ons.
+* UPDATE - Updated default loading transition to be fade, previously slide.
+* UPDATE - Added support for multiple instances of Ajax Load More and Masonry.
+* UPDATE - Fixed issue with the Post ID field in the ACF section of shortcode builder.
+* UPDATE - Various UI/UX enhancements
+
 
 = 3.3.1 - December 7, 2017 =
 

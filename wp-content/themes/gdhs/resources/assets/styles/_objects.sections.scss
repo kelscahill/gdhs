@@ -15,14 +15,6 @@
     position: relative;
     min-height: 70vh;
     z-index: 0;
-
-    @include media('>medium') {
-      min-height: rem(450);
-    }
-
-    @include media('>xlarge') {
-      min-height: rem(600);
-    }
   }
 
   &__content {
@@ -65,11 +57,7 @@
     min-height: rem(350);
 
     @include media('>medium') {
-      min-height: rem(450);
-    }
-
-    @include media('>xlarge') {
-      min-height: rem(600);
+      min-height: 70vh;
     }
   }
 

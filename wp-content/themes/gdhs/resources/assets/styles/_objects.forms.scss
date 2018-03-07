@@ -29,14 +29,25 @@ label {
   @include u-font--secondary--xs;
 }
 
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  background: url('../../assets/images/o-arrow-down--small.svg') $white center right rem(10) no-repeat;
+  background-size: rem(10);
+}
+
 input[type=email],
 input[type=number],
 input[type=search],
 input[type=tel],
 input[type=text],
 input[type=url],
-textarea {
+textarea,
+select {
   width: 100%;
+  font-size: rem(16);
 
   &:focus {
     border-color: $secondary-color;

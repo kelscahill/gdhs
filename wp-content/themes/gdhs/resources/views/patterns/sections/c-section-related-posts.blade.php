@@ -27,7 +27,18 @@
 @if ($related->have_posts())
   <section class="c-section c-section-related u-background--texture">
     <div class="c-section--inner l-container u-spacing">
-      <h2 class="u-font--primary--m u-color--white u-text-align--center">Related {{ ucwords($post_type) . 's' }}</h2>
+      <h2 class="u-font--primary--m u-color--white u-text-align--center">
+        Related
+        @if ($post_type == 'post')
+          {{ 'News' }}
+        @elseif ($post_type == 'library')
+          {{ 'Posts' }}
+        @elseif ($post_type == 'events')
+          {{ ucwords($post_type) }}
+        @else
+          {{ ucwords($post_type) . 's' }}
+        @endif
+      </h2>
       <div class="l-narrow l-narrow--l">
         <div class="l-grid l-grid--4-col">
           @while ($related->have_posts())

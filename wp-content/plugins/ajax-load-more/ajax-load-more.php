@@ -7,15 +7,15 @@ Text Domain: ajax-load-more
 Author: Darren Cooney
 Twitter: @KaptonKaos
 Author URI: https://connekthq.com
-Version: 3.3.1
+Version: 3.4.1
 License: GPL
 Copyright: Darren Cooney & Connekt Media
 */
 
 
 
-define('ALM_VERSION', '3.3.1');
-define('ALM_RELEASE', 'December 7, 2017');
+define('ALM_VERSION', '3.4.1');
+define('ALM_RELEASE', 'February 22, 2018');
 define('ALM_STORE_URL', 'https://connekthq.com');
 
 
@@ -112,7 +112,10 @@ if( !class_exists('AjaxLoadMore') ):
 
 	class AjaxLoadMore {
 
+		static $shortcode_atts = null;
+
    	function __construct(){
+
 
          $this->alm_define_constants();
          $this->alm_includes();
@@ -153,6 +156,7 @@ if( !class_exists('AjaxLoadMore') ):
          if (!defined('ALM_CTA_ITEM_NAME')) define('ALM_CTA_ITEM_NAME', '14456');
          if (!defined('ALM_COMMENTS_ITEM_NAME')) define('ALM_COMMENTS_ITEM_NAME', '12172');
          if (!defined('ALM_UNLIMITED_ITEM_NAME')) define('ALM_UNLIMITED_ITEM_NAME', '3118');
+         if (!defined('ALM_FILTERS_ITEM_NAME')) define('ALM_FILTERS_ITEM_NAME', '35992');
          if (!defined('ALM_LAYOUTS_ITEM_NAME')) define('ALM_LAYOUTS_ITEM_NAME', '11398');
          if (!defined('ALM_NEXTPAGE_ITEM_NAME')) define('ALM_NEXTPAGE_ITEM_NAME', '24540');
          if (!defined('ALM_PAGING_ITEM_NAME')) define('ALM_PAGING_ITEM_NAME', '6898');
@@ -302,10 +306,24 @@ if( !class_exists('AjaxLoadMore') ):
    	*  The AjaxLoadMore shortcode
    	*
    	*  @since 2.0.0
+   	*  @updated 3.2.0
    	*/
 
    	public function alm_shortcode($atts) {
+	   	self::$shortcode_atts = $atts;
       	return ALM_SHORTCODE::alm_render_shortcode($atts);
+   	}
+
+
+
+   	/*
+   	*  alm_return_shortcode_atts
+   	*  Return the ALM shortcode atts
+   	*
+   	*  @since 3.2.0
+   	*/
+   	public static function alm_return_shortcode_atts(){
+	   	return self::$shortcode_atts;
    	}
 
 
@@ -372,7 +390,7 @@ if( !class_exists('AjaxLoadMore') ):
    		$meta_type = $_GET['meta_type'];
    		if($meta_type == '') $meta_type = 'CHAR';
 
-   		$s = (isset($_GET['search'])) ? $_GET['search'] : '';
+   		$s = (isset($_GET['search'])) ? sanitize_text_field($_GET['search']) : '';
    		$custom_args = (isset($_GET['custom_args'])) ? $_GET['custom_args'] : '';
 
    		// Author

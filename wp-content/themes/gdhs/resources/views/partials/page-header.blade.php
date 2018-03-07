@@ -18,7 +18,7 @@
     $icon = true;
     $kicker = 'All Events';
     $title = false;
-  } elseif (is_home() || is_page_template('views/template-exhibit.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php')) {
+  } elseif (is_home() || is_page_template('views/template-exhibitions.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php')) {
     $icon = true;
     $kicker = 'Refine ' . get_the_title($id);
     $title = false;
@@ -41,7 +41,7 @@
     $title = true;
     $meta = true;
   } elseif (is_singular('exhibit')) {
-    $kicker = 'Exhibit';
+    $kicker = 'Exhibition';
     $breadcrumbs = true;
     $title = true;
     $meta = true;
@@ -107,7 +107,7 @@
         {{ $kicker }}
       </span>
     @endif
-    @if (is_home() || is_page_template('views/template-events.blade.php') || is_page_template('views/template-exhibit.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
+    @if (is_home() || is_page_template('views/template-events.blade.php') || is_page_template('views/template-exhibitions.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
     @else
       @if (!is_front_page() && !is_archive() && !is_author() && get_field('display_title', $id) && !is_author() )
         <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ the_field('display_title', $id) }}</h1>

@@ -14,7 +14,7 @@
       </div>
       @php echo do_shortcode('[ajax_load_more container_type="div" post_type="post" scroll="false" transition_container="false" button_label="Load More" posts_per_page="12" offset="12"]'); @endphp
     @else
-      <p>Sorry there are no posts at this time.</p>
+      <p>Sorry, there are no posts at this time.</p>
     @endif
   </article>
 @endsection

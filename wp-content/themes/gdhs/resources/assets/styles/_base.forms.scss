@@ -50,7 +50,8 @@ input[type=search],
 input[type=tel],
 input[type=text],
 input[type=url],
-textarea {
+textarea,
+select {
   border: 1px solid $border-color;
   background-color: $white;
   width: 100%;

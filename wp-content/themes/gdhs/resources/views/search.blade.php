@@ -17,7 +17,6 @@
         @endwhile
         @php(wp_reset_query())
       </div>
-      @php /* echo do_shortcode('[ajax_load_more container_type="div" search="get_search_query()" post_type="post, page" scroll="false" transition_container="false" button_label="Load More" posts_per_page="12" offset="12"]'); */ @endphp
     @else
       <div class="l-narrow l-narrow--m u-text-align--center u-spacing">
         <p>{{  __('Sorry, no results were found.', 'sage') }}</p>

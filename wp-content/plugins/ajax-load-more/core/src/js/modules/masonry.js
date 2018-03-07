@@ -3,20 +3,20 @@
 
 	Function to trigger built-in Ajax Load More Masonry
 
-   @param container  object
-   @param items      object
-   @param selector   string
-   @param animation  string
-   @param speed      int
-   @param init       boolean
-   @param filtering  boolean   
+   @param container     object
+   @param items         object
+   @param selector      string
+   @param animation     string
+   @param speed         int
+   @param masonry_init  boolean
+   @param init          boolean
+   @param filtering     boolean   
    @since 3.1
-   @updated 3.2
+   @updated 3.3.2
 */
 
-let almMasonryInit = true; // flag
 
-let almMasonry = (container, items, selector, animation, horizontalOrder, speed, init, filtering) => {	
+let almMasonry = (container, items, selector, animation, horizontalOrder, speed, masonry_init, init, filtering) => {	
       
    let duration = (speed+100)/1000 +'s'; // Add 100 for some delay
    let hidden = 'scale(0.5)';
@@ -45,9 +45,9 @@ let almMasonry = (container, items, selector, animation, horizontalOrder, speed,
    horizontalOrder = (horizontalOrder === 'true') ? true : false;
    
 	if(!filtering){
+   	
 		// First Run
-		if(almMasonryInit && init){
-			almMasonryInit = false;
+		if(masonry_init && init){
 			container.imagesLoaded( () => {
 				items.fadeIn(speed);				
 				container.masonry({
@@ -64,9 +64,10 @@ let almMasonry = (container, items, selector, animation, horizontalOrder, speed,
                   opacity: 1
                }
 				});
-				container.masonry('reloadItems');
+				//container.masonry('reloadItems');
 			});
 		}
+		
 		// Standard
 		else{
 			container.append( items ); // Append new items
@@ -79,9 +80,8 @@ let almMasonry = (container, items, selector, animation, horizontalOrder, speed,
 	} else{
 		// Filtering Reset
 		container.masonry('destroy'); // destroy masonry
-		almMasonryInit = true; // reset almMasonryInit
 		container.append( items );
-		almMasonry(container, items, selector, animation, horizontalOrder, speed, true, false);
+		almMasonry(container, items, selector, animation, horizontalOrder, speed, true, true, false);
 	}
 
 };

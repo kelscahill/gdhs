@@ -31,7 +31,7 @@
    		 </div>
          <div class="wrap">
             <div class="inner">
-               <input type="text" value="" id="acf_post_id"  class="alm_element">
+               <input type="text" value="" id="acf_post_id"  class="alm_element numbers-only">
             </div>
          </div>
 

@@ -2,6 +2,10 @@
     $HELPER/TRUMP CLASSES
 \*------------------------------------ */
 
+.disable-link {
+  pointer-events: none;
+}
+
 .u-overlay,
 .u-overlay--full {
   position: relative;

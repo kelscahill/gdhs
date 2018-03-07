@@ -2,6 +2,10 @@
     $LIST TYPES
 \*------------------------------------ */
 
+.u-list__title {
+  margin-bottom: $space;
+}
+
 .u-list__details {
   border-left: 1px solid $gray;
   padding-left: $pad;

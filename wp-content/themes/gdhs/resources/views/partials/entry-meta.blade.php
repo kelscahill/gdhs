@@ -20,6 +20,6 @@
     @if(!empty($end_time)){{ ' to ' . $end_time }}@endif
     @if($location){{ '- ' . $location }}@endif
   @else
-    {{ __('By', 'sage') }} <a href="{{ get_author_posts_url(get_the_author_meta('ID')) }}" rel="author" class="fn">{{ get_the_author() }}</a><span class="o-divider">|</span><time datetime="{{ get_post_time('c', true) }}">{{ get_the_date() }}</time>
+    {{ __('By', 'sage') }} <a href="{{ get_author_posts_url(get_the_author_meta('ID')) }}" rel="author" class="fn">{{ get_the_author_meta('display_name') }}</a><span class="o-divider">|</span><time datetime="{{ get_post_time('c', true) }}">{{ get_the_date() }}</time>
   @endif
 </div>

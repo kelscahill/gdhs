@@ -77,8 +77,20 @@ function alm_get_addons(){
          'item_id' => ALM_UNLIMITED_ITEM_NAME
       ),
       array(
+         'name' => __('Filters', 'ajax-load-more'),
+         'intro' => __('Create custom Ajax Load More filters in seconds.', 'ajax-load-more'),
+         'desc' => __('The Filters add-on provides front-end and admin functionality for building and managing Ajax filters.', 'ajax-load-more'),
+         'action' => 'alm_filters_installed',
+         'key' => 'alm_filters_license_key',
+         'status' => 'alm_filters_license_status',
+         'settings_field' => 'alm_filters_license',
+         'img' => 'img/add-ons/filters-add-on.jpg',
+         'url' => 'https://connekthq.com/plugins/ajax-load-more/add-ons/filters/',
+         'item_id' => ALM_FILTERS_ITEM_NAME
+      ),
+      array(
          'name' => __('Layouts', 'ajax-load-more'),
-         'intro' => __('Predefined layouts for your repeater templates.', 'ajax-load-more'),
+         'intro' => __('Predefined layouts for repeater templates.', 'ajax-load-more'),
          'desc' => __('The Layouts add-on provides a collection of unique, well designed and fully responsive templates.', 'ajax-load-more'),
          'action' => 'alm_layouts_installed',
          'key' => 'alm_layouts_license_key',
@@ -153,9 +165,9 @@ function alm_get_addons(){
          'intro' => __('Manage repeater templates within your current theme directory.', 'ajax-load-more'),
          'desc' => __('The Theme Repeater add-on will allow you load, edit and maintain templates from your current theme directory.', 'ajax-load-more'),
          'action' => 'alm_theme_repeaters_installed',
-         'key' => 'alm_seo_license_key',
-         'status' => 'alm_seo_license_status',
-         'settings_field' => 'alm_seo_license',
+         'key' => 'alm_theme_repeaters_license_key',
+         'status' => 'alm_theme_repeaters_license_status',
+         'settings_field' => 'alm_theme_repeaters_license',
          'img' => 'img/add-ons/theme-repeater-add-on.jpg',
          'url' => 'https://connekthq.com/plugins/ajax-load-more/add-ons/theme-repeaters/',
          'item_id' => ALM_THEME_REPEATERS_ITEM_NAME
@@ -165,35 +177,15 @@ function alm_get_addons(){
          'intro' => __('Enable infinite scrolling of WordPress users.', 'ajax-load-more'),
          'desc' => __('The Users add-on will allow lazy loading of users by role using a WP_User_Query.', 'ajax-load-more'),
          'action' => 'alm_users_installed',
-         'key' => 'alm_theme_repeaters_license_key',
-         'status' => 'alm_theme_repeaters_license_status',
-         'settings_field' => 'alm_theme_repeaters_license',
+         'key' => 'alm_users_license_key',
+         'status' => 'alm_users_license_status',
+         'settings_field' => 'alm_users_license',
          'img' => 'img/add-ons/users-add-on.jpg',
          'url' => 'https://connekthq.com/plugins/ajax-load-more/add-ons/users/',
          'item_id' => ALM_USERS_ITEM_NAME
       )
    );
    return $addons;
-}
-
-
-
-/*
-*  alm_has_addon
-*  Does user have add-ons installed and activated
-*  License Page
-*
-*  @return boolean
-*  @since 2.13.0
-*  @depreacted 3.3.0
-*/
-
-function alm_has_addon(){
-	if(has_action('alm_cta_installed') || has_action('alm_comments_installed') || has_action('alm_unlimited_installed') || has_action('alm_layouts_installed') || has_action('alm_nextpage_installed') || has_action('alm_preload_installed') || has_action('alm_paging_installed') || has_action('alm_prev_post_installed') || has_action('alm_rest_api_installed') || has_action('alm_seo_installed') || has_action('alm_theme_repeaters_installed') || has_action('alm_users_installed')) {
-   	return true;
-	} else {
-   	return false;
-	}
 }
 
 
@@ -211,17 +203,15 @@ function alm_has_addon_shortcodes(){
    $actions = array(
       'alm_acf_installed',
       'alm_cache_installed',
-      'alm_cache_installed',
       'alm_cta_installed',
+      'alm_filters_installed',
       'alm_comments_installed',
-      'alm_unlimited_installed',
       'alm_nextpage_installed',
       'alm_preload_installed',
       'alm_paging_installed',    
       'alm_prev_post_installed',   
       'alm_rest_api_installed',    
-      'alm_seo_installed',    
-      'alm_theme_repeaters_installed',    
+      'alm_seo_installed',       
       'alm_users_installed'   
    );
    // Loop actions to determine if add-on/extension is installed   
@@ -231,6 +221,27 @@ function alm_has_addon_shortcodes(){
    
    
 	if($installed) {
+   	return true;
+	} else {
+   	return false;
+	}
+}
+
+
+
+
+/*
+*  alm_has_addon
+*  Does user have add-ons installed and activated
+*  License Page
+*
+*  @return boolean
+*  @since 2.13.0
+*  @depreacted 3.3.0
+*/
+
+function alm_has_addon(){
+	if(has_action('alm_cta_installed') || has_action('alm_comments_installed') || has_action('alm_unlimited_installed') || has_action('alm_layouts_installed') || has_action('alm_nextpage_installed') || has_action('alm_preload_installed') || has_action('alm_paging_installed') || has_action('alm_prev_post_installed') || has_action('alm_rest_api_installed') || has_action('alm_seo_installed') || has_action('alm_theme_repeaters_installed') || has_action('alm_users_installed')) {
    	return true;
 	} else {
    	return false;

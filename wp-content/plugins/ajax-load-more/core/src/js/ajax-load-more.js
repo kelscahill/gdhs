@@ -3,7 +3,7 @@
  * http://wordpress.org/plugins/ajax-load-more/
  * https://connekthq.com/plugins/ajax-load-more/
  *
- * Copyright 2017 Connekt Media - https://connekthq.com
+ * Copyright 2018 Connekt Media - https://connekthq.com
  * Free to use under the GPLv2 license. 
  * http://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -11,15 +11,13 @@
  * Twitter: @KaptonKaos, @ajaxloadmore, @connekthq 
  */
 
-(function ($) {
-   "use strict"; 
+(function ($) { 
+   "use strict";   
 
    $.ajaxloadmore = function (el, e) {
 
-      //Prevent loading of unnessasry posts - move user to top of page
-      if(alm_localize.scrolltop === 'true'){
-         $(window).scrollTop(0);
-      }
+      // Prevent loading of unnessasry posts - move user to top of page
+      if(alm_localize.scrolltop === 'true'){ $(window).scrollTop(0); }
       
       //Set ALM Variables
       let alm = this;
@@ -33,6 +31,7 @@
       alm.init = true;
       alm.loading = true;
       alm.finished = false;
+      alm.prefix = 'alm-';
       alm.el = el;
       alm.container = el;
       alm.container.addClass('alm-'+e).attr('data-alm-id', e); // Add unique classname and data id
@@ -42,7 +41,6 @@
       alm.is_search = alm.el.attr('data-search');
       alm.slug = alm.el.attr('data-slug');
       alm.post_id = alm.el.attr('data-post-id');
-      alm.prefix = 'alm-';
 
       alm.repeater = alm.content.attr('data-repeater'); // Repeaters
       alm.theme_repeater = alm.content.attr('data-theme-repeater');
@@ -53,9 +51,11 @@
       alm.btnWrap = $('.alm-btn-wrap', alm.container);
 		alm.button_label = alm.content.attr('data-button-label');
       alm.button_loading_label = alm.content.attr('data-button-loading-label');
-      alm.scroll_distance = parseInt(alm.content.attr('data-scroll-distance'));      
+      alm.scroll_distance = alm.content.attr('data-scroll-distance'); 
+      alm.scroll_distance = (alm.scroll_distance) ? parseInt(alm.scroll_distance) : 150;      
       alm.scroll_container = alm.content.attr('data-scroll-container'); 
-      alm.max_pages = parseInt(alm.content.attr('data-max-pages'));
+      alm.max_pages = alm.content.attr('data-max-pages');
+      alm.max_pages = (alm.max_pages) ? parseInt(alm.max_pages) : 0;
       alm.pause_override = alm.content.attr('data-pause-override'); // true | false
       alm.pause = alm.content.attr('data-pause'); // true | false
       alm.transition = alm.content.attr('data-transition'); // Transition
@@ -70,9 +70,9 @@
       alm.offset = alm.content.attr('data-offset');
       
       alm.cache = alm.content.attr('data-cache'); // Cache add-on
-      alm.cache_id = alm.content.attr('data-cache-id'); // cache value
-      alm.cache_path = alm.content.attr('data-cache-path'); // cache path 
-      alm.cache_logged_in = alm.content.attr('data-cache-logged-in'); // cache logged in (settings)
+      alm.cache_id = alm.content.attr('data-cache-id');
+      alm.cache_path = alm.content.attr('data-cache-path');
+      alm.cache_logged_in = alm.content.attr('data-cache-logged-in');
 
       alm.cta = alm.content.attr('data-cta'); // CTA add-on
       alm.cta_position = alm.content.attr('data-cta-position');
@@ -80,33 +80,29 @@
       alm.cta_theme_repeater = alm.content.attr('data-cta-theme-repeater'); 
 
       alm.acf = alm.content.attr('data-acf'); // ACF add-on
-      alm.acf_field_type = alm.content.attr('data-acf-field-type'); // Field Type
-      alm.acf_field_name = alm.content.attr('data-acf-field-name'); // Field Name
-      alm.acf_post_id = alm.content.attr('data-acf-post-id'); // Get the Post ID
+      alm.acf_field_type = alm.content.attr('data-acf-field-type');
+      alm.acf_field_name = alm.content.attr('data-acf-field-name');
+      alm.acf_post_id = alm.content.attr('data-acf-post-id');
 
       alm.nextpage = alm.content.attr('data-nextpage'); // Nextpage add-on
-      alm.nextpage_urls = alm.content.attr('data-nextpage-urls'); // Update url
-      alm.nextpage_scroll = alm.content.attr('data-nextpage-scroll'); // Scroll
-      alm.nextpage_pageviews = alm.content.attr('data-nextpage-pageviews'); // pageviews
-      alm.nextpage_post_id = alm.content.attr('data-nextpage-post-id'); // Get the nextpage id
-      alm.nextpage_startpage = alm.content.attr('data-nextpage-startpage'); // nextpage startpage
+      alm.nextpage_urls = alm.content.attr('data-nextpage-urls');
+      alm.nextpage_scroll = alm.content.attr('data-nextpage-scroll');
+      alm.nextpage_pageviews = alm.content.attr('data-nextpage-pageviews');
+      alm.nextpage_post_id = alm.content.attr('data-nextpage-post-id');
+      alm.nextpage_startpage = alm.content.attr('data-nextpage-startpage');
 
       alm.previous_post = alm.content.attr('data-previous-post'); // Previous Post add-on
-      alm.previous_post_id = alm.content.attr('data-previous-post-id'); // Get the post id
-      alm.previous_post_taxonomy = alm.content.attr('data-previous-post-taxonomy'); // Get the post taxonomy
-      alm.previous_post_excluded_terms = alm.content.attr('data-previous-post-excluded-terms'); // Get the post excluded terms
+      alm.previous_post_id = alm.content.attr('data-previous-post-id');
+      alm.previous_post_taxonomy = alm.content.attr('data-previous-post-taxonomy');
+      alm.previous_post_excluded_terms = alm.content.attr('data-previous-post-excluded-terms'); 
 
-      alm.comments = alm.content.attr('data-comments'); // true | false
-      if(alm.comments === 'true'){ // if comments, then set alm.content to comments wrap
+      alm.comments = alm.content.attr('data-comments'); // Comments add-on
+      if(alm.comments === 'true'){ // if comments, adjust alm.content wrapper
          alm.content = $('.alm-comments', alm.container);
-      }
-      alm.comments_post_id = alm.content.attr('data-comments_post_id'); // current post id
-      alm.comments_per_page = alm.content.attr('data-comments_per_page');
-      alm.comments_type = alm.content.attr('data-comments_type');
-      alm.comments_style = alm.content.attr('data-comments_style');
-      alm.comments_template = alm.content.attr('data-comments_template');
-      alm.comments_callback = alm.content.attr('data-comments_callback');
+      }      
 
+      alm.filters = alm.content.attr('data-filters');
+      
       alm.restapi = alm.content.attr('data-restapi');
       alm.restapi_base_url = alm.content.attr('data-restapi-base-url');
       alm.restapi_namespace = alm.content.attr('data-restapi-namespace');
@@ -114,23 +110,53 @@
       alm.restapi_template_id = alm.content.attr('data-restapi-template-id');
       alm.restapi_debug = alm.content.attr('data-restapi-debug');
 
-      alm.seo = alm.content.attr('data-seo'); // true | false
+      alm.seo = alm.content.attr('data-seo'); // SEO add-on
 
-      alm.preloaded = alm.content.attr('data-preloaded'); // true | false
-      alm.preloaded_amount = alm.content.attr('data-preloaded-amount'); // 0
+      alm.preloaded = alm.content.attr('data-preloaded'); // Preloaded add-on
+      alm.preloaded_amount = alm.content.attr('data-preloaded-amount');
 
-      alm.paging = alm.content.attr('data-paging'); // is paging enabled
-      alm.paging_controls = alm.content.attr('data-paging-controls');
-      alm.paging_show_at_most = alm.content.attr('data-paging-show-at-most');
-      alm.paging_classes = alm.content.attr('data-paging-classes');
-      alm.paging_init = true;
+      alm.paging = alm.content.attr('data-paging'); // Paging add-on      
       
       alm.users = (alm.content.attr('data-users') === 'true') ? true : false; // Users add-on
-      if(alm.users){
-         // Override paging params for users
+      if(alm.users){ // Override paging params for users
          alm.orginal_posts_per_page = alm.content.attr('data-users-per-page');
          alm.posts_per_page = alm.content.attr('data-users-per-page');
       }
+      
+      
+      /* Filters */
+      if(alm.filters === 'true'){  
+			alm.filters = true;
+			
+			alm.filters_analtyics = alm.content.attr('data-filters-analtyics');
+         alm.filters_debug = alm.content.attr('data-filters-debug');
+	      
+	      // Check for startpage param
+			/*
+			alm.filters_startpage = alm.content.attr('data-filters-startpage');
+			alm.filters_startpage = parseInt(alm.filters_startpage);
+			alm.page = alm.filters_startpage;
+			*/		
+	      
+	      // Get Paged Querystring Val
+	      alm.filters_startpage = 0;
+	      let page = almGetParameterByName('pg');
+	      if(page !== null){
+		      alm.filters_startpage = parseInt(page);
+		      alm.page = alm.filters_startpage;
+	      }
+			 
+			alm.isPaged = false;
+			if (alm.filters_startpage > 0) {
+				alm.isPaged = true;
+				alm.page = alm.filters_startpage - 1;
+	      }
+		}else{
+   		
+   		alm.filters = false;
+   		
+		}      
+      /* End Filters  */
 		
 
       /* REST API */
@@ -151,17 +177,20 @@
 		/* Paging */
 		if(alm.paging === 'true'){
 			alm.paging = true;
-			if(alm.paging_show_at_most === undefined){
-   			alm.paging_show_at_most = 7;
-			}
-			if(alm.preloaded === 'true'){ // If preloaded, pause ALM
+			alm.paging_controls = alm.content.attr('data-paging-controls') ? true : false;
+	      alm.paging_show_at_most = alm.content.attr('data-paging-show-at-most');
+	      alm.paging_classes = alm.content.attr('data-paging-classes');
+	      alm.paging_init = true;
+			alm.paging_show_at_most = (alm.paging_show_at_most === undefined) ? 7 : alm.paging_show_at_most;   
+			
+			// If preloaded, pause ALM	
+			if(alm.preloaded === 'true'){ 
 				alm.pause = true;
-			}
+			}	
+					
 		}else{
 			alm.paging = false;
-		}
-
-		alm.paging_controls = (alm.paging_controls === 'true') ? true : false;
+		}		
       /* End Paging  */
 
 
@@ -221,9 +250,7 @@
          alm.seo_scroll_speed = alm.content.attr('data-seo-scroll-speed');
          alm.seo_scrolltop = alm.content.attr('data-seo-scrolltop');
          alm.seo_controls = alm.content.attr('data-seo-controls');
-
 	      alm.isPaged = false;
-
 	      if (alm.start_page > 1) {
 	         alm.isPaged = true; // Is this a $paged page > 1 ?
             alm.posts_per_page = alm.start_page * alm.posts_per_page;
@@ -335,7 +362,7 @@
       alm.scroll_container = (alm.scroll_container === undefined) ? '' : alm.scroll_container;
 
       /* Transition */
-      alm.transition = (alm.transition === undefined) ? 'slide' : alm.transition;
+      alm.transition = (alm.transition === undefined) ? 'fade' : alm.transition;
       
       /* Transition Container Class */
       alm.tcc = (alm.tcc === undefined) ? '' : alm.tcc;
@@ -343,6 +370,7 @@
 		/* Masonry */
       alm.is_masonry_preloaded = false;
       if(alm.transition === 'masonry'){
+         alm.masonry_init = true;
       	alm.masonry_selector = alm.content.attr('data-masonry-selector');
       	alm.masonry_animation = alm.content.attr('data-masonry-animation');
       	alm.masonry_horizontalorder = alm.content.attr('data-masonry-horizontalorder');
@@ -782,7 +810,7 @@
          alm.data = $(html); // data converted to an object
 
          if(is_cache){ // If cache, get the length of the data object
-	      	total = alm.data.length;
+	      	total = alm.data.length; 
 	      }
 
          // First Run
@@ -816,20 +844,39 @@
 
             // ALM Empty
             if(total === 0){
-               if ($.isFunction($.fn.almEmpty)) {
+               if(alm.paging){
+						if ($.isFunction($.fn.almPagingEmpty)){
+                     $.fn.almPagingEmpty(alm);
+                  }
+               }
+               if($.isFunction($.fn.almEmpty)) {
                   $.fn.almEmpty(alm);
                }
             }
 
             // isPaged
             if(alm.isPaged){
-               // Reset our posts per page variable
-               if(alm.users){
-                  alm.posts_per_page = alm.content.attr('data-users-per-page');         
-               } else {
-                  alm.posts_per_page = alm.content.attr('data-posts-per-page');
+	            
+               // Reset the posts_per_page parameter
+               alm.posts_per_page = (alm.users) ? alm.content.attr('data-users-per-page') : alm.content.attr('data-posts-per-page');
+               
+               // SEO add-on
+               if(alm.start_page){
+	               // Set new page #
+               	alm.page = alm.start_page - 1; 
                }
-               alm.page = alm.start_page - 1; // Set our new page #
+               
+               // Filters add-on               
+		         if(alm.filters){		         
+		         
+	               if(alm.filters_startpage){
+		                // Set new page #
+	               	alm.page = alm.filters_startpage - 1;
+	               	
+							// Reset filters-startpage data attr after the first run
+				         alm.posts_per_page = alm.content.attr('data-posts-per-page');
+	               }
+               }
             }
 
          }
@@ -845,7 +892,9 @@
                	alm.el = $('<div class="alm-reveal alm-previous-post post-'+alm.previous_post_id+'" data-id="'+alm.previous_post_id+'" data-title="'+alm.previous_post_title+'" data-url="'+alm.previous_post_permalink+'" data-page="'+alm.page+'"/>');
                	alm.el.append(alm.data).hide();
 
-               } else {
+               } 
+               
+               else {
 
                   if(!alm.transition_container){ // No transition container
 
@@ -854,39 +903,43 @@
 
                   } else { // Standard container
 
-							var pagenum;
+							let pagenum;
+							let querystring = window.location.search;
 
                      // SEO
                      if (alm.init && alm.start_page > 1){
                         // loop through items and break into separate alm-reveal divs for paging
 
-                        var seo_data = [],
-                            posts_per_page = parseInt(alm.posts_per_page);
+                        let seo_data = [];
+                        let posts_per_page = parseInt(alm.posts_per_page);
 
                         if(alm.cta === 'true'){
                            // If CTA, +1 to posts_per_page to offset the CTA template and correct the display
                            posts_per_page = posts_per_page + 1;
                         }
 
-                        var pages = Math.ceil(total/posts_per_page); // slice seo_data array into pages
+                        let pages = Math.ceil(total/posts_per_page); // slice seo_data array into pages
                         for (var i = 0; i < total; i += posts_per_page) {
                            seo_data.push(alm.data.slice(i, posts_per_page + i));
                         }
 
                         alm.el = alm.content; // Set alm.el to be alm-listing div
+                        
                         for (var k = 0; k < seo_data.length; k++){
 
-                           var p = (alm.preloaded === 'true') ? 1 : 0; // Add 1 page if items are preloaded.
-                           var div;
+                           let p = (alm.preloaded === 'true') ? 1 : 0; // Add 1 page if items are preloaded.
+                           let div;
 
-                           if(k > 0 || alm.preloaded === 'true'){ // > Paged
+                           if(k > 0 || alm.preloaded === 'true'){ 
+                              // > Paged
                               pagenum = (k + 1 + p);
                               if(alm.permalink === 'default'){
                                  div = $('<div class="alm-reveal alm-seo'+alm.tcc+'" data-url="'+alm.canonical_url+''+ alm.search_value +'&paged='+ pagenum+'" data-page="'+ pagenum +'" />');
                               }else{
                                  div = $('<div class="alm-reveal alm-seo'+alm.tcc+'" data-url="'+alm.canonical_url+'page/'+ pagenum + alm.trailing_slash + alm.search_value +'" data-page="'+ pagenum +'" />');
                               }
-                           }else{ // First Page
+                           }else{ 
+                              // First Page
                               div = $('<div class="alm-reveal alm-seo'+alm.tcc+'"  data-url="'+alm.canonical_url+''+ alm.search_value +'" data-page="1" />');
                            }
 
@@ -899,26 +952,43 @@
                      // End SEO -- /
 
                      else {
-                        // If is SEO and paged, or preloaded.
+                        // If is SEO and paged OR Preloaded.
                         if(alm.seo && alm.page > 0 || alm.preloaded === 'true'){
 
-                           var p2 = (alm.preloaded === 'true') ? 1 : 0; // Add 1 page if items are preloaded.
+                           let p2 = (alm.preloaded === 'true') ? 1 : 0; // Add 1 page if items are preloaded.
 
                            // SEO [Paged]
                            pagenum = (alm.page + 1 + p2);
-
-                           if(alm.seo){
+                           
+                           if(alm.seo){                             
+                                 
                               if(alm.permalink === 'default'){
                                  alm.el = $('<div class="alm-reveal alm-seo'+alm.tcc+'" data-url="'+alm.canonical_url+''+ alm.search_value +'&paged='+ pagenum+'" data-page="'+ pagenum +'" />');
-                              }else{
+                              }
+                              else{                                 
                                  alm.el = $('<div class="alm-reveal alm-seo'+alm.tcc+'" data-url="'+alm.canonical_url+'page/'+ pagenum + alm.trailing_slash + alm.search_value +'" data-page="'+ pagenum +'" />');
                               }
-                           }else{
+                              
+                           }   
+                                                   
+                           else if(alm.filters){
+	                           // Filters
+	                           alm.el = $('<div class="alm-reveal alm-filters'+alm.tcc+'" data-url="'+alm.canonical_url+''+ querystring +'" data-page="'+ (pagenum) +'" />');	                        
+	                        }
+	                        
+                           else{                              
                               // Basic ALM
                               alm.el = $('<div class="alm-reveal'+alm.tcc+'" />');
                            }
 
-                        }else{
+                        }
+                   
+                        else if(alm.filters){
+	                        // Filters
+	                        alm.el = $('<div class="alm-reveal alm-filters'+alm.tcc+'" data-url="'+alm.canonical_url+''+ querystring +'" data-page="'+ (alm.page + 1) +'" />');	                        
+                        }
+                        
+                        else{
 
                            if(alm.seo){
                               // SEO [Page 1]
@@ -967,10 +1037,10 @@
 	                  });
 	               }
 
-               }else if(alm.transition === 'masonry') { // masonry
+               }
+               else if(alm.transition === 'masonry') { // Masonry
 
-						almMasonry(alm.masonry_wrap, alm.el, alm.masonry_selector, alm.masonry_animation, alm.masonry_horizontalorder, alm.speed, alm.init, alm_is_filtering);
-						
+						almMasonry(alm.masonry_wrap, alm.el, alm.masonry_selector, alm.masonry_animation, alm.masonry_horizontalorder, alm.speed, alm.masonry_init, alm.init, alm_is_filtering);						   alm.masonry_init = false;
 
                   if(!alm.paging){
                   	alm.button.delay(alm.speed).removeClass('loading');
@@ -980,7 +1050,8 @@
                   alm.container.removeClass('alm-loading');
                   alm.AjaxLoadMore.triggerAddons(alm);
 
-               }else if(alm.transition === 'none') { // None
+               }
+               else if(alm.transition === 'none') { // None
 	               if(alm.images_loaded === 'true'){
 		               alm.el.almWaitForImages().done(function(){
 			               alm.el.show();
@@ -996,7 +1067,8 @@
                   	alm.AjaxLoadMore.resetBtnText();
                   }
 
-               }else { // Slide
+               }
+               else { // Slide
 	               if(alm.images_loaded === 'true'){
 		               alm.el.almWaitForImages().done(function(){
 		                  alm.el.slideDown(alm.speed, 'alm_easeInOutQuad', function () {
@@ -1118,6 +1190,8 @@
        *  @since 2.11.3
        */
       alm.AjaxLoadMore.pagingPreloadedInit = function(data){
+	      
+	      data = (data == null) ? '' : data; // Check for null data object
 
          alm.el = $('<div class="alm-reveal'+alm.tcc+'"/>');
          alm.el.append('<div class="alm-paging-content">'+data+'</div><div class="alm-paging-loading"></div>');
@@ -1128,6 +1202,15 @@
          var paddingT = parseInt(alm.content.css('padding-top')),
 				 paddingB = parseInt(alm.content.css('padding-bottom'));
          alm.content.css('height', alm.el.height() + paddingT + paddingB + 'px');
+         
+         if(data === ''){
+				if ($.isFunction($.fn.almPagingEmpty)){
+					$.fn.almPagingEmpty(alm);
+				}
+				if($.isFunction($.fn.almEmpty)) {
+					$.fn.almEmpty(alm);
+				}
+			}
 
          if ($.isFunction($.fn.almFadePageControls)){
             $.fn.almFadePageControls(alm.btnWrap);
@@ -1217,9 +1300,9 @@
             error: function (jqXHR, textStatus, errorThrown) {
                alm.AjaxLoadMore.error(jqXHR, textStatus, errorThrown);
                alm.fetchingPreviousPost = false;
-            }
-
+            }            
          });
+         
       };
 
 
@@ -1267,13 +1350,11 @@
        *  @since 2.8.4
        */
       alm.AjaxLoadMore.resetBtnText = function(){
-
 	      if(alm.button_loading_label !== false){ // Reset button text
    	      if(!alm.paging){
                alm.button.html(alm.button_label);
             }
          }
-
       };
 
 
@@ -1300,11 +1381,12 @@
        *  Load more button click event
        *  @since 1.0.0
        */
-
+       
       if(!alm.paging && !alm.fetchingPreviousPost){
 	      alm.button.unbind( "click" ); // Remove past event (when filtering data)
 	      alm.button.on('click', function (e) {
    	      e.preventDefault();
+   	      
 	         if (alm.pause === 'true') {
 	            alm.pause = false;
 	            alm.pause_override = false;
@@ -1315,6 +1397,11 @@
 	            alm.page++;
 	            alm.AjaxLoadMore.loadPosts();
 	         }
+	         
+	         // Filters Paged URLs
+	         if(alm.filters && typeof almFiltersPaged === 'function'){
+	            almFiltersPaged(alm); 
+	         }	         
 	      });
       }
 
@@ -1400,8 +1487,7 @@
 	            // Standard Scroll event
 	            else{
 	               if (!alm.loading && !alm.finished && scrollTrigger && alm.page < (alm.max_pages - 1) && alm.proceed && alm.pause !== 'true') {
-	                  alm.page++;
-	                  alm.AjaxLoadMore.loadPosts();
+	                  alm.button.trigger('click');
 	               }
                }
             }
@@ -1413,7 +1499,7 @@
       /*  Init Ajax load More
        *
        *  Load posts as user scrolls the page
-       *  @since 2.0
+       *  @since 2.0 
        */
       alm.AjaxLoadMore.init = function(){
 
@@ -1432,20 +1518,42 @@
 	         }
 	      }
 
+
 			// Previous Post Add-on
 	      if(alm.previous_post){
 	         alm.AjaxLoadMore.getPreviousPost(); // Set next post on load
-	         alm.loading = false;
+	         alm.loading = false;  
 	      }
+	      
 	      
 	      // Preloaded + SEO && !Paging
 	      if(alm.preloaded === 'true' && alm.seo && !alm.paging){
+		      // Delay for scripts to load
    	      setTimeout(function () {     
       	      if ($.isFunction($.fn.almSEO) && alm.start_page < 1) {
          	      $.fn.almSEO(alm, true);
                } 
-            }, 300);
+            }, 150);
          }
+         
+         
+         // Preloaded
+         if(alm.preloaded === 'true' && !alm.paging){	   
+	         // Delay for scripts to load
+	         setTimeout(function(){
+		         // triggerDone
+		         if (alm.preloaded_total_posts <= parseInt(alm.preloaded_amount)){		         
+			         alm.AjaxLoadMore.triggerDone();
+		         }
+		         // almEmpty
+		         if(alm.preloaded_total_posts == 0){
+			         if ($.isFunction($.fn.almEmpty)){
+	                  $.fn.almEmpty(alm);
+	               }
+		         }
+	         }, 150);	         
+         }
+
 
 			// Next Page Add-on
 	      if(alm.nextpage){
@@ -1461,10 +1569,12 @@
    	      }
 	      }
 
+
 			// Masonry + Preloaded
 			alm.window.bind('load', function(){
 		      if(alm.is_masonry_preloaded){
-			      almMasonry(alm.masonry_wrap, alm.el, alm.masonry_selector, alm.masonry_animation, alm.masonry_horizontalorder, alm.speed, true, false);
+			      almMasonry(alm.masonry_wrap, alm.el, alm.masonry_selector, alm.masonry_animation, alm.masonry_horizontalorder, alm.speed, alm.masonry_init, true, false);
+			      alm.masonry_init = false;
 		      }
 	      });
 
@@ -1473,10 +1583,10 @@
 
 
 
-      //flag to prevent unnecessary loading of post on init. Hold for 3/10 of a second
+      //flag to prevent unnecessary loading of post on init. Hold for 2/10 of a second
       setTimeout(function () {
          alm.proceed = true;
-      }, 300);
+      }, 200);
 
 
 
@@ -1545,7 +1655,7 @@
 
 
 
-      /* $.fn.almGetObj()
+      /*  $.fn.almGetObj()
        *
        *  return the current ALM obj
        *
@@ -1609,15 +1719,6 @@
 		   new $.ajaxloadmore($(alm), e);
 	   });
    }
-   
-
-
-	/*
-	   if ($(".ajax-load-more-wrap").length){
-	      $(".ajax-load-more-wrap").ajaxloadmore();
-	   }
-	*/
-
 
 
 })(jQuery);

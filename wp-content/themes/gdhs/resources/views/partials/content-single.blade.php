@@ -24,6 +24,20 @@
     </div>
     <div class="c-article__content--right c-article__body u-spacing--double">
       @php(the_content())
+      @php($blocks = get_field('block'))
+      @if ($blocks)
+        @foreach ($blocks as $block)
+          @php
+            $title = $block['block_title'];
+            $excerpt = $block['block_description'];
+            $thumb_id = $block['block_image']['id'];
+            $img_s = $block['block_image']['sizes']['horiz__4x3--s'];
+            $img_m = $block['block_image']['sizes']['horiz__4x3--m'];
+            $link = $block['block_url'];
+          @endphp
+          @include('patterns.blocks.c-block')
+        @endforeach
+      @endif
     </div>
   </div>
   <footer class="c-article__footer">

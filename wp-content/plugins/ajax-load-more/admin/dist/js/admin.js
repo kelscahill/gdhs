@@ -1311,7 +1311,7 @@ jQuery(document).ready(function ($) {
                settingsTarget.classList.add('--saved');
                settingsTarget.innerHTML = alm_admin_localize.settings_saved;
                settingsForm.classList.remove('--saving');
-               console.log(alm_admin_localize.ajax_load_more + ' - ' + alm_admin_localize.settings_saved);
+               //console.log(alm_admin_localize.ajax_load_more +' - '+ alm_admin_localize.settings_saved);
                savingSettings = false;
 
                setTimeout(function () {
@@ -1358,10 +1358,12 @@ jQuery(document).ready(function ($) {
      *  @since 2.8.4
      */
 
-   $('.tooltip').tooltipster({
-      delay: 100,
-      speed: 175,
-      maxWidth: 400
+   $('body').on('mouseenter', '.tooltip:not(.tooltipstered)', function () {
+      $(this).tooltipster({
+         delay: 100,
+         speed: 150,
+         maxWidth: 325
+      }).tooltipster('show');
    });
 
    /*
@@ -1426,7 +1428,7 @@ jQuery(document).ready(function ($) {
    };
 
    // Copy link on shortcode builder
-   $('.shortcode-builder .copy').click(function () {
+   $('.copy-to-clipboard').on('click', function () {
       var c = $('#shortcode_output').html();
       _alm.copyToClipboard(c);
    });
@@ -1697,11 +1699,11 @@ jQuery(document).ready(function ($) {
    if ($('#alm-add-ons').length) {
       var addOnColumns = $('#alm-add-ons .group .expand-wrap');
       $(window).load(function () {
-         equalheight(addOnColumns);
+         //equalheight(addOnColumns);
       });
       $(window).resize(function () {
          setTimeout(function () {
-            equalheight(addOnColumns);
+            //equalheight(addOnColumns);
          }, 500);
       });
    }

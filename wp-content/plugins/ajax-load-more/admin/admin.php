@@ -113,16 +113,17 @@ function alm_license_activation(){
 			}
 		}
 		$return["msg"] = $msg;
-
+      
 		update_option( $option_status, $license_data->license);
 		update_option( $option_key, $license );
 
-	   echo json_encode($return);
-
-		die();
+	   wp_send_json($return);
+	   
 
 	} else {
+   	
       echo __('You don\'t belong here.', 'ajax-load-more');
+      
    }
 }
 
@@ -442,12 +443,17 @@ function alm_admin_menu() {
       'ajax-load-more-licenses',
       'alm_licenses_page'
    );
+   
+   
+   $before_link = '<span style="display:block; border-top: 1px solid #555; padding-top: 8px;">';
+	$after_link = '</span>';
+	$style_link_icon = 'style="opacity: 0.6; font-size: 18px; height: 18px; width: 18px; position: relative; left: -2px;"';
 
    if(has_action('alm_cache_installed')){
       $alm_cache_page = add_submenu_page(
          'ajax-load-more',
-         'Cache',
-         '<span style="color: #f2f5bf; display:block; border-top: 1px solid #555; padding-top: 8px; border-radius: 3px;">Cache<span>',
+         __('Cache', 'ajax-load-more'),
+         $before_link . '<span class="dashicons dashicons-admin-generic" '.$style_link_icon.'></span> ' .__('Cache', 'ajax-load-more') . $after_link,
          'edit_theme_options',
          'ajax-load-more-cache',
          'alm_cache_page'
@@ -455,6 +461,25 @@ function alm_admin_menu() {
       add_action( 'load-' . $alm_cache_page, 'alm_load_admin_js' );
       add_action( 'load-' . $alm_cache_page, 'alm_load_cache_admin_js' );
       add_action( 'load-' . $alm_cache_page, 'alm_set_admin_nonce' );
+   }   
+
+   if(has_action('alm_filters_installed')){	 
+	     
+	   if(has_action('alm_cache_installed')){
+		   $before_link = '<span style="display:block;">';
+		}  
+	   
+      $alm_filters_page = add_submenu_page(
+         'ajax-load-more',
+         __('Filters', 'ajax-load-more'),
+         $before_link . '<span class="dashicons dashicons-filter" '.$style_link_icon.'></span> '. __('Filters', 'ajax-load-more') . $after_link,
+         'edit_theme_options',
+         'ajax-load-more-filters',
+         'alm_filters_page'
+      );
+      add_action( 'load-' . $alm_filters_page, 'alm_load_admin_js' );
+      add_action( 'load-' . $alm_filters_page, 'alm_load_filters_admin_scripts' );
+      add_action( 'load-' . $alm_filters_page, 'alm_set_admin_nonce' );
    }
 
    //Add our admin scripts
@@ -592,6 +617,19 @@ function alm_cache_page(){
 }
 
 
+/*
+*  alm_filters_page
+*  Filters Add-on page
+*
+*  @since 3.4.0
+*/
+
+function alm_filters_page(){
+   include_once( ALM_FILTERS_PATH . 'admin/functions.php');
+   include_once( ALM_FILTERS_PATH . 'admin/views/filters.php');
+}
+
+
 
 /**
 * alm_load_admin_js
@@ -603,9 +641,16 @@ function alm_cache_page(){
 function alm_load_admin_js(){
 	add_action( 'admin_enqueue_scripts', 'alm_enqueue_admin_scripts' );
 }
+// Cache Scripts
 function alm_load_cache_admin_js(){
 	if(class_exists('ALMCache')){
    	ALMCache::alm_enqueue_cache_admin_scripts();
+   }
+}
+// Filters Scripts
+function alm_load_filters_admin_scripts(){
+	if(class_exists('ALMFilters')){
+   	ALMFilters::alm_enqueue_filters_admin_scripts();
    }
 }
 
@@ -993,14 +1038,6 @@ function alm_admin_init(){
 		'alm_general_settings'
 	);
 
-	add_settings_field(  // Inline CSS
-		'_alm_inline_css',
-		__('Load CSS Inline', 'ajax-load-more' ),
-		'alm_inline_css_callback',
-		'ajax-load-more',
-		'alm_general_settings'
-	);
-
 	add_settings_field(  // Button classes
 		'_alm_btn_classname',
 		__('Button Classes', 'ajax-load-more' ),
@@ -1008,17 +1045,14 @@ function alm_admin_init(){
 		'ajax-load-more',
 		'alm_general_settings'
 	);
-   
-   /*
-   Removed in 3.2.1   
-	add_settings_field(  // Nonce security
-		'_alm_nonce_security',
-		__('Ajax Security', 'ajax-load-more' ),
-		'_alm_nonce_security_callback',
+
+	add_settings_field(  // Inline CSS
+		'_alm_inline_css',
+		__('Load CSS Inline', 'ajax-load-more' ),
+		'alm_inline_css_callback',
 		'ajax-load-more',
 		'alm_general_settings'
 	);
-	*/
 
 	add_settings_field(  // Scroll to top on load
 		'_alm_scroll_top',
@@ -1062,6 +1096,12 @@ function alm_admin_init(){
 	// CUSTOM REPEATERS
 	if(has_action('alm_unlimited_settings')){
    	do_action('alm_unlimited_settings');
+   }
+
+
+	// FILTERS
+	if(has_action('alm_filters_settings')){
+   	do_action('alm_filters_settings');
    }
 
 
@@ -1410,11 +1450,13 @@ function alm_btn_class_callback(){
     	jQuery('input#alm_disable_css_input').change(function() {
     		var el = jQuery(this);
 	      if(el.is(":checked")) {
-	      	el.parent().parent('tr').next('tr').hide(); // Hide button color
-	      	el.parent().parent('tr').next('tr').next('tr').hide(); // Hide inline css
+	      	el.parent().parent('tr').next('tr').hide(); // Hide button
+	      	el.parent().parent('tr').next('tr').next('tr').hide(); // Hide button color
+	      	el.parent().parent('tr').next('tr').next('tr').next('tr').hide(); // Hide inline css
 	      }else{
-	      	el.parent().parent('tr').next('tr').show(); // show button color
-	      	el.parent().parent('tr').next('tr').next('tr').show(); // show inline css
+	      	el.parent().parent('tr').next('tr').show(); // show button
+	      	el.parent().parent('tr').next('tr').next('tr').show(); // show button color
+	      	el.parent().parent('tr').next('tr').next('tr').next('tr').show(); // show inline css
 	      }
 	   });
 

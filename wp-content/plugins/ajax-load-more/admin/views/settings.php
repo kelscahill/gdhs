@@ -58,18 +58,20 @@
       	   	<?php
          	   	if(has_action('alm_cache_settings'))
                      echo '<option value="2">'.__('Cache', 'ajax-load-more').'</option>';
+         	   	if(has_action('alm_filters_installed'))
+                     echo '<option value="3">'.__('Filters', 'ajax-load-more').'</options>';
          	   	if(has_action('alm_layouts_installed'))
-                     echo '<option value="3">'.__('Layouts', 'ajax-load-more').'</options>';
+                     echo '<option value="4">'.__('Layouts', 'ajax-load-more').'</options>';
          	   	if(has_action('alm_paging_settings'))
-                     echo '<option value="4">'.__('Paging', 'ajax-load-more').'</option>';
+                     echo '<option value="5">'.__('Paging', 'ajax-load-more').'</option>';
          	   	if(has_action('alm_prev_post_settings'))
-                     echo '<option value="5">'.__('Previous Post', 'ajax-load-more').'</option>';
+                     echo '<option value="6">'.__('Previous Post', 'ajax-load-more').'</option>';
                   if(has_action('alm_rest_api_settings'))
-                     echo '<option value="6">'.__('REST API', 'ajax-load-more').'</option>';
+                     echo '<option value="7">'.__('REST API', 'ajax-load-more').'</option>';
                   if(has_action('alm_seo_settings'))
-                     echo '<option value="7">'.__('SEO', 'ajax-load-more').'</option>';
+                     echo '<option value="8">'.__('SEO', 'ajax-load-more').'</option>';
                   if(has_action('alm_theme_repeaters_settings'))
-                     echo '<option value="8">'.__('Theme Repeaters', 'ajax-load-more').'</option>';
+                     echo '<option value="9">'.__('Theme Repeaters', 'ajax-load-more').'</option>';
          	   ?>
    	   	   </select>
        	   </div>
