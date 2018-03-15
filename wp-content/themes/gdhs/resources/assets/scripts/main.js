@@ -95,6 +95,7 @@
           speed: 250,
           fade: true,
           cssEase: 'linear',
+          useTransform: true
         });
 
         $('.slick-gallery').slick({

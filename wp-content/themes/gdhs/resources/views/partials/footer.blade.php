@@ -3,7 +3,7 @@
     <div class="c-footer__links u-spacing--double">
       <div class="c-footer__question u-spacing">
         <h3 class="u-font--xl u-color--white">Have a question?</h3>
-        <p class="u-color--gray">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut molestie nunc magna, eu posuere nisi fermentum nec.</p>
+        <p class="u-color--gray">Please let us know if you have a question or comment about our organization or this website.</p>
         <p><a href="/contact" class="u-link--cta u-link--white">Get in touch<span class="u-icon u-icon--m u-path-fill--white">@include('patterns.icons.o-arrow--short')</span></a></p>
       </div>
       <div class="c-footer__nav u-spacing">
