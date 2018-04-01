@@ -22,7 +22,7 @@
     <div class="c-article__content--left js-sticky-social">
       @include('patterns.components.c-share-tools')
     </div>
-    <div class="c-article__content--right c-article__body u-spacing--double">
+    <div class="c-article__content--right c-article__body u-spacing--double @if (get_field('hide_dropcap') != 1){{ 'has-dropcap' }}@endif">
       @php(the_content())
       @php($blocks = get_field('block'))
       @if ($blocks)

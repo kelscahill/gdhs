@@ -26,9 +26,9 @@
           @if ($gallery)
             <div class="slick-gallery">
               @foreach ($gallery as $item)
-                <picture class="c-article__image u-spacing--half">
-                  <source srcset="{{ $item['sizes']['vert__3x4--m'] }}" media="(min-width:600px)">
-                  <img src="{{ $item['sizes']['vert__3x4--s'] }}" alt="{{ $item['alt'] }}" class="u-center-block">
+                <picture class="c-article__image">
+                  <source srcset="{{ $item['sizes']['flex-height--m'] }}" media="(min-width:350px)">
+                  <img src="{{ $item['sizes']['flex-height--s'] }}" alt="{{ $item['alt'] }}" class="u-center-block">
                 </picture>
               @endforeach
             </div>
@@ -36,23 +36,25 @@
             @php
               $thumb_id = get_post_thumbnail_id();
               $caption = get_the_post_thumbnail_caption();
-              $image_small = wp_get_attachment_image_src($thumb_id, 'vert__3x4--s')[0];
-              $image_medium = wp_get_attachment_image_src($thumb_id, 'vert__3x4--m')[0];
+              $image_small = wp_get_attachment_image_src($thumb_id, 'flex-height--s')[0];
+              $image_medium = wp_get_attachment_image_src($thumb_id, 'flex-height--m')[0];
               $image_alt = get_post_meta($thumb_id, '_wp_attachment_image_alt', true);
             @endphp
             <picture class="c-article__image u-spacing--half">
-              <source srcset="{{ $image_medium }}" media="(min-width:600px)">
+              <source srcset="{{ $image_medium }}" media="(min-width:350px)">
               <img src="{{ $image_small }}" alt="{{ $image_alt }}" class="u-center-block">
               @if ($caption)
                 <div class="o-caption u-font--s">{{ $caption }}</div>
               @endif
             </picture>
-            @endif
+          @endif
         </div>
         <div class="c-article--right u-spacing--double">
-          @php(the_content())
+          <div class="u-clear-fix">
+            @php(the_content())
+          </div>
           @if (have_rows('product_details'))
-            <span class="u-list__title u-font--secondary--s u-color--secondary u-display--block">Details</span>
+            <span class="u-list__title u-font--secondary--s u-color--secondary u-display--block u-space--double--top">Details</span>
             <ul class="u-list__details">
               @while (have_rows('product_details'))
                 @php(the_row())
@@ -64,7 +66,7 @@
             @if ($button || $pdf)
               <div class="c-article__footer--left">
                 @if ($button)
-                  <a href="{{ $button }}" class="o-button u-button--red" target="_blank">Buy Now</a>
+                  <a href="{{ $button }}" class="o-button u-button--red" target="_blank">Order Now</a>
                 @endif
                 @if ($pdf)
                   <a href="{{ $pdf }}" class="u-link u-font--m u-font-style--italic" target="_blank">PDF Download</a>

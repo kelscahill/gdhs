@@ -20,7 +20,7 @@
       </picture>
     @endif
   @endif
-  <div class="c-article__body u-spacing--double">
+  <div class="c-article__body u-spacing--double @if (get_field('hide_dropcap') != 1){{ 'has-dropcap' }}@endif">
     @php(the_content())
   </div>
   @if (is_page('gallery'))

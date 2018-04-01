@@ -137,3 +137,14 @@ label + .wpcf7-form-control-wrap {
     margin-top: 0;
   }
 }
+
+.o-filter-select {
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: $secondary-color;
+  width: rem(125);
+  margin-left: $space;
+
+  @include p;
+}

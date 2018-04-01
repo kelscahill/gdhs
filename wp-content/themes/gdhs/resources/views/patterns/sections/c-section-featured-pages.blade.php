@@ -32,9 +32,11 @@
           @endif
           <div class="c-block__content u-spacing u-padding--double">
             <div class="u-block__header u-spacing">
-              <h2 class="u-font--secondary--s u-color--tan">{{ $title }}</h2>
               @if ($excerpt)
+                <h2 class="u-font--secondary--s u-color--tan">{{ $title }}</h2>
                 <p class="u-font--primary--l u-color--white">{{ $excerpt }}</p>
+              @else
+                <h2 class="u-font--primary--l u-color--white">{{ $title }}</h2>
               @endif
             </div>
             <div class="u-block__link">

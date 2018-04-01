@@ -1,6 +1,7 @@
 @php
   $id = get_queried_object_id();
   $thumb_id = get_post_thumbnail_id($id);
+  $caption = get_the_post_thumbnail_caption($id);
   if ($thumb_id) {
     $classes = 'c-section-hero--tall u-overlay u-background--cover u-background-image--' . $thumb_id;
   } else {
@@ -59,4 +60,9 @@
       </p>
     @endif
   </div>
+  @if ($caption)
+    <span class="c-section-hero__caption o-caption u-font--s u-color--white">
+      {{ $caption }}
+    </span>
+  @endif
 </section>

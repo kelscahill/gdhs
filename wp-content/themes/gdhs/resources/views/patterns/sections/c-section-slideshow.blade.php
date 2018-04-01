@@ -14,16 +14,21 @@
           <div class="c-slideshow__image u-overlay slick-background u-background--cover u-background-image--{{ $thumb_id }}"></div>
           <style>
             .u-background-image--{{ $thumb_id }} {
-              background-image: url({{ wp_get_attachment_image_src($thumb_id, "flex-height--m")[0] }});
+              background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--s")[0] }});
             }
-            @media (min-width: 700px) {
+            @media (min-width: 500px) {
               .u-background-image--{{ $thumb_id }} {
-                background-image: url({{ wp_get_attachment_image_src($thumb_id, "flex-height--l")[0] }});
+                background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--m")[0] }});
+              }
+            }
+            @media (min-width: 800px) {
+              .u-background-image--{{ $thumb_id }} {
+                background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--l")[0] }});
               }
             }
             @media (min-width: 1100px) {
               .u-background-image--{{ $thumb_id }} {
-                background-image: url({{ wp_get_attachment_image_src($thumb_id, "flex-height--xl")[0] }});
+                background-image: url({{ wp_get_attachment_image_src($thumb_id, "featured__hero--xl")[0] }});
               }
             }
           </style>

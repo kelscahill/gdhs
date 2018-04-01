@@ -89,4 +89,8 @@
     align-items: center;
     margin: rem(-100) auto 0 auto;
   }
+
+  + .c-section-events {
+    margin-top: $space*4;
+  }
 }

@@ -2,6 +2,28 @@
     $BLOCKS
 \*------------------------------------ */
 
+.single-product,
+.template-shop {
+  .c-block__thumb {
+    background: white;
+    min-height: rem(200);
+    position: relative;
+    border-bottom: 1px solid $border-color;
+
+    img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: block;
+      max-height: 80%;
+      margin: auto;
+      width: auto;
+    }
+  }
+}
+
 .c-block__default {
   .l-grid {
     margin: 0;
@@ -11,6 +33,7 @@
   .c-block__media {
     min-height: rem(250);
     background-color: $tan;
+    background-size: cover;
 
     @include media('>large') {
       min-height: rem(300);

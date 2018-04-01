@@ -5,7 +5,7 @@
     'posts_per_page' => 4,
     'post_status' => 'publish',
     'order' => 'DESC',
-    'category' => 'news'
+    'category_name' => 'featured'
   ));
 @endphp
 @if ($posts->have_posts())

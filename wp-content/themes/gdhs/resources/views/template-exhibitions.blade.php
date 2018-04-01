@@ -11,13 +11,28 @@
       'posts_per_page' => 12,
       'post_status' => 'publish',
       'orderby' => $orderby,
-      'order' => $order,
+      'order' => $order
+    ));
+  } else if (isset($_GET['category'])) {
+    // Display posts based on the query_var
+    $cat = ($_GET['category']);
+    $posts = new WP_Query(array(
+      'post_type' => 'exhibit',
+      'posts_per_page' => 12,
+      'post_status' => 'publish',
+      'tax_query' => array(
+        array(
+          'taxonomy' => 'exhibit_category',
+          'field'    => 'slug',
+          'terms'    => $cat,
+        ),
+      )
     ));
   } else {
     // Display news post by date
     $posts = new WP_Query(array(
       'posts_per_page' => 12,
-      'post_type' => 'exhibit',
+      'post_type' => 'exhibit'
     ));
   }
 @endphp

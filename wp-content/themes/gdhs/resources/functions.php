@@ -93,6 +93,100 @@ if ($sage_views !== get_option('stylesheet')) {
     exit();
 }
 
+/*
+ * Add columns to events post list
+ */
+function add_acf_columns($columns) {
+  return array_merge($columns, array (
+    'event_start_date' => 'Event Start Date'
+  ));
+ }
+ add_filter('manage_events_posts_columns', 'add_acf_columns');
+
+/*
+ * Add columns to events post list
+ */
+function events_custom_column($column, $post_id) {
+  switch ($column) {
+    case 'event_start_date':
+    $date = get_post_meta($post_id, 'event_start_date', true);
+    echo date("F j, Y g:ia", strtotime($date));
+    break;
+  }
+}
+add_action('manage_events_posts_custom_column', 'events_custom_column', 10, 2);
+
+/*
+ * Sort event start date column
+ */
+function my_sortable_events_column($column) {
+    $column['event_start_date'] = 'event_start_date';
+    return $column;
+}
+add_filter( 'manage_edit-events_sortable_columns', 'my_sortable_events_column' );
+
+/**
+ * Change post status to `Draft` for events that are old
+ */
+
+// Add a new interval of 1 seconds
+function gdhs_add_seconds($schedules) {
+ $schedules['everysecond'] = array(
+   'interval' => 60,
+   'display' => __('Every Second')
+ );
+ return $schedules;
+}
+add_filter('cron_schedules', 'gdhs_add_seconds');
+
+// Schedule an action if it's not already scheduled
+if (!wp_next_scheduled('expire_posts') ) {
+  wp_schedule_event(time(), 'everysecond', 'expire_posts');
+}
+
+// Hook into that action that'll fire every three minutes
+add_action('expire_posts', 'expire_posts_function');
+function expire_posts_function() {
+  date_default_timezone_set('US/Eastern');
+  $today = new DateTime(date('Y-m-d'));
+  $today = $today->modify('-1 day');
+  $today = $today->format('Y-m-d');
+  $timezone = date('T');
+  $today = $today . ' 11:59:00 PM ' . $timezone;
+  $args = array(
+    'post_type' => 'events',
+    'posts_per_page' => -1
+  );
+  $events = get_posts($args);
+  foreach ($events as $event) {
+    $id = $event->ID;
+    $start_date = get_post_meta($id, 'event_start_date', true);
+    $end_date = get_post_meta($id, 'event_end_date', true);
+    $start_time = get_post_meta($id, 'event_start_date', true);
+    $end_time = get_post_meta($id, 'event_end_date', true);
+    if ($end_date) {
+      $event_date = date("Y-m-d", strtotime($end_date));
+    } else {
+      $event_date = date("Y-m-d", strtotime($start_date));
+    }
+    if ($end_time) {
+      $event_time = date("h:i:s A T", strtotime($end_time));
+    } elseif ($start_time) {
+      $event_time = date("h:i:s A T", strtotime($start_time));
+    } else {
+      $event_time = date("h:i:s A T", strtotime('12:00 AM'));
+    }
+    $date = $event_date . ' ' . $event_time;
+    if ($date < $today) {
+      $postdata = array(
+        'ID' => $id,
+        'post_status' => 'draft'
+      );
+      wp_update_post($postdata);
+    }
+  }
+}
+
 /**
  * Load ajax script on news template
  */
@@ -163,7 +257,7 @@ function cptui_register_my_cpts() {
     "query_var" => true,
     "menu_position" => 4,
     "menu_icon" => "dashicons-calendar-alt",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt" )
+    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
   );
 
   register_post_type( "events", $event_args );
@@ -204,7 +298,7 @@ function cptui_register_my_cpts() {
     "query_var" => true,
     "menu_position" => 5,
     "menu_icon" => "dashicons-format-gallery",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt" )
+    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
   );
 
   register_post_type( "exhibit", $exhibit_args );
@@ -245,7 +339,7 @@ function cptui_register_my_cpts() {
     "query_var" => true,
     "menu_position" => 5,
     "menu_icon" => "dashicons-book-alt",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt" )
+    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
   );
 
   register_post_type( "library", $research_args );
@@ -286,7 +380,7 @@ function cptui_register_my_cpts() {
     "query_var" => true,
     "menu_position" => 5,
     "menu_icon" => "dashicons-cart",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt" )
+    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
   );
 
   register_post_type( "product", $product_args );
@@ -1258,4 +1352,125 @@ acf_add_local_field_group(array (
   'description' => '',
 ));
 
+acf_add_local_field_group(array (
+  'key' => 'group_5abae0be304a0',
+  'title' => 'Hide Author',
+  'fields' => array (
+    array (
+      'key' => 'field_5abae0c8ddc6d',
+      'label' => 'Hide Author',
+      'name' => 'hide_author',
+      'type' => 'true_false',
+      'instructions' => 'Check to hide the author from displaying on the page.',
+      'required' => 0,
+      'conditional_logic' => 0,
+      'wrapper' => array (
+        'width' => '',
+        'class' => '',
+        'id' => '',
+      ),
+      'message' => '',
+      'default_value' => 0,
+    ),
+  ),
+  'location' => array (
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'post',
+      ),
+    ),
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'exhibit',
+      ),
+    ),
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'library',
+      ),
+    ),
+  ),
+  'menu_order' => 0,
+  'position' => 'side',
+  'style' => 'default',
+  'label_placement' => 'top',
+  'instruction_placement' => 'label',
+  'hide_on_screen' => '',
+  'active' => 1,
+  'description' => '',
+));
+
+acf_add_local_field_group(array (
+  'key' => 'group_5ac0f3ab01971',
+  'title' => 'Hide Dropcap',
+  'fields' => array (
+    array (
+      'key' => 'field_5ac0f3b5f5c18',
+      'label' => 'Hide Dropcap',
+      'name' => 'hide_dropcap',
+      'type' => 'true_false',
+      'instructions' => 'Check to hide the dropcap from displaying in the text area.',
+      'required' => 0,
+      'conditional_logic' => 0,
+      'wrapper' => array (
+        'width' => '',
+        'class' => '',
+        'id' => '',
+      ),
+      'message' => '',
+      'default_value' => 0,
+    ),
+  ),
+  'location' => array (
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'page',
+      ),
+    ),
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'post',
+      ),
+    ),
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'events',
+      ),
+    ),
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'library',
+      ),
+    ),
+    array (
+      array (
+        'param' => 'post_type',
+        'operator' => '==',
+        'value' => 'exhibit',
+      ),
+    ),
+  ),
+  'menu_order' => 0,
+  'position' => 'side',
+  'style' => 'default',
+  'label_placement' => 'top',
+  'instruction_placement' => 'label',
+  'hide_on_screen' => '',
+  'active' => 1,
+  'description' => '',
+));
 endif;

@@ -91,7 +91,7 @@
   }
 @endphp
 <header class="c-page-header l-container l-narrow l-narrow--l u-text-align--center u-spacing--double">
-  @if (isset($breadcrumbs))
+  @if (!empty($breadcrumbs))
     <div class="c-page-header__breadcrumbs">
       @include('patterns.components.c-breadcrumbs')
     </div>

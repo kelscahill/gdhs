@@ -1,4 +1,5 @@
 @php
+  date_default_timezone_set('US/Eastern');
   $id = get_the_ID();
   $title = get_the_title($id);
   $body = strip_tags(get_the_content());
@@ -9,17 +10,18 @@
   $link = get_permalink($id);
   $disable_link = get_field('disable_link', $id);
   $location = get_field('event_location', $id);
+
   $start_date = get_field('event_start_date', false, false);
   $start_date = new DateTime($start_date);
+  $start_date_formatted = $start_date->format('F j, Y');
   $start_time = $start_date->format('g:ia');
-
   $end_date = get_field('event_end_date', false, false);
   if ($end_date) {
     $end_date = new DateTime($end_date);
+    $end_date_formatted = $end_date->format('F j, Y');
     $end_time = $end_date->format('g:ia');
   }
 
-  $date = $start_date->format('F j, Y');
   $date_month = $start_date->format('M');
   $date_day = $start_date->format('l');
   $date_date = $start_date->format('d');
@@ -52,8 +54,14 @@
             {{ $title }}
           </h3>
           <span class="u-font--s">
-            {{ $date }}, @if(!empty($start_time)){{ $start_time }}@endif
-            @if(!empty($end_time)){{ ' to ' . $end_time }}@endif
+            {{ $start_date_formatted }}, @if(!empty($start_time)){{ $start_time }}@endif
+            @if(!empty($end_time))
+              @if($start_date_formatted != $end_date_formatted)
+                {{ ' to ' . $end_date_formatted . ', ' . $end_time }}
+              @else
+                {{ ' to ' . $end_time }}
+              @endif
+            @endif
             @if($location){{ '- ' . $location }}@endif
           </span>
         </div>

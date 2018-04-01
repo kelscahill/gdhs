@@ -69,6 +69,18 @@
           }
         });
 
+        $(window).load(function() {
+          setTimeout(function(){
+            $('html').removeClass("preload");
+          }, 1000);
+        });
+
+        $('.o-filter-select').on('change', function() {
+          var data = $(this).find(':selected').data('filter');
+          window.history.pushState({}, '', data);
+          location.reload();
+        });
+
         // Add active class the menu-nav link
         var url = window.location.toString();
 

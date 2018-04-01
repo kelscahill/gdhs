@@ -1,5 +1,5 @@
 <!doctype html>
-<html @php(language_attributes())>
+<html @php(language_attributes()) class="preload">
   @include('partials.head')
   <body id="top" @php(body_class())>
     @php(do_action('get_header'))

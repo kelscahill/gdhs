@@ -23,7 +23,6 @@
     'meta_type' => 'DATE'
   ));
 @endphp
-
 @extends('layouts.app')
 @section('content')
   @include('patterns.sections.c-section-hero')

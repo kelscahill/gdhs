@@ -109,7 +109,9 @@
       justify-content: center;
 
       > * {
-        margin: 0 $space 0 0;
+        @include media('>small') {
+          margin: 0 $space 0 0;
+        }
       }
     }
 
@@ -219,7 +221,12 @@ ul {
     margin: 0 auto;
   }
 
-  > p:first-child::first-letter {
+  > .c-article--left {
+    max-width: 100%;
+    margin-bottom: $space;
+  }
+
+  &.has-dropcap > p:first-child::first-letter {
     color: $secondary-color;
     float: left;
     font-size: rem(60);
@@ -391,5 +398,23 @@ ul {
   .size-thumbnail {
     max-width: rem(400);
     height: auto;
+  }
+}
+
+.c-article--right {
+  .alignleft,
+  .alignright {
+    min-width: 33.33%;
+    max-width: 33.33%;
+
+    img {
+      width: 100%;
+    }
+  }
+
+  .alignright {
+    @include media('>large') {
+      margin-right: 0;
+    }
   }
 }
