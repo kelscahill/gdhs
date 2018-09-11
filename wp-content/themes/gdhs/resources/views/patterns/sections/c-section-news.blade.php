@@ -11,6 +11,7 @@
 @if ($posts->have_posts())
   <section class="c-section c-section-news">
     <div class="c-section--inner l-container u-spacing">
+      <h3 class="u-text-align--center">Announcements</h3>
       <div class="l-narrow l-narrow--l">
         <div class="c-section-news__grid l-grid l-grid--4-col">
           @while ($posts->have_posts()) @php($posts->the_post())

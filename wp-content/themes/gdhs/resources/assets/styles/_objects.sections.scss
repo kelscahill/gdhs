@@ -8,6 +8,10 @@
   @include media('>medium') {
     padding: $pad*4 0;
   }
+
+  &__blocks {
+    padding-top: 0;
+  }
 }
 
 .c-slideshow {

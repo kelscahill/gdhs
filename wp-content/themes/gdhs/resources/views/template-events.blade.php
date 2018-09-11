@@ -5,7 +5,6 @@
   // Display events by date greater than today
   // Find date time now
   $date_now = date('Y-m-d H:i:s');
-
   $posts = new WP_Query(array(
     'posts_per_page' => -1,
     'post_type' => 'events',
@@ -20,7 +19,7 @@
     'order' => 'ASC',
     'orderby' => 'meta_value',
     'meta_key' => 'event_start_date',
-    'meta_type' => 'DATE'
+    'meta_type' => 'DATETIME'
   ));
 @endphp
 @extends('layouts.app')
