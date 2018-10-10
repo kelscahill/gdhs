@@ -2,8 +2,8 @@
   // Display events by date greater than today
 
   // Find date time now
-  $date_now = date('Y-m-d H:i:s');
-  //print_r()
+  date_default_timezone_set('America/New_York');
+  $date_now = date('Y-m-d 24:00:00', mktime(date('H'),date('i'),date('s'), date('m'),date('d')-1,date('Y')));
   $posts = new WP_Query(array(
     'posts_per_page' => 3,
     'post_type' => 'events',
