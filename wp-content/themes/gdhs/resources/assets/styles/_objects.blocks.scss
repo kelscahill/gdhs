@@ -335,3 +335,53 @@
     }
   }
 }
+
+.c-block-gallery {
+  &__images {
+    display: flex;
+    flex-direction: column;
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  }
+
+  &__image {
+    figure {
+      position: relative;
+      width: 100%;
+      height: auto;
+    }
+
+    figure > figcaption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      padding: $space / 4;
+      background-color: rgba(black, 0.6);
+      color: white;
+    }
+  }
+
+  &__nav {
+    margin-top: $space / 4;
+    margin-left: -$space / 4;
+    margin-right: -$space / 4;
+
+    picture {
+      cursor: pointer;
+      padding: $space / 4;
+    }
+
+    .slick-slide:focus {
+      border-radius: 0;
+      outline: 0;
+      box-shadow: inset 0 0 0 2px $primary-color;
+    }
+  }
+}

@@ -210,6 +210,38 @@ add_filter('upload_mimes', 'cc_mime_types');
 add_post_type_support( 'page', 'excerpt' );
 
 /**
+ * ALPS Gutenberg Blocks
+ */
+
+// Remove colors and text styles from Gutenberg
+add_theme_support('disable-custom-colors');
+add_theme_support('editor-color-palette');
+add_theme_support('editor-text-styles');
+add_theme_support('wp-block-styles');
+
+// Only allow the following blocks in Gutenberg
+add_filter('allowed_block_types', function () {
+  return [
+    'core/heading',
+    'core/image',
+    'core/block',
+    'core/embed',
+    'core/spacer',
+    'core/buttons',
+    'core/list',
+    'core/shortcode',
+    'core/video',
+    'core/html',
+    'core/embed',
+    'core/paragraph',
+    'core/separator',
+    'core/quote',
+    'core/table',
+    'acf/gallery',
+  ];
+});
+
+/**
  * ACF Options Page
  */
 if( function_exists('acf_add_options_page') ) {
@@ -1474,3 +1506,34 @@ acf_add_local_field_group(array (
   'description' => '',
 ));
 endif;
+
+/**
+ * Custom block types.
+ *
+ * @package WordPress
+ */
+
+/**
+ * Register custom block types.
+ */
+function register_custom_block_types() {
+	if ( function_exists( 'acf_register_block_type' ) ) {
+		// Register a gallery block.
+		acf_register_block_type(
+			array(
+				'name'            => 'gallery',
+				'title'           => 'Gallery',
+				'description'     => 'A custom gallery block.',
+				'category'        => 'media',
+				'icon'            => 'format-gallery',
+				'keywords'        => array( 'gallery', 'images' ),
+				'render_template' => 'views/partials/block-gallery.blade.php',
+				'mode'            => 'edit',
+				'supports'        => array(
+					'mode' => false,
+				),
+			)
+		);
+	}
+}
+add_action( 'init', 'register_custom_block_types' );

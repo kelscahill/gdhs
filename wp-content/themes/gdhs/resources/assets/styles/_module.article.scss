@@ -324,16 +324,6 @@ ul {
     @include u-font--s;
   }
 
-  figure {
-    max-width: none;
-    width: auto !important;
-
-    img {
-      margin: 0 auto;
-      display: block;
-    }
-  }
-
   blockquote {
     p {
       @include u-font--xl;

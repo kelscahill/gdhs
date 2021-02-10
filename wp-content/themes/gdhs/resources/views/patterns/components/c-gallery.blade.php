@@ -1,6 +1,6 @@
 @php($gallery = get_field('gallery'))
 @if($gallery)
-  <div class="l-narrow c-gallery l-grid--photos">
+  <div class="l-narrow--xl c-gallery l-grid--photos">
     @foreach($gallery as $image)
       @php
         $width = $image['width'];

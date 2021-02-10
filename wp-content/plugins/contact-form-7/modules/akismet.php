@@ -4,9 +4,9 @@
 ** Akismet API: http://akismet.com/development/api/
 **/
 
-add_filter( 'wpcf7_spam', 'wpcf7_akismet' );
+add_filter( 'wpcf7_spam', 'wpcf7_akismet', 10, 2 );
 
-function wpcf7_akismet( $spam ) {
+function wpcf7_akismet( $spam, $submission ) {
 	if ( $spam ) {
 		return $spam;
 	}
@@ -32,9 +32,15 @@ function wpcf7_akismet( $spam ) {
 	$c['user_ip'] = $_SERVER['REMOTE_ADDR'];
 	$c['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
 	$c['referrer'] = $_SERVER['HTTP_REFERER'];
-
-	// http://blog.akismet.com/2012/06/19/pro-tip-tell-us-your-comment_type/
 	$c['comment_type'] = 'contact-form';
+
+	$datetime = date_create_immutable(
+		'@' . $submission->get_meta( 'timestamp' )
+	);
+
+	if ( $datetime ) {
+		$c['comment_date_gmt'] = $datetime->format( DATE_ATOM );
+	}
 
 	if ( $permalink = get_permalink() ) {
 		$c['permalink'] = $permalink;
@@ -48,7 +54,18 @@ function wpcf7_akismet( $spam ) {
 		}
 	}
 
-	return wpcf7_akismet_comment_check( $c );
+	if ( wpcf7_akismet_comment_check( $c ) ) {
+		$spam = true;
+
+		$submission->add_spam_log( array(
+			'agent' => 'akismet',
+			'reason' => __( "Akismet returns a spam response.", 'contact-form-7' ),
+		) );
+	} else {
+		$spam = false;
+	}
+
+	return $spam;
 }
 
 function wpcf7_akismet_is_available() {
@@ -70,7 +87,8 @@ function wpcf7_akismet_submitted_params() {
 	$has_akismet_option = false;
 
 	foreach ( (array) $_POST as $key => $val ) {
-		if ( '_wpcf7' == substr( $key, 0, 6 ) || '_wpnonce' == $key ) {
+		if ( '_wpcf7' == substr( $key, 0, 6 )
+		or '_wpnonce' == $key ) {
 			continue;
 		}
 

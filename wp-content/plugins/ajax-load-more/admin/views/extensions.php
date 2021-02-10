@@ -5,6 +5,7 @@
             <?php echo ALM_TITLE; ?>: <strong><?php _e('Extensions', 'ajax-load-more'); ?></strong>
             <em><?php _e('Free extensions that provide compatibility with popular plugins and core WordPress functionality', 'ajax-load-more'); ?>.</em>
          </h1>
+         <?php alm_render_transient_notification(); ?>  
       </header>
       
       <div class="ajax-load-more-inner-wrapper">
@@ -23,6 +24,9 @@
    					),
    					array(
    						'slug' => 'ajax-load-more-for-searchwp'
+   					),
+   					array(
+   						'slug' => 'ajax-load-more-for-terms'
    					)
    				);	   				   			
       			if(class_exists('Connekt_Plugin_Installer')){

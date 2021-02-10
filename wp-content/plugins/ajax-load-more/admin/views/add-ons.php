@@ -6,17 +6,19 @@
             <?php echo ALM_TITLE; ?>: <strong><?php _e('Add-ons', 'ajax-load-more'); ?></strong>
             <em><?php _e('Add-ons are available to extend and enhance the core functionality of Ajax Load More', 'ajax-load-more'); ?>.</em>
          </h1>
+         <?php alm_render_transient_notification(); ?>
 		</header>
-		
-		<div class="ajax-load-more-inner-wrapper">		
-		
-   		<div class="cnkt-main">
-	   		
-	   		<div class="flexbox-wrap">      		
-	         <?php 
+
+		<div class="ajax-load-more-inner-wrapper">
+
+   		<div class="cnkt-main stylefree">
+
+	   		<div class="flexbox-wrap">
+					<?php
+					require_once( ALM_PATH . 'admin/includes/cta/pro-hero.php');
 	            $target = 'target="_blank"';
-	            $addons = alm_get_addons(); 	            
-	            foreach($addons as $addon){ 
+	            $addons = alm_get_addons();
+	            foreach( $addons as $addon ) {
 	         		$name = $addon['name'];
 	         		$intro = $addon['intro'];
 	         		$desc = $addon['desc'];
@@ -37,28 +39,28 @@
 	                     if (has_action($action)){
 	                        echo '<span class="cnkt-button installed"><i class="fa fa-check-square"></i> '. __('Installed', 'ajax-load-more') .'</span> ';
 	                     }else{
-	                        echo '<span class="cnkt-button"><i class="fa fa-download"></i> '. __('Purchase', 'ajax-load-more') .'</span>';
+	                        echo '<span class="cnkt-button">'. __('Purchase', 'ajax-load-more') .'</span>';
 	                     }
 	                  ?>
                   </a>
-	   		   </div>     		
-	      		<?php } ?>					
+	   		   </div>
+	      		<?php } ?>
 				</div>
-				
+
 				<div class="call-out light no-shadow">
 					<p><?php _e('All add-ons are installed as stand alone plugins and with a valid license key will receive plugin update notifications directly within the <a href="plugins.php">WordPress plugin dashboard</a>.', 'ajax-load-more'); ?></p>
 				</div>
    		</div>
-			
+
    	   <aside class="cnkt-sidebar">
       	   <div id="cnkt-sticky-wrapper">
 	      	   <div id="cnkt-sticky">
       	      	<?php include_once( ALM_PATH . 'admin/includes/cta/add-ons.php');	?>
 	      	   </div>
       	   </div>
-         </aside>   	   
-   	      	
-         <div class="clear"></div>   
+         </aside>
+
+         <div class="clear"></div>
       </div>
 
 	</div>

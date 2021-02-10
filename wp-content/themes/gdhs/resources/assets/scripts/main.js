@@ -120,6 +120,31 @@
           adaptiveHeight: true
         });
 
+        var $slickGalleryImages = $('.js-block-gallery');
+        var $slickGalleryNav = $('.js-block-gallery-nav');
+        if ($slickGalleryImages.length) {
+          $slickGalleryImages.slick({
+            speed: 500,
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            arrows: true,
+            fade: true,
+            dots: false,
+            asNavFor: $slickGalleryNav,
+            prevArrow: '<span class="u-icon--arrow u-icon--arrow-prev"></span>',
+            nextArrow: '<span class="u-icon--arrow u-icon--arrow-next"></span>',
+          });
+
+          $slickGalleryNav.slick({
+            slidesToShow: 4,
+            slidesToScroll: 1,
+            asNavFor: $slickGalleryImages,
+            draggable: true,
+            focusOnSelect: true,
+            arrows: false
+          });
+        }
+
         /**
          * Fixto
          */

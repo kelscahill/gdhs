@@ -1,31 +1,7 @@
 <?php
-
-
-/*
-*  alm_masonry_after
-*  Masonry HTML wrapper open
-*
-*  @param $transition string
-*  @since 3.1.0
-*/
-function alm_masonry_before($transition){
-	return ($transition === 'masonry') ? '<div class="alm-masonry">' : '';
-}
-add_filter('alm_masonry_before', 'alm_masonry_before');
-
-
-
-/*
-*  alm_masonry_after
-*  Masonry HTML wrapper close
-*
-*  @param $transition string
-*  @since 3.1.0
-*/
-function alm_masonry_after($transition){
-	return ($transition === 'masonry') ? '</div>' : '';
-}
-add_filter('alm_masonry_after', 'alm_masonry_after');
+// @codingStandardsIgnoreStart
+include_once ALM_PATH . 'core/functions/addons.php';
+include_once ALM_PATH . 'core/functions/masonry.php';
 
 
 
@@ -42,90 +18,108 @@ function alm_progress_css($counter, $progress_bar, $progress_bar_color){
 	if($counter == 1 && $progress_bar === 'true'){
 		$style = '
 <style>
-.pace {
-	-webkit-pointer-events: none;
-	pointer-events: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	user-select: none;
-}
-.pace-inactive {
-	display: none;
-}
-.pace .pace-progress {
-	background: #'. $progress_bar_color .';
-	position: fixed;
-	z-index: 2000;
-	top: 0;
-	right: 100%;
-	width: 100%;
-	height: 5px;
-	-webkit-box-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
-	box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
-}
+.pace { -webkit-pointer-events: none; pointer-events: none; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+.pace-inactive { display: none; }
+.pace .pace-progress { background: #'. $progress_bar_color .'; position: fixed; z-index: 2000; top: 0; right: 100%; width: 100%; height: 5px; -webkit-box-shadow: 0 0 3px rgba(255, 255, 255, 0.3); box-shadow: 0 0 2px rgba(255, 255, 255, 0.3); }
 </style>';
 		return $style;
 	}
 }
 add_filter('alm_progress_css', 'alm_progress_css', 10, 3);
 
-
-
 /*
-*  alm_css_disabled
-*  Has core ALM CSS disabled?
+*  Is ALM CSS disabled.
 *
 *  @param $setting name of the setting field
 *  @return boolean
 *  @since 3.3.1
 */
-
 function alm_css_disabled($setting) {
 	$options = get_option( 'alm_settings' );
 	$disabled = true;
-	if(!isset($options[$setting]) || $options[$setting] != '1'){
+	if(!isset($options[$setting]) || $options[$setting] !== '1'){
 		$disabled = false;
-	}	
-	return $disabled;	
+	}
+	return $disabled;
 }
 
-
-
-/*
-*  alm_do_inline_css
-*  Load ALM CSS inline
-*
-*
-*  @param $setting name of the setting field
-*  @return boolean
-*  @since 3.3.1
+/**
+ * Load ALM CSS inline.
+ *
+ *
+ * @param $setting name of the setting field
+ * @return boolean
+ * @since 3.3.1
 */
-
 function alm_do_inline_css($setting) {
+
+	// Exit if this is a REST API request
+	if(defined('REST_REQUEST')){
+		if(REST_REQUEST) return false;
+	}
+
 	$options = get_option( 'alm_settings' );
 	$inline = false;
 	if(!isset($options[$setting]) || $options[$setting] === '1'){
 		$inline = true;
-	}	
-	return $inline;	
+	}
+	return $inline;
+}
+
+/**
+ * This function will return HTML of a looped item.
+ *
+ * @param string  $repeater
+ * @param string  $type
+ * @param string  $theme_repeater
+ * @param string  $alm_found_posts
+ * @param string  $alm_page
+ * @param string  $alm_item
+ * @param string  $alm_current
+ * @param array   $args
+ * @param boolean $ob
+ * @return $html
+ * @since 3.7
+*/
+function alm_loop($repeater, $type, $theme_repeater, $alm_found_posts = '', $alm_page = '', $alm_item = '', $alm_current = '', $args, $ob = true){
+
+	if ( $ob ) { // If Output Buffer is true.
+		ob_start();
+	}
+
+   // Theme Repeater.
+	if ( $theme_repeater !== 'null' && has_filter( 'alm_get_theme_repeater' ) ) {
+		do_action( 'alm_get_theme_repeater', $theme_repeater, $alm_found_posts, $alm_page, $alm_item, $alm_current );
+	}
+	// Standard Repeater Templates.
+	else {
+		$file = alm_get_current_repeater( $repeater, $type );
+      include $file;
+	}
+
+	if ( $ob ) { // If Output Buffer is true.
+		$html = ob_get_contents();
+		ob_end_clean();
+		return $html;
+	}
 }
 
 
-
-/*
-*  alm_get_current_repeater
-*  Get the current repeater template file
-*
-*  @return $include (file path)
-*  @since 2.5.0
-*/
-
+/**
+ * Get the current repeater template file
+ *
+ * @param string $repeater current repater name
+ * @param string $type Type of template *
+ * @return $include (file path)
+ * @since 2.5.0
+ * @updated 3.5.1
+ */
 function alm_get_current_repeater($repeater, $type) {
 
 	$template = $repeater;
 	$include = '';
 
-	// If is Custom Repeaters (Custom Repeaters v1)
+	// Custom Repeaters v1
 	if( $type == 'repeater' && has_action('alm_repeater_installed' )){
 		$include = ALM_REPEATER_PATH . 'repeaters/'. $template .'.php';
 
@@ -134,15 +128,22 @@ function alm_get_current_repeater($repeater, $type) {
 		}
 
 	}
-   // If is Unlimited Repeaters (Custom Repeaters v2)
-	elseif( $type == 'template_' && has_action('alm_unlimited_installed' )){
-		global $wpdb;
-		$blog_id = $wpdb->blogid;
 
-		if($blog_id > 1){
-			$include = ALM_UNLIMITED_PATH. 'repeaters/'. $blog_id .'/'.$template .'.php';
-		}else{
-			$include = ALM_UNLIMITED_PATH. 'repeaters/'.$template .'.php';
+   // Custom Repeaters v2
+	elseif( $type == 'template_' && has_action('alm_unlimited_installed' )){
+
+   	// Custom Repeaters 2.5+
+   	if(ALM_UNLIMITED_VERSION >= '2.5'){
+      	// Get path to repeater (alm_templates)
+			$base_dir = AjaxLoadMore::alm_get_repeater_path();
+			$include = $base_dir .'/'. $template .'.php';
+
+   	} else {
+
+   		global $wpdb;
+   		$blog_id = $wpdb->blogid;
+   		$include = ($blog_id > 1) ? ALM_UNLIMITED_PATH. 'repeaters/'. $blog_id .'/'. $template .'.php' : ALM_UNLIMITED_PATH. 'repeaters/'. $template .'.php';
+
 		}
 
 		if(!file_exists($include)){ //confirm file exists
@@ -155,30 +156,27 @@ function alm_get_current_repeater($repeater, $type) {
 	}
 
 	// Security check
-	// check if $template contains relative path. So, set include to default
+	// Confirm $template does NOT contains relative path
 	if ( false !== strpos( $template, './' ) ) {
 	   $include = alm_get_default_repeater();
 	}
 
 	return $include;
-
 }
 
 
 
-/*
-*  alm_get_default_repeater
-*  Get the default repeater template for current blog
-*
-*  @return $include (file path)
-*  @since 2.5.0
-*/
-
+/**
+ * Get the default repeater template for current blog
+ *
+ * @return $include (file path)
+ * @since 2.5.0
+ */
 function alm_get_default_repeater() {
 
 	global $wpdb;
 	$file = null;
-	$template_dir = 'alm_templates';
+	$template_dir = apply_filters( 'alm_template_path', 'alm_templates' );
 
 	// Allow user to load template from theme directory
 	// Since 2.8.5
@@ -200,14 +198,9 @@ function alm_get_default_repeater() {
 	}
 
 	// Since 2.0
-	// otherwise use pre-defined plug-in templates
+	// Updated 3.5
 	if($file == null){
-		$blog_id = $wpdb->blogid;
-		if($blog_id > 1){
-			$file = ALM_PATH. 'core/repeater/'. $blog_id .'/default.php'; // File
-		}else{
-			$file = ALM_PATH. 'core/repeater/default.php';
-		}
+   	$file = AjaxLoadMore::alm_get_repeater_path() .'/default.php';
 	}
 
 	return $file;
@@ -215,15 +208,13 @@ function alm_get_default_repeater() {
 
 
 
-/*
-*  alm_get_taxonomy
-*  Query by custom taxonomy values
-*
-*  @return $args = array();
-*  @since 2.5.0
-*
-*  @deprecated in 2.5.0
-*/
+/**
+ * Query by custom taxonomy values.
+ *
+ * @return $args = array();
+ * @since 2.5.0
+ * @deprecated in 2.5.0
+ */
 function alm_get_taxonomy($taxonomy, $taxonomy_terms, $taxonomy_operator){
    if(!empty($taxonomy) && !empty($taxonomy_terms) && !empty($taxonomy_operator)){
       $the_terms = explode(",", $taxonomy_terms);
@@ -299,14 +290,13 @@ function alm_get_taxonomy_query($taxonomy, $taxonomy_terms, $taxonomy_operator){
 
 
 
-/*
-*  alm_parse_tax_terms
-*  Parse the taxonomy terms for multiple vals
-*
-*  @helper function @alm_get_taxonomy_query()
-*  @return array;
-*  @since 2.8.5
-*/
+/**
+ * Parse the taxonomy terms for multiple vals.
+ *
+ * @helper function @alm_get_taxonomy_query()
+ * @return array;
+ * @since 2.8.5
+ */
 function alm_parse_tax_terms($taxonomy_terms){
 	// Remove all whitespace for $taxonomy_terms because it needs to be an exact match
 	$taxonomy_terms = preg_replace('/\s+/', ' ', $taxonomy_terms); // Trim whitespace
@@ -317,14 +307,12 @@ function alm_parse_tax_terms($taxonomy_terms){
 
 
 
-/*
-*  alm_get_tax_query
-*  Query by custom taxonomy values
-*
-*  @return $args = array();
-*  @since 2.5.0
-
-*  @deprecated in 2.8.5
+/**
+ * Query by custom taxonomy values.
+ *
+ * @return $args = array();
+ * @since 2.5.0
+ * @deprecated in 2.8.5
 */
 function alm_get_tax_query($post_format, $taxonomy, $taxonomy_terms, $taxonomy_operator){
 
@@ -404,19 +392,30 @@ function alm_get_tax_query($post_format, $taxonomy, $taxonomy_terms, $taxonomy_o
 	}
 }
 
-
-
-/*
-*  alm_get_meta_query
-*  Query by custom field values
-*
-*  @return $args = array();
-*  @since 2.5.0
-*/
+/**
+ * Query by custom field values.
+ *
+ * @return $args = array();
+ * @since 2.5.0
+ */
 function alm_get_meta_query($meta_key, $meta_value, $meta_compare, $meta_type){
-   if(!empty($meta_key)){
+
+   if ( !empty( $meta_key ) ) {
+      // do_shortcode fixes (shortcode was rendering as HTML when using < OR  <==)
+      $meta_compare = ($meta_compare === 'lessthan') ? '<' : $meta_compare;
+      $meta_compare = ($meta_compare === 'lessthanequalto') ? '<=' : $meta_compare;
+      $meta_compare = ($meta_compare === 'greaterthan') ? '>' : $meta_compare;
+      $meta_compare = ($meta_compare === 'greatthanequalto') ? '>=' : $meta_compare;
+
+      // Get optimized `meta_value` parameter
       $meta_values = alm_parse_meta_value($meta_value, $meta_compare);
-      if(!empty($meta_values)){
+
+      // Unset `$meta_values` if empty
+      if($meta_values === ''){
+         unset($meta_values);
+      }
+
+      if(isset($meta_values)){
          $return = array(
             'key' => $meta_key,
             'value' => $meta_values,
@@ -446,42 +445,39 @@ function alm_get_meta_query($meta_key, $meta_value, $meta_compare, $meta_type){
 *  @since 2.6.4
 */
 function alm_parse_meta_value($meta_value, $meta_compare){
-   // See the docs (http://codex.wordpress.org/Class_Reference/WP_Meta_Query)
-   if($meta_compare === 'IN' || $meta_compare === 'NOT IN' || $meta_compare === 'BETWEEN' || $meta_compare === 'NOT BETWEEN'){
+
+   // Meta Query Docs (http://codex.wordpress.org/Class_Reference/WP_Meta_Query)
+   $meta_array = array('IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN');
+
+   if(in_array($meta_compare, $meta_array)){
    	// Remove all whitespace for meta_value because it needs to be an exact match
    	$mv_trimmed = preg_replace('/\s+/', ' ', $meta_value); // Trim whitespace
    	$meta_values = str_replace(', ', ',', $mv_trimmed); // Replace [term, term] with [term,term]
-   	$meta_values = explode(",", $meta_values);
+   	$meta_values = ($meta_values === '') ? '' : explode(",", $meta_values);
    }else{
    	$meta_values = $meta_value;
    }
    return $meta_values;
 }
 
-
-
-/*
-*  alm_get_repeater_type
-*  Get type of repeater
-*
-*  @return $type;
-*  @since 2.9
-*/
+/**
+ * Get type of repeater.
+ *
+ * @return $type;
+ * @since 2.9
+ */
 function alm_get_repeater_type($repeater){
 	$type = preg_split('/(?=\d)/', $repeater, 2); // split $repeater value at number to determine type
    $type = $type[0]; // default | repeater | template_
 	return $type;
 }
 
-
-
-/*
-*  alm_get_canonical_url
-*  Get current page base URL
-*
-*  @return $canonicalURL;
-*  @since 2.12
-*/
+/**
+ * Get current page base URL
+ *
+ * @return $canonicalURL;
+ * @since 2.12
+ */
 function alm_get_canonical_url(){
 
 	$canonicalURL = '';
@@ -516,13 +512,13 @@ function alm_get_canonical_url(){
    }
    // Category
    elseif(is_category()){
-      $cur_cat_id = get_cat_id( single_cat_title('',false) );
-      $canonicalURL = get_category_link($cur_cat_id);
+      $cat_id = get_query_var( 'cat' );
+      $canonicalURL = get_category_link($cat_id);
    }
    // Tag
    elseif(is_tag()){
-      $cur_tag_id = get_query_var('tag_id');
-      $canonicalURL = get_tag_link($cur_tag_id);
+      $tag_id = get_query_var('tag_id');
+      $canonicalURL = get_tag_link($tag_id);
    }
    // Author
    elseif(is_author()){
@@ -531,9 +527,11 @@ function alm_get_canonical_url(){
    }
    // Taxonomy
    elseif(is_tax()){
-      $tax_term = get_term_by('slug', get_query_var('term'), get_query_var('taxonomy' ));
-      $tax_id = $tax_term->term_id;
-      $canonicalURL = get_term_link($tax_id);
+		$tax_term = get_term_by('slug', get_query_var('term'), get_query_var('taxonomy' ));
+		if($tax_term){
+      	$tax_id = $tax_term->term_id;
+      	$canonicalURL = get_term_link($tax_id);
+      }
    }
    // Post Type
    elseif(is_post_type_archive()){
@@ -551,19 +549,19 @@ function alm_get_canonical_url(){
 	return $canonicalURL;
 }
 
-
-
-/*
-*  alm_get_page_slug
-*  Get current page slug
-*
-*  @return slug;
-*  @since 2.13.0
-*/
+/**
+ * Get current page slug
+ *
+ * @return slug;
+ * @since 2.13.0
+ */
 function alm_get_page_slug($post){
 
+   // Exit if admin
+   if(is_admin()) return false;
+
 	if(!is_archive()){
-		// If not an archive page, set the post slug
+   	// If not archive, set the post slug
 		if(is_front_page() || is_home()){
 			$slug = 'home';
 		}else{
@@ -627,14 +625,16 @@ function alm_get_page_slug($post){
 }
 
 
-/*
-*  alm_get_page_id
-*  Get current page ID
-*
-*  @return $post_id;
-*  @since 3.0.1
-*/
+/**
+ * Get current page ID
+ *
+ * @return $post_id;
+ * @since 3.0.1
+ */
 function alm_get_page_id($post){
+
+   // Exit if admin
+   if(is_admin()) return false;
 
    $post_id = '';
 
@@ -687,14 +687,11 @@ function alm_get_page_id($post){
 	return $post_id;
 }
 
-
-
-/*
-*  alm_get_startpage
-*  Get query param of start page (paged, page)
-*
-*  @since 2.14.0
-*/
+/**
+ * Get query param of start page (paged, page)
+ *
+ * @since 2.14.0
+ */
 function alm_get_startpage(){
    if ( get_query_var('paged') ) {
       $start_page = get_query_var('paged');
@@ -706,62 +703,50 @@ function alm_get_startpage(){
    return $start_page;
 }
 
+/**
+ * Debug helper for printing variables to screen.
+ *
+ * @since 3.7
+ */
+function alm_pretty_print($query){
+	if($query){
+		echo '<pre>';
+		print_r($query);
+		echo '</pre>';
+	}
+}
 
+/**
+ * Convert dashes to underscores.
+ *
+ * @param $string string
+ * @return string
+ * @since 3.7
+ */
+function alm_convert_dashes_to_underscore($string = ''){
+	return str_replace('-', '_', $string);
+}
 
-/*
-*  alm_paging_no_script
-*  Create paging navigation
-*
-*  @return html;
-*  @since 2.8.3
-*/
-function alm_paging_no_script($alm_preload_query){
-   $numposts = $alm_preload_query->found_posts;
-   $max_page = $alm_preload_query->max_num_pages;
-   if(empty($paged) || $paged == 0) {
-      $paged = 1;
-   }
-   $pages_to_show = 8;
-   $pages_to_show_minus_1 = $pages_to_show-1;
-   $half_page_start = floor($pages_to_show_minus_1/2);
-   $half_page_end = ceil($pages_to_show_minus_1/2);
-   $start_page = $paged - $half_page_start;
-   if($start_page <= 0) {
-      $start_page = 1;
-   }
-   $end_page = $paged + $half_page_end;
-   if(($end_page - $start_page) != $pages_to_show_minus_1) {
-      $end_page = $start_page + $pages_to_show_minus_1;
-   }
-   if($end_page > $max_page) {
-      $start_page = $max_page - $pages_to_show_minus_1;
-      $end_page = $max_page;
-   }
-   if($start_page <= 0) {
-      $start_page = 1;
-   }
-   $content = '';
-   if ($max_page > 1) {
-      $content .= '<noscript>';
-      $content .= '<div>';
-      $content .= '<span>'.__('Pages:', 'ajax-load-more').'  </span>';
-      if ($start_page >= 2 && $pages_to_show < $max_page) {
-         $first_page_text = "&laquo;";
-         $content .= '<span class="page"><a href="'.get_pagenum_link().'">'.$first_page_text.'</a></span>';
+/**
+ * Remove posts if post__not_in is set in the ALM shortcode.
+ *
+ * @param $ids    array
+ * @param $not_in array
+ * @return array
+ * @since 3.7
+ */
+function alm_sticky_post__not_in($ids = '', $not_in = ''){
+
+   if(!empty($not_in)){
+      $new_array = array();
+      foreach($ids as $id){
+         if(!in_array($id, $not_in)){
+            array_push($new_array, $id);
+         }
       }
-      for($i = $start_page; $i  <= $end_page; $i++) {
-      if($i == $paged) {
-         $content .= ' <span class="page current">'.$i.'</span> ';
-      } else {
-         $content .= ' <span class="page"><a href="'.get_pagenum_link($i).'">'.$i.'</a></span>';
-      }
+      $ids = $new_array;
+
    }
-   if ($end_page < $max_page) {
-      $last_page_text = "&raquo;";
-      $content .= '<span><a href="'.get_pagenum_link($max_page).'" title="'.$last_page_text.'">'.$last_page_text.'</a></span>';
-   }
-      $content .= '</div>';
-      $content .= '</noscript>';
-   }
-   return $content;
+
+   return $ids;
 }

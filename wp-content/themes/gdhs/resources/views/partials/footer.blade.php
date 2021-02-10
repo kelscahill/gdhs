@@ -30,7 +30,7 @@
         All Rights Reserved / Copyright {{ date("Y") }}
       </div>
       <div class="c-footer__credit u-font--secondary--xs u-color--gray">
-        Design & Code: <a class="u-link--white" href="http://cahillscreative.com" target="_blank">Cahill's Creative</a>
+        Design & Code: <a class="u-link--white" href="https://cahillscreative.com" target="_blank">Cahill's Creative LLC.</a>
       </div>
       <div class="c-footer__affiliate">
         <a href="https://smile.amazon.com/" class="u-path-fill--gray" target="_blank">
