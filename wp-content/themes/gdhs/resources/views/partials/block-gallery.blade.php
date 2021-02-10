@@ -17,8 +17,8 @@
     <?php endif; ?>
   </div>
   <?php if ($images): ?>
-    <div class="c-block-gallery__images">
-      <div class="c-block-gallery__image js-block-gallery">
+    <div id="<?php echo $block['id']; ?>" class="c-block-gallery__images js-block-gallery">
+      <div class="c-block-gallery__image js-block-gallery-image">
         <?php foreach($images as $image): ?>
           <figure>
             <picture>

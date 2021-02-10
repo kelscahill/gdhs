@@ -1505,6 +1505,95 @@ acf_add_local_field_group(array (
   'active' => 1,
   'description' => '',
 ));
+
+acf_add_local_field_group(array(
+  'key' => 'group_602405abbb4ef',
+  'title' => 'Block: Gallery',
+  'fields' => array(
+    array(
+      'key' => 'field_602405b10585a',
+      'label' => 'Gallery Title',
+      'name' => 'gallery_title',
+      'type' => 'text',
+      'instructions' => '',
+      'required' => 0,
+      'conditional_logic' => 0,
+      'wrapper' => array(
+        'width' => '',
+        'class' => '',
+        'id' => '',
+      ),
+      'default_value' => '',
+      'placeholder' => '',
+      'prepend' => '',
+      'append' => '',
+      'maxlength' => '',
+    ),
+    array(
+      'key' => 'field_602405b90585b',
+      'label' => 'Gallery Description',
+      'name' => 'gallery_description',
+      'type' => 'text',
+      'instructions' => '',
+      'required' => 0,
+      'conditional_logic' => 0,
+      'wrapper' => array(
+        'width' => '',
+        'class' => '',
+        'id' => '',
+      ),
+      'default_value' => '',
+      'placeholder' => '',
+      'prepend' => '',
+      'append' => '',
+      'maxlength' => '',
+    ),
+    array(
+      'key' => 'field_602405c10585c',
+      'label' => 'Gallery',
+      'name' => 'gallery',
+      'type' => 'gallery',
+      'instructions' => '',
+      'required' => 0,
+      'conditional_logic' => 0,
+      'wrapper' => array(
+        'width' => '',
+        'class' => '',
+        'id' => '',
+      ),
+      'return_format' => 'array',
+      'preview_size' => 'medium',
+      'insert' => 'append',
+      'library' => 'all',
+      'min' => '',
+      'max' => '',
+      'min_width' => '',
+      'min_height' => '',
+      'min_size' => '',
+      'max_width' => '',
+      'max_height' => '',
+      'max_size' => '',
+      'mime_types' => '',
+    ),
+  ),
+  'location' => array(
+    array(
+      array(
+        'param' => 'block',
+        'operator' => '==',
+        'value' => 'acf/gallery',
+      ),
+    ),
+  ),
+  'menu_order' => 0,
+  'position' => 'normal',
+  'style' => 'default',
+  'label_placement' => 'top',
+  'instruction_placement' => 'label',
+  'hide_on_screen' => '',
+  'active' => true,
+  'description' => '',
+));
 endif;
 
 /**
@@ -1517,23 +1606,23 @@ endif;
  * Register custom block types.
  */
 function register_custom_block_types() {
-	if ( function_exists( 'acf_register_block_type' ) ) {
-		// Register a gallery block.
-		acf_register_block_type(
-			array(
-				'name'            => 'gallery',
-				'title'           => 'Gallery',
-				'description'     => 'A custom gallery block.',
-				'category'        => 'media',
-				'icon'            => 'format-gallery',
-				'keywords'        => array( 'gallery', 'images' ),
-				'render_template' => 'views/partials/block-gallery.blade.php',
-				'mode'            => 'edit',
-				'supports'        => array(
-					'mode' => false,
-				),
-			)
-		);
-	}
+  if ( function_exists( 'acf_register_block_type' ) ) {
+    // Register a gallery block.
+    acf_register_block_type(
+      array(
+        'name'            => 'gallery',
+        'title'           => 'Gallery',
+        'description'     => 'A custom gallery block.',
+        'category'        => 'media',
+        'icon'            => 'format-gallery',
+        'keywords'        => array( 'gallery', 'images' ),
+        'render_template' => 'views/partials/block-gallery.blade.php',
+        'mode'            => 'edit',
+        'supports'        => array(
+          'mode' => false,
+        ),
+      )
+    );
+  }
 }
 add_action( 'init', 'register_custom_block_types' );

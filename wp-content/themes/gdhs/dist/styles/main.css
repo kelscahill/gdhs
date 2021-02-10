@@ -3529,10 +3529,6 @@ ul {
   }
 }
 
-.c-article__body .size-full {
-  width: auto;
-}
-
 .c-article__body .size-thumbnail {
   max-width: 25rem;
   height: auto;
