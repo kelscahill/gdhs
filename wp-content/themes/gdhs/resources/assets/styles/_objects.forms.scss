@@ -34,7 +34,7 @@ select {
   -moz-appearance: none;
   appearance: none;
   cursor: pointer;
-  background: url('../../assets/images/o-arrow-down--small.svg') $white center right rem(10) no-repeat;
+  background: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"%3E%3Ctitle%3EArrow Down%3C/title%3E%3Cpath d="M5.38,7.5,9.62,3.25a.5.5,0,1,0-.71-.71L5,6.44,1.09,2.5a.5.5,0,0,0-.71,0,.51.51,0,0,0,0,.71L4.62,7.45h0a.5.5,0,0,0,.7.1Z" fill="%2331302e"/%3E%3C/svg%3E') $white center right rem(10) no-repeat;
   background-size: rem(10);
 }
 
@@ -77,27 +77,23 @@ input[type=radio] {
   background-color: $white;
   position: relative;
   top: rem(3);
+  border-width: 1px;
+  border-style: solid;
+  border-color: $border-color;
 }
 
 input[type=radio] {
   border-radius: rem(50);
 }
 
-input[type=checkbox],
-input[type=radio] {
-  border-width: 1px;
-  border-style: solid;
-  border-color: $border-color;
-}
-
 input[type=checkbox]:checked {
   border-color: $secondary-color;
-  background: $secondary-color url('../assets/images/o-icon--check.svg') center center no-repeat;
+  background: $secondary-color url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"%3E%3Ctitle%3Eo-icon--check%3C/title%3E%3Cpath d="M15.71,3.31,8.41,14,4.2,8.91,2.66,10.19l5.91,7.18L17.35,4.44Z" fill="%23fff"/%3E%3C/svg%3E') center center no-repeat;
 }
 
 input[type=radio]:checked {
   border-color: $secondary-color;
-  background: $secondary-color url('../assets/images/o-icon--radio.svg') center center no-repeat;
+  background: $secondary-color url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"%3E%3Ctitle%3Eo-icon--radio%3C/title%3E%3Ccircle cx="10" cy="10" r="5.63" fill="%23fff"/%3E%3C/svg%3E') center center no-repeat;
 }
 
 input[type=checkbox] + span,

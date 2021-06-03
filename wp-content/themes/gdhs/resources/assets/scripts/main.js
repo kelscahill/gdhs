@@ -62,17 +62,11 @@
         };
 
         // This will create a single gallery from all elements that have class "c-gallery__image"
-        $('.c-gallery__image-link').magnificPopup({
+        $('.c-block-gallery__image-link, .c-gallery__image-link').magnificPopup({
           type: 'image',
-          gallery:{
+          gallery: {
             enabled:true
           }
-        });
-
-        $(window).load(function() {
-          setTimeout(function(){
-            $('html').removeClass("preload");
-          }, 1000);
         });
 
         $('.o-filter-select').on('change', function() {

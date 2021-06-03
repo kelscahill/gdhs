@@ -1,12 +1,16 @@
 @extends('layouts.app')
 @section('content')
-  @while(have_posts()) @php(the_post())
+  @while(have_posts()) @php the_post() @endphp
     @php
       $subtitle = get_field('product_subtitle');
       $gallery = get_field('product_gallery');
       $details = get_field('product_details');
       $button = get_field('paypal_link');
-      $pdf = get_field('pdf_download')['url'];
+      if (get_field('pdf_download')) {
+        $pdf = get_field('pdf_download')['url'];
+      } else {
+        $pdf = NULL;
+      }
     @endphp
     <header class="c-page-header l-container l-narrow l-narrow--l u-text-align--center u-spacing--double">
       <div class="c-page-header__breadcrumbs">
@@ -14,13 +18,13 @@
       </div>
       <div class="u-spacing--half">
         <span class="c-page-header__kicker o-kicker u-font--secondary--s u-color--primary">Shop</span>
-        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{!! App\title() !!}</h1>
+        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{!! get_the_title() !!}</h1>
         <div class="c-page-header__meta u-font--s">
           {{ get_field('product_subtitle') }}
         </div>
       </div>
     </header>
-    <article @php(post_class('c-article c-article-product l-container l-narrow l-narrow--l'))>
+    <article @php post_class('c-article c-article-product l-container l-narrow l-narrow--l') @endphp>
       <div class="c-article__body">
         <div class="c-article--left">
           @if ($gallery)
@@ -51,13 +55,13 @@
         </div>
         <div class="c-article--right u-spacing--double">
           <div class="u-clear-fix">
-            @php(the_content())
+            @php the_content() @endphp
           </div>
           @if (have_rows('product_details'))
             <span class="u-list__title u-font--secondary--s u-color--secondary u-display--block u-space--double--top">Details</span>
             <ul class="u-list__details">
               @while (have_rows('product_details'))
-                @php(the_row())
+                @php the_row() @endphp
                 <li>{{ the_sub_field('product_detail') }}</li>
               @endwhile
             </ul>

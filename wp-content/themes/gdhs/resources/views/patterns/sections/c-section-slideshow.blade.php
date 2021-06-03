@@ -36,7 +36,7 @@
             <div class="c-slideshow__content--inner l-container u-color--white u-spacing u-text-align--center l-narrow l-narrow--m">
               @if ($title)
                 <h1 class="c-slideshow__content-title u-font--primary--xl">
-                  {{ $title }}
+                  {!! $title !!}
                 </h1>
                 <hr class="u-hr--small u-hr--white"/>
               @endif

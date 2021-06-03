@@ -4,9 +4,9 @@
 
 @extends('layouts.app')
 @section('content')
-  @while(have_posts()) @php(the_post())
+  @while(have_posts()) @php the_post() @endphp
     @include('partials.content-page')
-    @php($blocks = get_field('block'))
+    @php $blocks = get_field('block') @endphp
     @if ($blocks)
       <section class="c-section c-section__blocks l-narrow u-spacing--double">
         @foreach ($blocks as $block)

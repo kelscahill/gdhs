@@ -58,16 +58,16 @@
     <div class="c-block__content u-padding--half u-spacing">
       <div class="c-block__header u-spacing--half">
         @if (!empty($kicker))
-          <h4 class="c-block__kicker o-kicker u-font--secondary--s u-color--primary">{{ $kicker }}</h4>
+          <h4 class="c-block__kicker o-kicker u-font--secondary--s u-color--primary">{!! $kicker !!}</h4>
         @endif
         <h3 class="c-block__title u-font--primary--s">
-          {{ $title }}
+          {!! $title !!}
         </h3>
         <p class="c-block__excerpt">
           @if (!empty($excerpt))
-            {{ wp_trim_words($excerpt, $excerpt_length, ' &hellip;') }}
+            {!! wp_trim_words($excerpt, $excerpt_length, ' ...') !!}
           @else
-            {{ wp_trim_words($body, $excerpt_length, ' &hellip;') }}
+            {!! wp_trim_words($body, $excerpt_length, ' ...') !!}
           @endif
         </p>
       </div>

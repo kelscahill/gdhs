@@ -1,4 +1,4 @@
-@php($featured_pages = get_field('featured_pages'))
+@php $featured_pages = get_field('featured_pages') @endphp
 @if ($featured_pages)
   <section class="l-container c-section c-section__featured-pages u-spacing u-padding--zero">
     <div class="l-grid l-grid--3-col">
@@ -33,10 +33,10 @@
           <div class="c-block__content u-spacing u-padding--double">
             <div class="u-block__header u-spacing">
               @if ($excerpt)
-                <h2 class="u-font--secondary--s u-color--tan">{{ $title }}</h2>
+                <h2 class="u-font--secondary--s u-color--tan">{!! $title !!}</h2>
                 <p class="u-font--primary--l u-color--white">{{ $excerpt }}</p>
               @else
-                <h2 class="u-font--primary--l u-color--white">{{ $title }}</h2>
+                <h2 class="u-font--primary--l u-color--white">{!! $title !!}</h2>
               @endif
             </div>
             <div class="u-block__link">

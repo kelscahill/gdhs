@@ -9,11 +9,11 @@
         $prev_link = $prev_post->guid;
         $prev_title = $prev_post->post_title;
       @endphp
-      <a href="{{ $prev_link }}" class="c-article__nav-item previous">
+      <a href="{!! $prev_link !!}" class="c-article__nav-item previous">
         <div class="c-article__nav-item-label u-font--secondary--s u-color--gray">
           Previous
         </div>
-        <div class="u-font--l">{{ $prev_title }}</div>
+        <div class="u-font--l">{!! $prev_title !!}</div>
       </a>
     @endif
   </div>
@@ -23,11 +23,11 @@
         $next_link = $next_post->guid;
         $next_title = $next_post->post_title;
       @endphp
-      <a href="{{ $next_link }}" class="c-article__nav-item next u-text-align--right">
+      <a href="{!! $next_link !!}" class="c-article__nav-item next u-text-align--right">
         <div class="c-article__nav-item-label u-font--secondary--s u-color--gray">
           Next
         </div>
-        <div class="u-font--l">{{ $next_title }}</div>
+        <div class="u-font--l">{!! $next_title !!}</div>
       </a>
     @endif
   </div>

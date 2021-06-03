@@ -27,12 +27,12 @@
 @section('content')
   @include('patterns.sections.c-section-hero')
   @include('partials.page-header')
-  <article @php(post_class('c-article l-container l-narrow l-narrow--l u-spacing--double'))>
+  <article @php post_class('c-article l-container l-narrow l-narrow--l u-spacing--double') @endphp>
     @if ($posts->have_posts())
-      @while ($posts->have_posts()) @php($posts->the_post())
+      @while ($posts->have_posts()) @php $posts->the_post() @endphp
         @include ('partials.content')
       @endwhile
-      @php(wp_reset_query())
+      @php wp_reset_query() @endphp
     @else
       <p>Sorry, there are no events at this time.</p>
     @endif

@@ -303,10 +303,7 @@ $mfp-use-visuallyhidden:              false !default;                      // Hi
   top: 0;
   padding: 0 $mfp-popup-padding-left;
   box-sizing: border-box;
-}
 
-// Vertical centerer helper
-.mfp-container {
   &::before {
     content: '';
     display: inline-block;
@@ -483,7 +480,7 @@ button {
   text-align: center;
   opacity: $mfp-controls-opacity;
   padding: 0 0 $space 0;
-  background: transparent url('../assets/images/o-icon--close.svg') top right $space-half no-repeat;
+  background: transparent url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21.92 21.92"%3E%3Ctitle%3Eicon--close%3C/title%3E%3Cpolygon points="11.67 10.96 21.92 0.71 21.21 0 10.96 10.25 0.71 0 0 0.71 10.25 10.96 0 21.21 0.71 21.92 10.96 11.67 21.21 21.92 21.92 21.21 11.67 10.96" fill="%23fff"/%3E%3C/svg%3E') top right $space-half no-repeat;
   background-size: rem(30);
   text-indent: 9999px;
   margin-top: $space-half;
@@ -536,13 +533,13 @@ button {
 
   .mfp-arrow-left {
     left: 0;
-    background: transparent url('../assets/images/o-arrow-carousel--left.svg') center center no-repeat;
+    background: transparent url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"%3E%3Ctitle%3Eicon--arrow-carousel--left%3C/title%3E%3Cpolygon points="20.16 0 20.85 0.51 10.22 15 20.86 29.49 20.16 30 9.14 15 20.16 0" fill="%23fff"/%3E%3C/svg%3E') center center no-repeat;
     background-size: auto rem(50);
   }
 
   .mfp-arrow-right {
     right: 0;
-    background: transparent url('../assets/images/o-arrow-carousel--right.svg') center center no-repeat;
+    background: transparent url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"%3E%3Ctitle%3Eicon--arrow-carousel--right%3C/title%3E%3Cpolygon points="9.85 30 9.15 29.49 19.78 15 9.14 0.51 9.85 0 20.86 15 9.85 30" fill="%23fff"/%3E%3C/svg%3E') center center no-repeat;
     background-size: auto rem(50);
   }
 }

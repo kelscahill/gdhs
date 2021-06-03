@@ -27,10 +27,10 @@
       <h3 class="u-font--primary--m u-color--white c-section-events__title">Upcoming Events</h3>
       <div class="c-section-events__feed c-section-events--inner u-spacing--double l-narrow l-narrow--l ">
         <div class="c-section-events__blocks">
-          @while ($posts->have_posts()) @php($posts->the_post())
+          @while ($posts->have_posts()) @php $posts->the_post() @endphp
             @include('patterns.blocks.c-block-events')
           @endwhile
-          @php(wp_reset_query())
+          @php wp_reset_query() @endphp
         </div>
         <a href="/visit/events" class="o-button u-button--green u-center-block">View All Events</a>
       </div><!-- ./l-narrow -->

@@ -23,6 +23,8 @@ add_filter('body_class', function (array $classes) {
         return preg_replace(['/-blade(-php)?$/', '/^page-template-views/'], '', $class);
     }, $classes);
 
+    $classes[] = 'body';
+
     return array_filter($classes);
 });
 
@@ -30,7 +32,7 @@ add_filter('body_class', function (array $classes) {
  * Add "… Continued" to the excerpt
  */
 add_filter('excerpt_more', function () {
-    return ' &hellip; <a href="' . get_permalink() . '">' . __('Continued', 'sage') . '</a>';
+    return ' ... <a href="' . get_permalink() . '">' . __('Continued', 'sage') . '</a>';
 });
 
 /**
@@ -40,16 +42,7 @@ collect([
     'index', '404', 'archive', 'author', 'category', 'tag', 'taxonomy', 'date', 'home',
     'frontpage', 'page', 'paged', 'search', 'single', 'singular', 'attachment'
 ])->map(function ($type) {
-    add_filter("{$type}_template_hierarchy", function ($templates) {
-        return collect($templates)->flatMap(function ($template) {
-            $transforms = [
-                '%^/?(resources[\\/]views)?[\\/]?%' => '',
-                '%(\.blade)?(\.php)?$%' => ''
-            ];
-            $normalizedTemplate = preg_replace(array_keys($transforms), array_values($transforms), $template);
-            return ["{$normalizedTemplate}.blade.php", "{$normalizedTemplate}.php"];
-        })->toArray();
-    });
+    add_filter("{$type}_template_hierarchy", __NAMESPACE__.'\\filter_templates');
 });
 
 /**
@@ -59,12 +52,33 @@ add_filter('template_include', function ($template) {
     $data = collect(get_body_class())->reduce(function ($data, $class) use ($template) {
         return apply_filters("sage/template/{$class}/data", $data, $template);
     }, []);
-    echo template($template, $data);
-    // Return a blank file to make WordPress happy
-    return get_theme_file_path('index.php');
+    if ($template) {
+        echo template($template, $data);
+        return get_stylesheet_directory().'/index.php';
+    }
+    return $template;
 }, PHP_INT_MAX);
 
 /**
- * Tell WordPress how to find the compiled path of comments.blade.php
+ * Render comments.blade.php
  */
-add_filter('comments_template', 'App\\template_path');
+add_filter('comments_template', function ($comments_template) {
+    $comments_template = str_replace(
+        [get_stylesheet_directory(), get_template_directory()],
+        '',
+        $comments_template
+    );
+
+    $data = collect(get_body_class())->reduce(function ($data, $class) use ($comments_template) {
+        return apply_filters("sage/template/{$class}/data", $data, $comments_template);
+    }, []);
+
+    $theme_template = locate_template(["views/{$comments_template}", $comments_template]);
+
+    if ($theme_template) {
+        echo template($theme_template, $data);
+        return get_stylesheet_directory().'/index.php';
+    }
+
+    return $comments_template;
+}, 100);

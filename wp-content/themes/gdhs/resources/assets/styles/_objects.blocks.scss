@@ -368,6 +368,10 @@
     }
   }
 
+  &__image-link {
+    cursor: zoom-in;
+  }
+
   &__nav {
     margin-top: $space / 4;
     margin-left: -$space / 4;

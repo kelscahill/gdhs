@@ -25,16 +25,16 @@
 @section('content')
   @include('patterns.sections.c-section-hero')
   @include('partials.page-header')
-  <article @php(post_class('c-article l-container l-narrow l-narrow--l'))>
+  <article @php post_class('c-article l-container l-narrow l-narrow--l') @endphp>
     @if ($posts->have_posts())
       <div class="l-grid l-grid--4-col">
-        @while ($posts->have_posts()) @php($posts->the_post())
+        @while ($posts->have_posts()) @php $posts->the_post() @endphp
           <div class="l-grid-item">
             @include ('partials.content')
           </div>
         @endwhile
       </div>
-      @php(wp_reset_query())
+      @php wp_reset_query() @endphp
       @php echo do_shortcode('[ajax_load_more container_type="div" post_type="library" scroll="false" transition_container="false" button_label="Load More" posts_per_page="12" offset="12"]'); @endphp
     @else
       <p class="u-text-align--center">Sorry, there are no research items at this time.</p>

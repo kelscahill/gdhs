@@ -32,7 +32,7 @@ a.fasc-button {
     color: $white;
 
     &::after {
-      background: url('../assets/images/o-arrow--white--short.svg') center center no-repeat;
+      background: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 9.53"%3E%3Ctitle%3Eo-arrow--white%3C/title%3E%3Cpath d="M21.85,4.39,17.61.15a.5.5,0,0,0-.71.71l3.39,3.39H.5a.5.5,0,0,0,0,1H20.3L16.86,8.68a.5.5,0,1,0,.71.71l4.24-4.24,0,0h0A.5.5,0,0,0,21.85,4.39Z" fill="%23fff"/%3E%3C/svg%3E') center center no-repeat;
       background-size: rem(30);
       right: rem(15);
     }
@@ -42,7 +42,7 @@ a.fasc-button {
     content: '';
     display: block;
     margin-left: $space-half;
-    background: url('../assets/images/o-arrow--white--short.svg') center center no-repeat;
+    background: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 9.53"%3E%3Ctitle%3Eo-arrow--white%3C/title%3E%3Cpath d="M21.85,4.39,17.61.15a.5.5,0,0,0-.71.71l3.39,3.39H.5a.5.5,0,0,0,0,1H20.3L16.86,8.68a.5.5,0,1,0,.71.71l4.24-4.24,0,0h0A.5.5,0,0,0,21.85,4.39Z" fill="%23fff"/%3E%3C/svg%3E') center center no-repeat;
     background-size: rem(30);
     width: rem(30);
     height: rem(30);

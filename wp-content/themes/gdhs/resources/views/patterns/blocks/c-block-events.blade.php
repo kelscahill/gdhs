@@ -48,10 +48,10 @@
       <div class="c-block__header u-spacing">
         <div class="c-block__header u-spacing--half">
           @if ($kicker)
-            <h4 class="c-block__kicker o-kicker u-font--secondary--s u-color--primary">{{ $kicker }}</h4>
+            <h4 class="c-block__kicker o-kicker u-font--secondary--s u-color--primary">{!! $kicker !!}</h4>
           @endif
           <h3 class="c-block__title u-font--primary--s">
-            {{ $title }}
+            {!! $title !!}
           </h3>
           <span class="u-font--s">
             {{ $start_date_formatted }}, @if(!empty($start_time)){{ $start_time }}@endif
@@ -67,11 +67,11 @@
         </div>
         @if (!empty($excerpt))
           <p class="c-block__excerpt">
-            {{ wp_trim_words($excerpt, $excerpt_length, ' &hellip;') }}
+            {!! wp_trim_words($excerpt, $excerpt_length, ' ...') !!}
           </p>
         @elseif (!empty($body))
           <p class="c-block__excerpt">
-            {{ wp_trim_words($body, $excerpt_length, ' &hellip;') }}
+            {!! wp_trim_words($body, $excerpt_length, ' ...') !!}
           </p>
         @endif
       </div>

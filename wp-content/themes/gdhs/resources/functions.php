@@ -1,8 +1,10 @@
 <?php
-
 /**
  * Do not edit anything in this file unless you know what you're doing
  */
+
+use Roots\Sage\Config;
+use Roots\Sage\Container;
 
 /**
  * Helper function for prettying up errors
@@ -11,37 +13,37 @@
  * @param string $title
  */
 $sage_error = function ($message, $subtitle = '', $title = '') {
-    $title = $title ?: __('Sage &rsaquo; Error', 'sage');
-    $footer = '<a href="https://roots.io/sage/docs/">roots.io/sage/docs/</a>';
-    $message = "<h1>{$title}<br><small>{$subtitle}</small></h1><p>{$message}</p><p>{$footer}</p>";
-    wp_die($message, $title);
+  $title = $title ?: __('Sage &rsaquo; Error', 'sage');
+  $footer = '<a href="https://roots.io/sage/docs/">roots.io/sage/docs/</a>';
+  $message = "<h1>{$title}<br><small>{$subtitle}</small></h1><p>{$message}</p><p>{$footer}</p>";
+  wp_die($message, $title);
 };
 
 /**
  * Ensure compatible version of PHP is used
  */
-if (version_compare('5.6.4', phpversion(), '>=')) {
-    $sage_error(__('You must be using PHP 5.6.4 or greater.', 'sage'), __('Invalid PHP version', 'sage'));
+if (version_compare('7', phpversion(), '>=')) {
+  $sage_error(__('You must be using PHP 7 or greater.', 'sage'), __('Invalid PHP version', 'sage'));
 }
 
 /**
  * Ensure compatible version of WordPress is used
  */
-if (version_compare('4.7.0', get_bloginfo('version'), '>=')) {
-    $sage_error(__('You must be using WordPress 4.7.0 or greater.', 'sage'), __('Invalid WordPress version', 'sage'));
+if (version_compare('5.0.0', get_bloginfo('version'), '>=')) {
+  $sage_error(__('You must be using WordPress 5.0.0 or greater.', 'sage'), __('Invalid WordPress version', 'sage'));
 }
 
 /**
  * Ensure dependencies are loaded
  */
 if (!class_exists('Roots\\Sage\\Container')) {
-    if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
-        $sage_error(
-            __('You must run <code>composer install</code> from the Sage directory.', 'sage'),
-            __('Autoloader not found.', 'sage')
-        );
-    }
-    require_once $composer;
+  if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
+    $sage_error(
+      __('You must run <code>composer install</code> from the Sage directory.', 'sage'),
+      __('Autoloader not found.', 'sage')
+    );
+  }
+  require_once $composer;
 }
 
 /**
@@ -51,11 +53,11 @@ if (!class_exists('Roots\\Sage\\Container')) {
  * Add or remove files to the array as needed. Supports child theme overrides.
  */
 array_map(function ($file) use ($sage_error) {
-    $file = "../app/{$file}.php";
-    if (!locate_template($file, true, true)) {
-        $sage_error(sprintf(__('Error locating <code>%s</code> for inclusion.', 'sage'), $file), 'File not found');
-    }
-}, ['helpers', 'setup', 'filters', 'admin']);
+  $file = "../app/{$file}.php";
+  if (!locate_template($file, true, true)) {
+      $sage_error(sprintf(__('Error locating <code>%s</code> for inclusion.', 'sage'), $file), 'File not found');
+  }
+}, ['helpers', 'setup', 'filters', 'admin', 'timber']);
 
 /**
  * Here's what's happening with these hooks:
@@ -74,24 +76,37 @@ array_map(function ($file) use ($sage_error) {
  * ├── STYLESHEETPATH         -> /srv/www/example.com/current/web/app/themes/sage/resources/views
  * └── TEMPLATEPATH           -> /srv/www/example.com/current/web/app/themes/sage/resources
  */
-if (is_customize_preview() && isset($_GET['theme'])) {
-    $sage_error(__('Theme must be activated prior to using the customizer.', 'sage'));
+array_map(
+  'add_filter',
+  ['theme_file_path', 'theme_file_uri', 'parent_theme_file_path', 'parent_theme_file_uri'],
+  array_fill(0, 4, 'dirname')
+);
+Container::getInstance()
+  ->bindIf('config', function () {
+    return new Config([
+      'assets' => require dirname(__DIR__).'/config/assets.php',
+      'theme' => require dirname(__DIR__).'/config/theme.php',
+      'view' => require dirname(__DIR__).'/config/view.php',
+    ]);
+}, true);
+
+/**
+ * Allow SVG's through WP media uploader
+ */
+function cc_mime_types($mimes) {
+  $mimes['svg'] = 'image/svg+xml';
+  return $mimes;
 }
-$sage_views = basename(dirname(__DIR__)).'/'.basename(__DIR__).'/views';
-add_filter('stylesheet', function () use ($sage_views) {
-    return dirname($sage_views);
-});
-add_filter('stylesheet_directory_uri', function ($uri) {
-    return dirname($uri);
-});
-if ($sage_views !== get_option('stylesheet')) {
-    update_option('stylesheet', $sage_views);
-    if (php_sapi_name() === 'cli') {
-        return;
-    }
-    wp_redirect($_SERVER['REQUEST_URI']);
-    exit();
+add_filter('upload_mimes', 'cc_mime_types');
+
+/**
+ * ACF Save json files
+ */
+function my_acf_json_save_point($path) {
+  $path = get_stylesheet_directory() . '/acf-json';
+  return $path;
 }
+add_filter('acf/settings/save_json', 'my_acf_json_save_point');
 
 /*
  * Add columns to events post list
@@ -100,8 +115,8 @@ function add_acf_columns($columns) {
   return array_merge($columns, array (
     'event_start_date' => 'Event Start Date'
   ));
- }
- add_filter('manage_events_posts_columns', 'add_acf_columns');
+}
+add_filter('manage_events_posts_columns', 'add_acf_columns');
 
 /*
  * Add columns to events post list
@@ -120,8 +135,8 @@ add_action('manage_events_posts_custom_column', 'events_custom_column', 10, 2);
  * Sort event start date column
  */
 function my_sortable_events_column($column) {
-    $column['event_start_date'] = 'event_start_date';
-    return $column;
+  $column['event_start_date'] = 'event_start_date';
+  return $column;
 }
 add_filter( 'manage_edit-events_sortable_columns', 'my_sortable_events_column' );
 
@@ -131,11 +146,11 @@ add_filter( 'manage_edit-events_sortable_columns', 'my_sortable_events_column' )
 
 // Add a new interval of 1 seconds
 function gdhs_add_seconds($schedules) {
- $schedules['everysecond'] = array(
-   'interval' => 60,
-   'display' => __('Every Second')
- );
- return $schedules;
+  $schedules['everysecond'] = array(
+    'interval' => 60,
+    'display' => __('Every Second')
+  );
+  return $schedules;
 }
 add_filter('cron_schedules', 'gdhs_add_seconds');
 
@@ -194,15 +209,6 @@ function enqueue_ajax_load_more() {
    wp_enqueue_script('ajax-load-more'); // Already registered, just needs to be enqueued
 }
 add_action('wp_enqueue_scripts', 'enqueue_ajax_load_more');
-
-/**
- * Allow SVG's through WP media uploader
- */
-function cc_mime_types($mimes) {
-  $mimes['svg'] = 'image/svg+xml';
-  return $mimes;
-}
-add_filter('upload_mimes', 'cc_mime_types');
 
 /**
  * Excerpt for pages
@@ -278,7 +284,7 @@ function cptui_register_my_cpts() {
     "public" => true,
     "publicly_queryable" => true,
     "show_ui" => true,
-    "show_in_rest" => false,
+    "show_in_rest" => true,
     "rest_base" => "",
     "show_in_menu" => true,
     "exclude_from_search" => false,
@@ -319,7 +325,7 @@ function cptui_register_my_cpts() {
     "public" => true,
     "publicly_queryable" => true,
     "show_ui" => true,
-    "show_in_rest" => false,
+    "show_in_rest" => true,
     "rest_base" => "",
     "show_in_menu" => true,
     "exclude_from_search" => false,
@@ -360,7 +366,7 @@ function cptui_register_my_cpts() {
     "public" => true,
     "publicly_queryable" => true,
     "show_ui" => true,
-    "show_in_rest" => false,
+    "show_in_rest" => true,
     "rest_base" => "",
     "show_in_menu" => true,
     "exclude_from_search" => false,
@@ -401,7 +407,7 @@ function cptui_register_my_cpts() {
     "public" => true,
     "publicly_queryable" => true,
     "show_ui" => true,
-    "show_in_rest" => false,
+    "show_in_rest" => true,
     "rest_base" => "",
     "show_in_menu" => true,
     "exclude_from_search" => false,

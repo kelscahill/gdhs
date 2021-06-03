@@ -1,14 +1,14 @@
 <!doctype html>
-<html @php(language_attributes()) class="preload">
+<html @php language_attributes() @endphp>
   @include('partials.head')
-  <body id="top" @php(body_class())>
-    @php(do_action('get_header'))
+  <body id="top" @php body_class() @endphp>
+    @php do_action('get_header') @endphp
     @include('partials.header')
     <main class="main" role="document">
       @yield('content')
     </main>
-    @php(do_action('get_footer'))
+    @php do_action('get_footer') @endphp
     @include('partials.footer')
-    @php(wp_footer())
+    @php wp_footer() @endphp
   </body>
 </html>

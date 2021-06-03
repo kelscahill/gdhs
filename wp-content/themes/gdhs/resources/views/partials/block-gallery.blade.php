@@ -21,15 +21,17 @@
       <div class="c-block-gallery__image js-block-gallery-image">
         <?php foreach($images as $image): ?>
           <figure>
-            <picture>
-              <!--[if IE 9]><video style="display: none"><![endif]-->
-              <source srcset="<?php echo $image['sizes']['horiz__4x3--l']; ?>" media="(min-width: 800px)">
-              <!--[if IE 9]></video><![endif]-->
-              <img src="<?php echo $image['sizes']['horiz__4x3--m']; ?>" alt="<?php echo $image['alt']; ?>" />
-            </picture>
-            <?php if ($image['caption']): ?>
-              <figcaption><?php echo $image['caption']; ?></figcaption>
-            <?php endif; ?>
+            <a href="{{ $image['url'] }}" title="{{ $image['caption'] }}" class="c-block-gallery__image-link">
+              <picture>
+                <!--[if IE 9]><video style="display: none"><![endif]-->
+                <source srcset="<?php echo $image['sizes']['horiz__4x3--l']; ?>" media="(min-width: 800px)">
+                <!--[if IE 9]></video><![endif]-->
+                <img src="<?php echo $image['sizes']['horiz__4x3--m']; ?>" alt="<?php echo $image['alt']; ?>" />
+              </picture>
+              <?php if ($image['caption']): ?>
+                <figcaption><?php echo $image['caption']; ?></figcaption>
+              <?php endif; ?>
+            </a>
           </figure>
         <?php endforeach; ?>
       </div>

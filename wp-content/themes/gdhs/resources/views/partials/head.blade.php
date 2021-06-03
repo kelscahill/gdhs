@@ -2,7 +2,7 @@
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  @php(wp_head())
+  @php wp_head() @endphp
   <!-- Favicon -->
   <link rel="shortcut icon" type="image/png" href="<?php bloginfo('template_directory'); ?>/assets/images/favicon.png">
   <link href="https://fonts.googleapis.com/css?family=Esteban|Raleway:700,900" rel="stylesheet">

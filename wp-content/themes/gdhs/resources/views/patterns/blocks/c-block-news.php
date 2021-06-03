@@ -63,9 +63,9 @@
           </h3>
           <p class="c-block__excerpt">
             <?php if (!empty($excerpt)): ?>
-              <?php echo wp_trim_words($excerpt, $excerpt_length, ' &hellip;'); ?>
+              <?php echo wp_trim_words($excerpt, $excerpt_length, ' ...'); ?>
             <?php else: ?>
-              <?php echo wp_trim_words($body, $excerpt_length, ' &hellip;'); ?>
+              <?php echo wp_trim_words($body, $excerpt_length, ' ...'); ?>
             <?php endif; ?>
           </p>
         </div>

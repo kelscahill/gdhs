@@ -42,11 +42,11 @@
       <div class="l-narrow l-narrow--l">
         <div class="l-grid l-grid--4-col">
           @while ($related->have_posts())
-            @php($related->the_post())
+            @php $related->the_post() @endphp
             <div class="l-grid-item">
               @include('patterns.blocks.c-block-news')
             </div>
-          @endwhile; @php(wp_reset_query())
+          @endwhile; @php wp_reset_query() @endphp
         </div>
       </div><!-- ./l-narrow -->
     </div><!-- ./l-container -->

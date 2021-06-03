@@ -40,7 +40,7 @@
   <div class="c-section-hero__content u-color--white u-spacing u-text-align--center l-container l-narrow l-narrow--m">
     @if ($title)
       <h1 class="c-section-hero__content-title u-font--primary--xl">
-        {{ $title }}
+        {!! $title !!}
       </h1>
     @endif
     @if (isset($description))

@@ -30,18 +30,12 @@ select,
 textarea {
   font-family: inherit;
   font-size: 100%;
+  -webkit-appearance: none;
+  -webkit-border-radius: 0;
 }
 
 textarea {
   line-height: 1.5;
-}
-
-button,
-input,
-select,
-textarea {
-  -webkit-appearance: none;
-  -webkit-border-radius: 0;
 }
 
 input[type=email],

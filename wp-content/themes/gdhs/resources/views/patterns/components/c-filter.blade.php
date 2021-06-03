@@ -1,4 +1,4 @@
-@php($id = get_queried_object_id())
+@php $id = get_queried_object_id() @endphp
 <ul class="c-secondary-nav__list">
   <li class="c-secondary-nav__list-item">
     <a href="{{ get_permalink($id) }}?orderby=date&order=DESC" class="filter-link c-secondary-nav__link">By Newer Posts</a>

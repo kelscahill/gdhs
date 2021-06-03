@@ -1,14 +1,14 @@
 @include('partials.page-header')
-<article @php(post_class('c-article l-container l-narrow l-narrow--l u-spacing--double'))>
-  @php
-    $thumb_id = get_post_thumbnail_id();
-    $caption = get_the_post_thumbnail_caption();
-    $image_small = wp_get_attachment_image_src($thumb_id, 'horiz__16x9--s')[0];
-    $image_medium = wp_get_attachment_image_src($thumb_id, 'horiz__16x9--m')[0];
-    $image_large = wp_get_attachment_image_src($thumb_id, 'horiz__16x9--l')[0];
-    $image_alt = get_post_meta($thumb_id, '_wp_attachment_image_alt', true);
-  @endphp
+<article @php post_class('c-article l-container l-narrow l-narrow--l u-spacing--double') @endphp>
+  @php $thumb_id = get_post_thumbnail_id(); @endphp
   @if ($thumb_id)
+    @php
+      $image_small = wp_get_attachment_image_src($thumb_id, 'horiz__16x9--s')[0];
+      $image_medium = wp_get_attachment_image_src($thumb_id, 'horiz__16x9--m')[0];
+      $image_large = wp_get_attachment_image_src($thumb_id, 'horiz__16x9--l')[0];
+      $image_alt = get_post_meta($thumb_id, '_wp_attachment_image_alt', true);
+      $caption = get_the_post_thumbnail_caption();
+    @endphp
     <picture class="c-article__image u-spacing--half">
       <source srcset="{{ $image_large }}" media="(min-width:800px)">
       <source srcset="{{ $image_medium }}" media="(min-width:500px)">
@@ -23,8 +23,8 @@
       @include('patterns.components.c-share-tools')
     </div>
     <div class="c-article__content--right c-article__body u-spacing--double @if (get_field('hide_dropcap') != 1){{ 'has-dropcap' }}@endif">
-      @php(the_content())
-      @php($blocks = get_field('block'))
+      @php the_content() @endphp
+      @php $blocks = get_field('block') @endphp
       @if ($blocks)
         @foreach ($blocks as $block)
           @php

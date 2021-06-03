@@ -14,12 +14,12 @@
       <h3 class="u-text-align--center">Announcements</h3>
       <div class="l-narrow l-narrow--l">
         <div class="c-section-news__grid l-grid l-grid--4-col">
-          @while ($posts->have_posts()) @php($posts->the_post())
+          @while ($posts->have_posts()) @php $posts->the_post() @endphp
             <div class="c-section-news__grid-item l-grid-item">
               @include ('partials.content')
             </div>
           @endwhile
-          @php(wp_reset_query())
+          @php wp_reset_query() @endphp
         </div>
         <a href="/about/news" class="o-button u-button--red u-center-block">View All News</a>
       </div><!-- ./l-narrow -->

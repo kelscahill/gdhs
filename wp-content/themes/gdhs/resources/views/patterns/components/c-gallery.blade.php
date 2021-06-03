@@ -1,4 +1,4 @@
-@php($gallery = get_field('gallery'))
+@php $gallery = get_field('gallery') @endphp
 @if($gallery)
   <div class="l-narrow--xl c-gallery l-grid--photos">
     @foreach($gallery as $image)

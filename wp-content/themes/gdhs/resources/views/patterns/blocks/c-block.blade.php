@@ -16,9 +16,9 @@
     @endif
     <a href="{{ $link }}" class="l-grid-item c-block__content u-spacing u-padding @if(empty($link)){{ 'disable-link' }}@endif" target="_blank">
       <div class="c-block__header u-spacing">
-        <h3 class="c-block__title">{{ $title }}</h3>
+        <h3 class="c-block__title">{!! $title !!}</h3>
         @if(!empty($excerpt))
-          <p class="c-block__excerpt">@php echo wp_trim_words($excerpt, 100, '&hellip;'); @endphp</p>
+          <p class="c-block__excerpt">{!! wp_trim_words($excerpt, 100, '...') !!}</p>
         @endif
       </div>
       @if ($link)

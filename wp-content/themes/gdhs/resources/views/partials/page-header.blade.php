@@ -104,7 +104,7 @@
     @endif
     @if (!empty($kicker))
       <span class="c-page-header__kicker o-kicker u-font--secondary--s u-color--primary">
-        {{ $kicker }}
+        {!! $kicker !!}
       </span>
     @endif
     @if (is_home() || is_page_template('views/template-events.blade.php') || is_page_template('views/template-exhibitions.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
@@ -112,9 +112,9 @@
       @if (!is_front_page() && !is_archive() && !is_author() && get_field('display_title', $id) && !is_author() )
         <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ the_field('display_title', $id) }}</h1>
       @elseif ($title != false && !is_archive() && !is_author())
-        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{!! App\title() !!}</h1>
+        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{!! get_the_title() !!}</h1>
       @else
-        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ $title }}</h1>
+        <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{!! $title !!}</h1>
       @endif
     @endif
     @if (isset($meta))
