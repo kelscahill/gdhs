@@ -81,7 +81,9 @@
         $('.c-primary-nav__list-item a').each(function() {
            var myHref = $(this).attr('href');
            if (url == myHref) {
+              $(this).parent().addClass('active');
               $(this).parent().parent().addClass('active');
+              $(this).parent().parent().parent().addClass('active');
            }
         });
 
@@ -177,20 +179,27 @@
           });
         });
 
-        var $toggled = '';
+        /**
+         * General helper function to support toggle functions.
+         */
         var toggleClasses = function(element) {
           var $this = element,
               $togglePrefix = $this.data('prefix') || 'this';
 
           // If the element you need toggled is relative to the toggle, add the
           // .js-this class to the parent element and "this" to the data-toggled attr.
-          if ($this.data('toggled') === "this") {
-            $toggled = $this.parents('.js-this');
+          if ($this.data('toggled') == "this") {
+            var $toggled = $this.closest('.js-this');
           }
           else {
-            $toggled = $('.' + $this.data('toggled'));
+            var $toggled = $('.' + $this.data('toggled'));
           }
-
+          if ($this.attr('aria-expanded', 'true')) {
+            $this.attr('aria-expanded', 'true')
+          }
+          else {
+            $this.attr('aria-expanded', 'false')
+          }
           $this.toggleClass($togglePrefix + '-is-active');
           $toggled.toggleClass($togglePrefix + '-is-active');
 
@@ -216,6 +225,7 @@
          *
          */
         $('.js-toggle').on('click', function(e) {
+          e.preventDefault();
           e.stopPropagation();
           toggleClasses($(this));
         });
@@ -224,17 +234,31 @@
         $('.js-toggle-parent').on('click', function(e) {
           e.preventDefault();
           var $this = $(this);
+          $this.toggleClass('this-is-active');
+          $this.parent().toggleClass('this-is-active');
+        });
 
-          $this.parent().toggleClass('is-active');
+        // Prevent bubbling to the body. Add this class to the element (or element
+        // container) that should allow the click event.
+        $('.js-stop-prop').on('click', function(e) {
+          e.stopPropagation();
         });
 
         // Toggle hovered classes
         if (getWidth() >= 1100) {
           $('.js-hover').on('mouseenter mouseleave', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             toggleClasses($(this));
           });
         }
+
+        $('.js-hover-parent').on('mouseenter mouseleave', function(e) {
+          e.preventDefault();
+          var $this = $(this);
+          $this.toggleClass('this-is-active');
+          $this.parent().toggleClass('this-is-active');
+        });
 
       },
       finalize: function() {

@@ -16,7 +16,7 @@ if ( $wpseo_taxonomy->name === 'post_format' ) {
 	$yform->light_switch(
 		'disable-post_format',
 		__( 'Format-based archives', 'wordpress-seo' ),
-		[ __( 'Enabled', 'wordpress-seo' ), __( 'Disabled', 'wordpress-seo' ) ],
+		[ __( 'On', 'wordpress-seo' ), __( 'Off', 'wordpress-seo' ) ],
 		false
 	);
 }
@@ -36,7 +36,7 @@ if ( $wpseo_taxonomy->name !== 'post_format' ) {
 	$yform->show_hide_switch(
 		'display-metabox-tax-' . $wpseo_taxonomy->name,
 		/* translators: %s: Expands to an indexable object's name, like a post type or taxonomy. */
-		sprintf( __( 'Show SEO settings for %1$s', 'wordpress-seo' ), '<strong>' . $title . '</strong>' )
+		sprintf( __( 'Show SEO settings for %1$s?', 'wordpress-seo' ), $title )
 	);
 }
 
@@ -63,24 +63,23 @@ $editor->render();
 echo '</div>';
 
 /**
- * Allow adding custom checkboxes to the admin meta page - Taxonomies tab.
- *
- * @param Yoast_Form  $yform          The Yoast_Form object.
- * @param WP_Taxonomy $wpseo_taxonomy The taxonomy.
+ * WARNING: This hook is intended for internal use only.
+ * Don't use it in your code as it will be removed shortly.
  */
-do_action( 'Yoast\WP\SEO\admin_taxonomies_meta', $yform, $wpseo_taxonomy );
+do_action( 'Yoast\WP\SEO\admin_taxonomies_meta_internal', $yform, $wpseo_taxonomy );
 
 /**
  * Allow adding custom checkboxes to the admin meta page - Taxonomies tab.
  *
- * @deprecated 16.3 Use {@see 'Yoast\WP\SEO\admin_taxonomies_meta'} instead.
+ * @deprecated 19.10 No replacement available.
  *
  * @param Yoast_Form  $yform          The Yoast_Form object.
  * @param WP_Taxonomy $wpseo_taxonomy The taxonomy.
  */
 do_action_deprecated(
-	'wpseo_admin_page_meta_taxonomies',
+	'Yoast\WP\SEO\admin_taxonomies_meta',
 	[ $yform, $wpseo_taxonomy ],
-	'16.3',
-	'Yoast\WP\SEO\admin_taxonomies_meta'
+	'19.10',
+	'',
+	'This action is going away with no replacement. If you want to add settings that interact with Yoast SEO, please create your own settings page.'
 );

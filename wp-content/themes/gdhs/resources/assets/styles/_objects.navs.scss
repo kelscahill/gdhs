@@ -19,7 +19,7 @@
     width: auto;
   }
 
-  &.is-active {
+  &.this-is-active {
     .c-primary-nav__list {
       display: block;
     }
@@ -241,7 +241,7 @@
   @include media('>xlarge') {
     position: absolute;
     left: 0;
-    width: rem(250);
+    width: max-content;
     box-shadow: 0 1px 2px rgba($gray, 0.5);
   }
 
@@ -280,7 +280,7 @@
     padding: 0 $pad/2;
     color: $secondary-color;
 
-    &.is-active {
+    &.this-is-active {
       color: $primary-color;
     }
   }

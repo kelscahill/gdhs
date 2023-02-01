@@ -11,7 +11,7 @@ use DeliciousBrains\WPMDB\Common\Settings\Settings;
 use DeliciousBrains\WPMDB\Common\Sql\Table;
 use DeliciousBrains\WPMDB\Common\UI\Notice;
 use DeliciousBrains\WPMDB\Common\Util\Util;
-use DeliciousBrains\WPMDB\Pro\Addon\Addon;
+use DeliciousBrains\WPMDB\Common\Addon\Addon;
 use DeliciousBrains\WPMDB\Pro\Api;
 use DeliciousBrains\WPMDB\Pro\Beta\BetaManager;
 use DeliciousBrains\WPMDB\Pro\License;
@@ -126,10 +126,10 @@ class Template extends \DeliciousBrains\WPMDB\Common\UI\TemplateBase
                 $url = add_query_arg('_wpnonce', wp_create_nonce('deactivate-plugin_' . $addon_basename), $url);
 
                 $msg = '<div><strong>Update Required</strong> &mdash; ' .
-                       sprintf(__('The version of the %1$s addon you have installed%2$s is out-of-date and will not work with this beta version WP Migrate DB Pro. There may be a <a href="%3$s">beta update available</a>, otherwise please <a href="%4$s">deactivate this addon</a>.', 'wp-migrate-db'), $addon['name'], $version, $update_url, $url) . '</div>';
+                       sprintf(__('The version of the %1$s addon you have installed%2$s is out-of-date and will not work with this beta version WP Migrate. There may be a <a href="%3$s">beta update available</a>, otherwise please <a href="%4$s">deactivate this addon</a>.', 'wp-migrate-db'), $addon['name'], $version, $update_url, $url) . '</div>';
             } else {
                 $msg = '<div><strong>Update Required</strong> &mdash; ' .
-                       sprintf(__('The version of the %1$s addon you have installed%2$s is out-of-date and will not work with this version WP Migrate DB Pro. <a href="%3$s">Update Now</a>', 'wp-migrate-db'), $addon['name'], $version, $update_url) . '</div>';
+                       sprintf(__('The version of the %1$s addon you have installed%2$s is out-of-date and will not work with this version WP Migrate. <a href="%3$s">Update Now</a>', 'wp-migrate-db'), $addon['name'], $version, $update_url) . '</div>';
             }
 
             // @TODO enable these notifications once Addons are released on 2.0 branch

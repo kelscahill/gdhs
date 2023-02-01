@@ -14,9 +14,9 @@
     $intro = get_field('intro', $id);
     $link = get_field('cta_link', $id);
     $nav = true;
-  } elseif (is_page_template('views/template-events.blade.php')) {
+  } elseif (is_page('calendar')) {
     $icon = true;
-    $kicker = 'All Events';
+    $kicker = 'All Upcoming Programs & Events';
     $title = false;
   } elseif (is_home() || is_page_template('views/template-exhibitions.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php')) {
     $icon = true;
@@ -36,10 +36,17 @@
       $title = true;
     }
   } elseif (is_singular('events')) {
-    $kicker = 'Event';
     $breadcrumbs = true;
     $title = true;
     $meta = true;
+    // Find date time now
+    date_default_timezone_set('America/New_York');
+    $date_now = date('Y-m-d 24:00:00', mktime(date('H'),date('i'),date('s'), date('m'),date('d')-1,date('Y')));
+    if (get_field('event_start_date', false, false) >= $date_now) {
+      $kicker = 'Upcoming Event';
+    } else {
+      $kicker = 'Past Event';
+    }
   } elseif (is_singular('exhibit')) {
     $kicker = 'Exhibition';
     $breadcrumbs = true;
@@ -107,7 +114,7 @@
         {!! $kicker !!}
       </span>
     @endif
-    @if (is_home() || is_page_template('views/template-events.blade.php') || is_page_template('views/template-exhibitions.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
+    @if (is_home() || is_page('calendar') || is_page_template('views/template-exhibitions.blade.php') || is_page_template('views/template-research.blade.php') || is_page_template('views/template-shop.blade.php'))
     @else
       @if (!is_front_page() && !is_archive() && !is_author() && get_field('display_title', $id) && !is_author() )
         <h1 class="c-page-header__title u-font--primary--xl u-color--secondary">{{ the_field('display_title', $id) }}</h1>

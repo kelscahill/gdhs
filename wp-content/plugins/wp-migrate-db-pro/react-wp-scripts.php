@@ -86,7 +86,12 @@ function get_assets_list($directory, $base_url)
                 function ($asset_path) use ($directory, $base_url, $build_folder) {
                     // Use realpath to remove default relative path and confirm file exists.
                     $real_path = realpath($directory . $build_folder . '/' . $asset_path);
-                    $str       = substr($real_path, strpos($real_path, $build_folder . DIRECTORY_SEPARATOR));
+
+                    // Remove path to plugins dir to avoid problems where site path includes build folder name.
+                    $str       = str_replace(WP_PLUGIN_DIR, '', $real_path);
+
+                    // Get things into a format we can enqueue.
+                    $str       = substr($str, strpos($str, $build_folder . DIRECTORY_SEPARATOR));
                     $str       = switch_slashes_for_windows($str);// Windows fix
                     $formatted = $base_url . '/' . $str;
 
@@ -197,8 +202,6 @@ function enqueue_assets($directory, $opts = [])
         'base_url' => '',
         'handle'   => basename($directory),
         'scripts'  => [
-            'react',
-            'react-dom',
             'wp-date',
         ],
         'styles'   => [],
@@ -207,9 +210,6 @@ function enqueue_assets($directory, $opts = [])
 
     $opts = wp_parse_args($opts, $defaults);
 
-    // Ensure react & react-dom are dependencies.
-    $opts['scripts'] = array_merge($opts['scripts'], ['react', 'react-dom']);
-    $opts['scripts'] = array_unique($opts['scripts']);
 
     $base_url = $opts['base_url'];
     if (empty($base_url)) {

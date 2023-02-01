@@ -2,13 +2,18 @@
 
 namespace DeliciousBrains\WPMDB\Pro\Cli;
 
+use DeliciousBrains\WPMDB\Pro\Cli\Extra\Setting;
+use DeliciousBrains\WPMDB\WPMDBDI;
+
 class Command extends \DeliciousBrains\WPMDB\Common\Cli\Command
 {
 
 	public static function register()
 	{
-		\WP_CLI::add_command('migratedb', 'DeliciousBrains\WPMDB\Pro\Cli\Command');
+		\WP_CLI::add_command('migratedb', self::class);
+		\WP_CLI::add_command('migrate', self::class);
 	}
+
 	/**
 	 * Export local DB to file.
 	 *
@@ -36,6 +41,23 @@ class Command extends \DeliciousBrains\WPMDB\Common\Cli\Command
 	 *
 	 *     Should be used in conjunction with the --find=<strings> argument, see it's
 	 *     documentation for further explanation of the find & replace functionality.
+	 *
+	 * [--regex-find]
+	 * : A regex pattern to match against when performing a string find
+	 * and replace across the database.
+	 *
+	 * [--regex-replace]
+	 * : A replace string that may contain references of the form \n or $n, with the latter
+	 * form being the preferred one. Every such reference will be replaced by the text captured by the n'th
+	 * parenthesized pattern used in the --regex-find pattern.
+	 *
+	 * [--case-sensitive-find]
+	 * : A comma separated list of strings to find when performing a string find
+	 * and replace across the database.
+	 *
+	 * [--case-sensitive-replace]
+	 * : A comma separated list of replace value strings to implement when
+	 * performing a string find & replace across the database.
 	 *
 	 * [--include-tables=<tables>]
 	 * : The comma separated list of tables to migrate. Excluding this parameter
@@ -103,6 +125,28 @@ class Command extends \DeliciousBrains\WPMDB\Common\Cli\Command
 	 *     Should be used in conjunction with the --find=<strings> argument, see it's
 	 *     documentation for further explanation of the find & replace functionality.
 	 *
+	 * [--regex-find]
+	 * : A regex pattern to match against when performing a string find
+	 * and replace across the database.
+	 *
+	 * [--regex-replace]
+	 * : A replace string that may contain references of the form \n or $n, with the latter
+	 * form being the preferred one. Every such reference will be replaced by the text captured by the n'th
+	 * parenthesized pattern used in the --regex-find pattern.
+	 *
+	 * [--case-sensitive-find]
+	 * : A comma separated list of strings to find when performing a string find
+	 * and replace across the database.
+	 *
+	 * [--case-sensitive-replace]
+	 * : A comma separated list of replace value strings to implement when
+	 * performing a string find & replace across the database.
+	 *
+	 * [--include-tables=<tables>]
+	 * : The comma separated list of tables to migrate. Excluding this parameter
+	 * will migrate all tables in your database that begin with your
+	 * installation's table prefix, e.g. wp_.
+	 *
 	 * [--include-tables=<tables>]
 	 * : The comma separated list of tables to search. Excluding this parameter
 	 * will run a find & replace on all tables in your database that begin with your
@@ -140,4 +184,45 @@ class Command extends \DeliciousBrains\WPMDB\Common\Cli\Command
 	{
 		parent::find_replace($args, $assoc_args);
 	}
+
+    /**
+     * Update settings for migratedb.
+     *
+     * ## OPTIONS
+     *
+     * <action>
+     * : Either get or update
+     *
+     * <setting_name>
+     * : Name of setting to update or get.
+     * Available settings: push | pull | connection-key | license
+     *
+     * [<value>]
+     * : Value of new setting
+     *
+     * [--user=<id|login|email>]
+     * : Required for license
+     *
+     * ## EXAMPLES
+     *
+     * wp migratedb setting update license xxx-xxx-xxx-xxxxx --user=1
+     *
+     * wp migratedb setting get license --user=1
+     *
+     * wp migratedb setting update pull on
+     *
+     * wp migratedb setting get pull
+     *
+     * @param array $args
+     *
+     * @return bool
+     * @since    1.2.5
+     */
+    public function setting($args)
+    {
+        $wpmdb_cli_settings = WPMDBDI::getInstance()->get(Setting::class);
+
+        // Handle settings logic in dedicated class
+        $wpmdb_cli_settings->handle_setting($args);
+    }
 }

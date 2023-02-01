@@ -25,7 +25,9 @@
 @endphp
 @extends('layouts.app')
 @section('content')
-  @include('patterns.sections.c-section-hero')
+  @if (is_page('calendar'))
+    @include('patterns.sections.c-section-hero')
+  @endif
   @include('partials.page-header')
   <article @php post_class('c-article l-container l-narrow l-narrow--l u-spacing--double') @endphp>
     @if ($posts->have_posts())
@@ -34,7 +36,8 @@
       @endwhile
       @php wp_reset_query() @endphp
     @else
-      <p>Sorry, there are no events at this time.</p>
+      <p>Sorry, there are no upcoming programs or events at this time.</p>
     @endif
   </article>
+  @include('patterns.sections.c-section-past-events')
 @endsection

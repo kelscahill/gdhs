@@ -21,7 +21,7 @@
       <div class="c-block-gallery__image js-block-gallery-image">
         <?php foreach($images as $image): ?>
           <figure>
-            <a href="{{ $image['url'] }}" title="{{ $image['caption'] }}" class="c-block-gallery__image-link">
+            <a href="<?php echo $image['url']; ?>" title="<?php echo $image['caption']; ?>" class="c-block-gallery__image-link">
               <picture>
                 <!--[if IE 9]><video style="display: none"><![endif]-->
                 <source srcset="<?php echo $image['sizes']['horiz__4x3--l']; ?>" media="(min-width: 800px)">

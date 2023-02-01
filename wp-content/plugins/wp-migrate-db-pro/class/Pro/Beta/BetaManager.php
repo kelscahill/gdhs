@@ -5,7 +5,7 @@ namespace DeliciousBrains\WPMDB\Pro\Beta;
 use DeliciousBrains\WPMDB\Common\Properties\Properties;
 use DeliciousBrains\WPMDB\Common\Settings\Settings;
 use DeliciousBrains\WPMDB\Common\Util\Util;
-use DeliciousBrains\WPMDB\Pro\Addon\Addon;
+use DeliciousBrains\WPMDB\Common\Addon\Addon;
 use DeliciousBrains\WPMDB\Pro\Api;
 use DeliciousBrains\WPMDB\Pro\Download;
 use DeliciousBrains\WPMDB\Pro\UI\Template;
@@ -113,7 +113,7 @@ class BetaManager
      */
     public function add_js_strings($strings)
     {
-        $strings['rollback_beta_to_stable'] = __('Would you like to rollback WP Migrate DB Pro and its addons to the latest stable release now?', 'wp-migrate-db');
+        $strings['rollback_beta_to_stable'] = __('Would you like to rollback WP Migrate to the latest stable release now?', 'wp-migrate-db');
 
         return $strings;
     }

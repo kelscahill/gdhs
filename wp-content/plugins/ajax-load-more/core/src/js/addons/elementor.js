@@ -1,3 +1,5 @@
+import { setButtonAtts } from '../modules/getButtonURL';
+import { lazyImages } from '../modules/lazyImages';
 import loadItems from '../modules/loadItems';
 
 /**
@@ -62,10 +64,9 @@ export function elementorInit(alm) {
  *
  * @param {HTMLElement} content
  * @param {object} alm
- * @param {String} pageTitle
+ * @param {string} pageTitle
  * @since 5.3.0
  */
-
 export function elementor(content, alm, pageTitle = document.title) {
 	if (!content || !alm) {
 		return false;
@@ -79,6 +80,11 @@ export function elementor(content, alm, pageTitle = document.title) {
 		if (container && items && url) {
 			// Convert NodeList to Array
 			items = Array.prototype.slice.call(items);
+
+			// Trigger almElementorLoaded callback.
+			if (typeof almElementorLoaded === 'function') {
+				window.almElementorLoaded(items);
+			}
 
 			// Load the items
 			(async function () {
@@ -100,6 +106,36 @@ export function elementor(content, alm, pageTitle = document.title) {
 }
 
 /**
+ * Handle Elementor loaded functionality and dispatch actions.
+ *
+ * @param {object} alm
+ * @since 5.5.0
+ */
+export function elementorLoaded(alm) {
+	let nextPageNum = alm.page + 1;
+	let nextPage = alm.addons.elementor_next_page_url; // Get URL.
+
+	// Set button data attributes.
+	setButtonAtts(alm.button, nextPageNum, nextPage);
+
+	// Lazy load images if necessary.
+	lazyImages(alm);
+
+	// Trigger almComplete.
+	if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
+		window.almComplete(alm);
+	}
+
+	// End transitions.
+	alm.AjaxLoadMore.transitionEnd();
+
+	// ALM Done
+	if (!nextPage) {
+		alm.AjaxLoadMore.triggerDone();
+	}
+}
+
+/**
  * Get the content, title and results text from the Ajax response.
  *
  * @param {*} response
@@ -112,7 +148,7 @@ export function elementorGetContent(response, alm) {
 		meta: {
 			postcount: 1,
 			totalposts: alm.localize.total_posts,
-			debug: 'Elementor Query',
+			debug: false,
 		},
 	};
 	if (response.status === 200 && response.data) {
@@ -141,8 +177,8 @@ export function elementorGetContent(response, alm) {
 /**
  * Create Elementor Params for ALM.
  *
- * @param Object alm
- * @return alm
+ * @param  {object} alm The alm object.
+ * @return {object}     The modified object.
  */
 export function elementorCreateParams(alm) {
 	// Get Settings
@@ -183,7 +219,7 @@ export function elementorCreateParams(alm) {
 	}
 	if (!alm.addons.elementor_pagination) {
 		console.warn(
-			'Ajax Load More: Unable to locate Elementor pagination. There are either no results or p Ajax Load More is unable to locate the pagination widget?'
+			'Ajax Load More: Unable to locate Elementor pagination. There are either no results or Ajax Load More is unable to locate the pagination widget?'
 		);
 	}
 	return alm;
@@ -192,8 +228,9 @@ export function elementorCreateParams(alm) {
 /**
  * Set the required classnames for parsing data and injecting content into the Elementor listing
  *
- * @param {*} alm
- * @param {*} type
+ * @param  {object} alm  The alm object.
+ * @param  {string} type The Elementor type.
+ * @return {object}      The modified object.
  */
 function setElementorClasses(alm, type = 'posts') {
 	// Container Class
@@ -213,7 +250,8 @@ function setElementorClasses(alm, type = 'posts') {
 /**
  * Parse Masonry Settings from Elementor Data atts
  *
- * @param {*} alm
+ * @param {object} alm The alm object.
+ * @return {object}    The modified object.
  */
 function parseMasonryConfig(alm) {
 	if (!alm.addons.elementor_element) {
@@ -241,9 +279,9 @@ function parseMasonryConfig(alm) {
 /**
  * Position Elementor Masonry Items
  *
- * @param {*} alm
- * @param {*} container_class
- * @param {*} item_class
+ * @param {object} alm             The alm object.
+ * @param {string} container_class The container classname.
+ * @param {string} item_class      The item classname.
  */
 function positionMasonryItems(alm, container_class, item_class) {
 	let heights = [];
@@ -300,8 +338,8 @@ function positionMasonryItems(alm, container_class, item_class) {
 /**
  * Determine the type of elementor widget (woocommerce || posts)
  *
- * @param {*} target
- * @param {*} classname
+ * @param  {HTMLElement} target The target element.
+ * @return {string}             The Elementor type.
  */
 function elementorGetWidgetType(target) {
 	if (!target) {
@@ -315,22 +353,20 @@ function elementorGetWidgetType(target) {
 /**
  * Get the upcoming URL from the a.next link from the HTML
  *
- * @param {HTMLElement} element
- * @param {String} classname
- * @return {string} href
+ * @param  {HTMLElement} element   The target element
+ * @param  {string}      classname The classname.
+ * @return {HTMLElement | string}      
  */
 function elementorGetNextPage(element, classname) {
 	const pagination = element.querySelector(classname);
-	const href = pagination ? elementorGetNextUrl(pagination) : '';
-
-	return href;
+	return pagination ? elementorGetNextUrl(pagination) : '';
 }
 
 /**
  * Get the URL of the next page to load from the a.next href
  *
- * @param {HTMLElement} element
- * @return {String} url
+ * @param {HTMLElement} element The target element
+ * @return {HTMLElement | string} 
  */
 function elementorGetNextUrl(element) {
 	if (!element) {

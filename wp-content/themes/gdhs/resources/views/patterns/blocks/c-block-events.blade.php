@@ -1,5 +1,5 @@
 @php
-  date_default_timezone_set('US/Eastern');
+  date_default_timezone_set('America/New_York');
   $id = get_the_ID();
   $title = get_the_title($id);
   $body = strip_tags(get_the_content());
@@ -26,7 +26,13 @@
   $date_day = $start_date->format('l');
   $date_date = $start_date->format('d');
 
-  $kicker = 'Event';
+  // Find date time now
+  $date_now = date('Y-m-d 24:00:00', mktime(date('H'),date('i'),date('s'), date('m'),date('d')-1,date('Y')));
+  if (get_field('event_start_date', false, false) >= $date_now) {
+    $kicker = 'Upcoming Event';
+  } else {
+    $kicker = 'Past Event';
+  }
 @endphp
 <div class="c-block c-block-events u-background-color--white u-border--black">
   <a href="{{ $link }}" class="c-block__link @if($disable_link == true){{ 'disable' }}@endif">

@@ -112,12 +112,11 @@ function _interopRequireDefault(obj) {
 }
 
 /**
- * createCacheFile
- * Create a single post cache file
+ * Create a single post cache file.
  *
- * @param {Object} alm
- * @param {String} content
- * @param {String} type
+ * @param {object} alm     The ALM object.
+ * @param {string} content The content to cache.
+ * @param {string} type    The type of cache to create.
  * @since 5.3.1
  */
 function createCacheFile(alm, content) {
@@ -126,7 +125,6 @@ function createCacheFile(alm, content) {
 	if (alm.addons.cache !== 'true' || !content || content === '') {
 		return false;
 	}
-
 	var name = type === 'single' ? alm.addons.single_post_id : 'page-' + (alm.page + 1);
 
 	var formData = new FormData();
@@ -144,8 +142,7 @@ function createCacheFile(alm, content) {
 }
 
 /**
- * wooCache
- * Create a WooCommerce cache file
+ * Create a WooCommerce cache file.
  *
  * @param {Object} alm
  * @param {String} content
@@ -165,7 +162,7 @@ function wooCache(alm, content) {
 	formData.append('name', 'page-' + alm.page);
 	formData.append('html', content.trim());
 
-	_axios2.default.post(alm_localize.ajaxurl, formData).then(function (response) {
+	_axios2.default.post(alm_localize.ajaxurl, formData).then(function () {
 		console.log('Cache created for post: ' + alm.canonical_url);
 		//console.log(response);
 	});
@@ -188,8 +185,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.elementorInit = elementorInit;
 exports.elementor = elementor;
+exports.elementorLoaded = elementorLoaded;
 exports.elementorGetContent = elementorGetContent;
 exports.elementorCreateParams = elementorCreateParams;
+
+var _getButtonURL = __webpack_require__(/*! ../modules/getButtonURL */ "./core/src/js/modules/getButtonURL.js");
+
+var _lazyImages = __webpack_require__(/*! ../modules/lazyImages */ "./core/src/js/modules/lazyImages.js");
 
 var _loadItems = __webpack_require__(/*! ../modules/loadItems */ "./core/src/js/modules/loadItems.js");
 
@@ -283,10 +285,9 @@ function elementorInit(alm) {
  *
  * @param {HTMLElement} content
  * @param {object} alm
- * @param {String} pageTitle
+ * @param {string} pageTitle
  * @since 5.3.0
  */
-
 function elementor(content, alm) {
 	var pageTitle = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document.title;
 
@@ -302,6 +303,11 @@ function elementor(content, alm) {
 		if (container && items && url) {
 			// Convert NodeList to Array
 			items = Array.prototype.slice.call(items);
+
+			// Trigger almElementorLoaded callback.
+			if (typeof almElementorLoaded === 'function') {
+				window.almElementorLoaded(items);
+			}
 
 			// Load the items
 			_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -337,6 +343,36 @@ function elementor(content, alm) {
 }
 
 /**
+ * Handle Elementor loaded functionality and dispatch actions.
+ *
+ * @param {object} alm
+ * @since 5.5.0
+ */
+function elementorLoaded(alm) {
+	var nextPageNum = alm.page + 1;
+	var nextPage = alm.addons.elementor_next_page_url; // Get URL.
+
+	// Set button data attributes.
+	(0, _getButtonURL.setButtonAtts)(alm.button, nextPageNum, nextPage);
+
+	// Lazy load images if necessary.
+	(0, _lazyImages.lazyImages)(alm);
+
+	// Trigger almComplete.
+	if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
+		window.almComplete(alm);
+	}
+
+	// End transitions.
+	alm.AjaxLoadMore.transitionEnd();
+
+	// ALM Done
+	if (!nextPage) {
+		alm.AjaxLoadMore.triggerDone();
+	}
+}
+
+/**
  * Get the content, title and results text from the Ajax response.
  *
  * @param {*} response
@@ -349,7 +385,7 @@ function elementorGetContent(response, alm) {
 		meta: {
 			postcount: 1,
 			totalposts: alm.localize.total_posts,
-			debug: 'Elementor Query'
+			debug: false
 		}
 	};
 	if (response.status === 200 && response.data) {
@@ -378,8 +414,8 @@ function elementorGetContent(response, alm) {
 /**
  * Create Elementor Params for ALM.
  *
- * @param Object alm
- * @return alm
+ * @param  {object} alm The alm object.
+ * @return {object}     The modified object.
  */
 function elementorCreateParams(alm) {
 	// Get Settings
@@ -415,7 +451,7 @@ function elementorCreateParams(alm) {
 		console.warn("Ajax Load More: Unable to locate Elementor Widget. Are you sure you've set up your target parameter correctly?");
 	}
 	if (!alm.addons.elementor_pagination) {
-		console.warn('Ajax Load More: Unable to locate Elementor pagination. There are either no results or p Ajax Load More is unable to locate the pagination widget?');
+		console.warn('Ajax Load More: Unable to locate Elementor pagination. There are either no results or Ajax Load More is unable to locate the pagination widget?');
 	}
 	return alm;
 }
@@ -423,8 +459,9 @@ function elementorCreateParams(alm) {
 /**
  * Set the required classnames for parsing data and injecting content into the Elementor listing
  *
- * @param {*} alm
- * @param {*} type
+ * @param  {object} alm  The alm object.
+ * @param  {string} type The Elementor type.
+ * @return {object}      The modified object.
  */
 function setElementorClasses(alm) {
 	var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'posts';
@@ -444,7 +481,8 @@ function setElementorClasses(alm) {
 /**
  * Parse Masonry Settings from Elementor Data atts
  *
- * @param {*} alm
+ * @param {object} alm The alm object.
+ * @return {object}    The modified object.
  */
 function parseMasonryConfig(alm) {
 	if (!alm.addons.elementor_element) {
@@ -472,9 +510,9 @@ function parseMasonryConfig(alm) {
 /**
  * Position Elementor Masonry Items
  *
- * @param {*} alm
- * @param {*} container_class
- * @param {*} item_class
+ * @param {object} alm             The alm object.
+ * @param {string} container_class The container classname.
+ * @param {string} item_class      The item classname.
  */
 function positionMasonryItems(alm, container_class, item_class) {
 	var heights = [];
@@ -531,8 +569,8 @@ function positionMasonryItems(alm, container_class, item_class) {
 /**
  * Determine the type of elementor widget (woocommerce || posts)
  *
- * @param {*} target
- * @param {*} classname
+ * @param  {HTMLElement} target The target element.
+ * @return {string}             The Elementor type.
  */
 function elementorGetWidgetType(target) {
 	if (!target) {
@@ -546,22 +584,20 @@ function elementorGetWidgetType(target) {
 /**
  * Get the upcoming URL from the a.next link from the HTML
  *
- * @param {HTMLElement} element
- * @param {String} classname
- * @return {string} href
+ * @param  {HTMLElement} element   The target element
+ * @param  {string}      classname The classname.
+ * @return {HTMLElement | string}      
  */
 function elementorGetNextPage(element, classname) {
 	var pagination = element.querySelector(classname);
-	var href = pagination ? elementorGetNextUrl(pagination) : '';
-
-	return href;
+	return pagination ? elementorGetNextUrl(pagination) : '';
 }
 
 /**
  * Get the URL of the next page to load from the a.next href
  *
- * @param {HTMLElement} element
- * @return {String} url
+ * @param {HTMLElement} element The target element
+ * @return {HTMLElement | string} 
  */
 function elementorGetNextUrl(element) {
 	if (!element) {
@@ -782,6 +818,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.createMasonrySEOPage = createMasonrySEOPage;
 exports.createMasonrySEOPages = createMasonrySEOPages;
 exports.createSEOAttributes = createSEOAttributes;
+exports.getSEOPageNum = getSEOPageNum;
 /**
  * createMasonrySEOPage
  * Create data attributes for SEO paged results
@@ -884,9 +921,12 @@ function masonrySEOAtts(alm, element, querystring, seo_class, pagenum) {
 /**
  * Create data attributes for SEO -  used when /page/2/, /page/3/ etc are hit on page load.
  *
- * @param {object} alm
- * @param {array} elements
- *
+ * @param  {object}      alm         The ALM object.
+ * @param  {HTLElement}  element     The div element.
+ * @param  {string}      querystring The current querystring.
+ * @param  {string}      seo_class   The classname to add to element.
+ * @param  {Number}      pagenum     The current page number.
+ * @return {HTMLElement}             The modified HTML element.
  * @since 5.3.1
  */
 function createSEOAttributes(alm, element, querystring, seo_class, pagenum) {
@@ -902,6 +942,21 @@ function createSEOAttributes(alm, element, querystring, seo_class, pagenum) {
 	}
 
 	return element;
+}
+
+/**
+ * Get the current page number.
+ *
+ * @param  {string} seo_offset Is this an SEO offset.
+ * @param  {Number} page       The page number,
+ * @return {Number}            The page number.
+ */
+function getSEOPageNum(seo_offset, page) {
+	if (seo_offset === 'true') {
+		return parseInt(page) + 1;
+	} else {
+		return page;
+	}
 }
 
 /***/ }),
@@ -1020,6 +1075,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.wooInit = wooInit;
 exports.woocommerce = woocommerce;
+exports.woocommerceLoaded = woocommerceLoaded;
 exports.wooReset = wooReset;
 exports.wooGetContent = wooGetContent;
 
@@ -1027,9 +1083,19 @@ var _axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 
 var _axios2 = _interopRequireDefault(_axios);
 
+var _dispatchScrollEvent = __webpack_require__(/*! ../helpers/dispatchScrollEvent */ "./core/src/js/helpers/dispatchScrollEvent.js");
+
+var _dispatchScrollEvent2 = _interopRequireDefault(_dispatchScrollEvent);
+
+var _getButtonURL = __webpack_require__(/*! ../modules/getButtonURL */ "./core/src/js/modules/getButtonURL.js");
+
+var _lazyImages = __webpack_require__(/*! ../modules/lazyImages */ "./core/src/js/modules/lazyImages.js");
+
 var _loadItems = __webpack_require__(/*! ../modules/loadItems */ "./core/src/js/modules/loadItems.js");
 
 var _loadItems2 = _interopRequireDefault(_loadItems);
+
+var _loadPrevious = __webpack_require__(/*! ../modules/loadPrevious */ "./core/src/js/modules/loadPrevious.js");
 
 function _interopRequireDefault(obj) {
 	return obj && obj.__esModule ? obj : { default: obj };
@@ -1082,6 +1148,7 @@ function wooInit(alm) {
 	var container = document.querySelector(alm.addons.woocommerce_settings.container); // Get `ul.products`
 	if (container) {
 		var count = getContainerCount(alm.addons.woocommerce_settings.container);
+		var currentPage = alm.addons.woocommerce_settings.paged;
 
 		if (count > 1) {
 			// Display warning if multiple containers were found.
@@ -1104,8 +1171,15 @@ function wooInit(alm) {
 			console.warn('ALM WooCommerce: Unable to locate products. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/#alm_woocommerce_products');
 		}
 
-		if (alm.addons.woocommerce_settings.paged > 1) {
-			almWooCommerceResultsTextInit(alm);
+		// Paged URL: Create previous button.
+		if (currentPage > 1) {
+			// almWooCommerceResultsTextInit(alm);
+
+			if (alm.addons.woocommerce_settings.settings.previous_products) {
+				var prevURL = alm.addons.woocommerce_settings.paged_urls[currentPage - 2];
+				var label = alm.addons.woocommerce_settings.settings.previous_products;
+				(0, _loadPrevious.createLoadPreviousButton)(alm, container, currentPage - 1, prevURL, label);
+			}
 		}
 	} else {
 		console.warn('ALM WooCommerce: Unable to locate container element. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/#alm_woocommerce_container');
@@ -1120,7 +1194,6 @@ function wooInit(alm) {
  * @param {String} pageTitle
  * @since 5.3.0
  */
-
 function woocommerce(content, alm) {
 	var pageTitle = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document.title;
 
@@ -1131,11 +1204,17 @@ function woocommerce(content, alm) {
 	return new Promise(function (resolve) {
 		var container = document.querySelector(alm.addons.woocommerce_settings.container); // Get `ul.products`
 		var products = content.querySelectorAll(alm.addons.woocommerce_settings.products); // Get all `.products`
-		var url = alm.addons.woocommerce_settings.paged_urls[alm.page];
+		var page = alm.rel === 'prev' ? alm.pagePrev - 1 : alm.page;
+		var url = alm.addons.woocommerce_settings.paged_urls[page];
 
 		if (container && products && url) {
-			// Convert NodeList to Array
+			// Convert NodeList to Array.
 			products = Array.prototype.slice.call(products);
+
+			// Trigger almWooCommerceLoaded callback.
+			if (typeof almWooCommerceLoaded === 'function') {
+				window.almWooCommerceLoaded(products);
+			}
 
 			// Load the Products
 			_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -1163,7 +1242,47 @@ function woocommerce(content, alm) {
 }
 
 /**
- * Reset a WooCommerce Instance by hitting the updated site URL
+ * Handle WooCommerce loaded functionality and dispatch actions.
+ *
+ * @param {object} alm
+ * @since 5.5.0
+ */
+function woocommerceLoaded(alm) {
+	var nextPageNum = alm.page + 2;
+	var nextPage = alm.addons.woocommerce_settings.paged_urls[nextPageNum - 1]; // Get URL.
+
+	// Set button data attributes.
+	if (alm.rel === 'prev' && alm.buttonPrev) {
+		var prevPageNum = alm.pagePrev - 1;
+		var prevPage = alm.addons.woocommerce_settings.paged_urls[alm.pagePrev - 2];
+		(0, _getButtonURL.setButtonAtts)(alm.buttonPrev, prevPageNum, prevPage);
+		(0, _dispatchScrollEvent2.default)(true);
+	} else {
+		(0, _getButtonURL.setButtonAtts)(alm.button, nextPageNum, nextPage);
+	}
+
+	// Lazy load images if necessary.
+	(0, _lazyImages.lazyImages)(alm);
+
+	// Trigger almComplete.
+	if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
+		window.almComplete(alm);
+	}
+
+	// End transitions.
+	alm.AjaxLoadMore.transitionEnd();
+
+	// ALM Done.
+	if (alm.rel === 'prev' && alm.pagePrev <= 1) {
+		alm.AjaxLoadMore.triggerDonePrev();
+	}
+	if (alm.rel === 'next' && nextPageNum > parseInt(alm.addons.woocommerce_settings.pages)) {
+		alm.AjaxLoadMore.triggerDone();
+	}
+}
+
+/**
+ * Reset a WooCommerce Instance by hitting the updated site URL.
  *
  * @since 5.3.8
  */
@@ -1190,7 +1309,7 @@ function wooReset() {
 /**
  * Get the content, title and results text from the Ajax response
  *
- * @param {object} alm
+ * @param {object} alm The Ajax Load More object.
  * @since 5.3.0
  */
 function wooGetContent(response, alm) {
@@ -1199,7 +1318,7 @@ function wooGetContent(response, alm) {
 		meta: {
 			postcount: 1,
 			totalposts: alm.localize.total_posts,
-			debug: 'WooCommerce Query'
+			debug: false
 		}
 	};
 	if (response.status === 200 && response.data) {
@@ -1225,7 +1344,7 @@ function wooGetContent(response, alm) {
  *  Set results text for WooCommerce Add-on.
  *
  *  @param {HTMLElement} target
- *  @param {Object} alm
+ *  @param {Object} alm The Ajax Load More object.
  *  @since 5.3
  */
 function almWooCommerceResultsText() {
@@ -1234,27 +1353,29 @@ function almWooCommerceResultsText() {
 
 	if (target && alm && alm.addons.woocommerce_settings.results_text) {
 		var currentResults = target.querySelector(alm.addons.woocommerce_settings.results);
-		var link = alm.addons.woocommerce_settings.settings.previous_page_link;
-		var label = alm.addons.woocommerce_settings.settings.previous_page_label;
-		var sep = alm.addons.woocommerce_settings.settings.previous_page_sep;
 
 		if (alm.addons.woocommerce_settings.results_text) {
+			//let link = alm.addons.woocommerce_settings.settings.previous_page_link;
+			//let label = alm.addons.woocommerce_settings.settings.previous_page_label;
+			//let sep = alm.addons.woocommerce_settings.settings.previous_page_sep;
 			alm.addons.woocommerce_settings.results_text.forEach(function (element) {
-				if (link && label) {
-					element.innerHTML = returnButton(currentResults, link, label, sep);
-				} else {
-					element.innerHTML = currentResults.innerHTML;
-				}
+				element.innerHTML = currentResults.innerHTML;
+				// if (link && label) {
+				// 	element.innerHTML = returnButton(currentResults, link, label, sep);
+				// } else {
+				// 	element.innerHTML = currentResults.innerHTML;
+				// }
 			});
 		}
 	}
 }
 
 /**
- *  Initiate Results text.
+ * Initiate Results text.
  *
- *  @param {Object} alm
- *  @since 5.3
+ * @param {Object} alm The Ajax Load More object.
+ * @since 5.3
+ * @deprecated 5.5
  */
 function almWooCommerceResultsTextInit(alm) {
 	if (alm && alm.addons.woocommerce_settings.results_text) {
@@ -1288,9 +1409,10 @@ function returnButton(text, link, label, seperator) {
 }
 
 /**
- * Get total count of WooCommerce containers
+ * Get total count of WooCommerce containers.
  *
- * @param {*} container
+ * @param {string} container The container class.
+ * @return {Number} The total umber of containers.
  */
 function getContainerCount(container) {
 	if (!container) {
@@ -1319,7 +1441,7 @@ function getContainerCount(container) {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.render = exports.getOffset = exports.almScroll = exports.start = exports.tracking = exports.tab = exports.reset = exports.filter = undefined;
+exports.render = exports.getOffset = exports.almScroll = exports.start = exports.tab = exports.tracking = exports.getTotalPosts = exports.getPostCount = exports.reset = exports.filter = undefined;
 
 var _axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 
@@ -1379,8 +1501,6 @@ var _setFocus2 = _interopRequireDefault(_setFocus);
 
 var _getButtonURL = __webpack_require__(/*! ./modules/getButtonURL */ "./core/src/js/modules/getButtonURL.js");
 
-var _getButtonURL2 = _interopRequireDefault(_getButtonURL);
-
 var _masonry = __webpack_require__(/*! ./modules/masonry */ "./core/src/js/modules/masonry.js");
 
 var _fadeIn = __webpack_require__(/*! ./modules/fadeIn */ "./core/src/js/modules/fadeIn.js");
@@ -1414,8 +1534,6 @@ var _srcsetPolyfill2 = _interopRequireDefault(_srcsetPolyfill);
 var _placeholder = __webpack_require__(/*! ./modules/placeholder */ "./core/src/js/modules/placeholder.js");
 
 var _lazyImages = __webpack_require__(/*! ./modules/lazyImages */ "./core/src/js/modules/lazyImages.js");
-
-var _lazyImages2 = _interopRequireDefault(_lazyImages);
 
 var _singleposts = __webpack_require__(/*! ./addons/singleposts */ "./core/src/js/addons/singleposts.js");
 
@@ -1511,20 +1629,19 @@ var alm_is_filtering = false;
 	'use strict';
 
 	/**
-  * ajaxloadmore
-  * Init Ajax Load More
+  * Initiate Ajax Load More.
   *
-  * @param {*} el
-  * @param {*} e
+  * @param {HTMLElement} el The Ajax Load More DOM element/container.
+  * @param {Number} index The current index number of the Ajax Load More instance.
   */
 
-	var ajaxloadmore = function ajaxloadmore(el, e) {
+	var ajaxloadmore = function ajaxloadmore(el, index) {
 		// Move user to top of page to prevent loading of unnessasry posts
 		if (alm_localize && alm_localize.scrolltop === 'true') {
 			window.scrollTo(0, 0);
 		}
 
-		//Set ALM Variables
+		// Set ALM Variables
 		var alm = this;
 		alm.AjaxLoadMore = {};
 		alm.addons = {};
@@ -1540,14 +1657,15 @@ var alm_is_filtering = false;
 		alm.loading = true;
 		alm.finished = false;
 		alm.timer = null;
+		alm.rel = 'next';
 
 		alm.ua = window.navigator.userAgent ? window.navigator.userAgent : ''; // Browser User Agent
 		alm.vendor = window.navigator.vendor ? window.navigator.vendor : ''; // Browser Vendor
 		alm.isSafari = /Safari/i.test(alm.ua) && /Apple Computer/.test(alm.vendor) && !/Mobi|Android/i.test(alm.ua);
 
 		alm.master_id = el.dataset.id ? 'ajax-load-more-' + el.dataset.id : el.id; // The defined or generated ID of the ALM instance
-		el.classList.add('alm-' + e); // Add unique classname
-		el.setAttribute('data-alm-id', e); // Add unique data id
+		el.classList.add('alm-' + index); // Add unique classname.
+		el.setAttribute('data-alm-id', index); // Add unique data id.
 
 		// Get localized <script/> variables
 		alm.master_id = alm.master_id.replace(/-/g, '_'); // Convert dashes to underscores for the var name
@@ -1560,6 +1678,7 @@ var alm_is_filtering = false;
 		alm.el = alm.content;
 		alm.ajax = el.querySelector('.alm-ajax');
 		alm.container_type = alm.listing.dataset.containerType;
+		alm.loading_style = alm.listing.dataset.loadingStyle;
 
 		// Instance Params
 		alm.canonical_url = el.dataset.canonicalUrl;
@@ -1597,12 +1716,12 @@ var alm_is_filtering = false;
 		alm.scroll_container = alm.listing.dataset.scrollContainer;
 		alm.scroll_direction = alm.listing.dataset.scrollDirection;
 		alm.max_pages = alm.listing.dataset.maxPages ? parseInt(alm.listing.dataset.maxPages) : 0;
-		alm.pause_override = alm.listing.dataset.pauseOverride; // true | false
+		alm.pause_override = alm.listing.dataset.pauseOverride ? alm.listing.dataset.pauseOverride : false; // true | false
 		alm.pause = alm.listing.dataset.pause ? alm.listing.dataset.pause : false; // true | false
 		alm.transition = alm.listing.dataset.transition; // Transition
 		alm.transition_container = alm.listing.dataset.transitionContainer; // Transition Container
 		alm.tcc = alm.listing.dataset.transitionContainerClasses; // Transition Container Classes
-		alm.speed = alm_localize.speed ? parseInt(alm_localize.speed) : 200;
+		alm.speed = alm_localize.speed ? parseInt(alm_localize.speed) : 150;
 		alm.images_loaded = alm.listing.dataset.imagesLoaded ? alm.listing.dataset.imagesLoaded : false;
 		alm.destroy_after = alm.listing.dataset.destroyAfter ? alm.listing.dataset.destroyAfter : '';
 		alm.orginal_posts_per_page = parseInt(alm.listing.dataset.postsPerPage); // Used for paging add-on
@@ -1697,6 +1816,7 @@ var alm_is_filtering = false;
 		alm.addons.tabs = alm.listing.dataset.tabs;
 		alm.addons.filters = alm.listing.dataset.filters;
 		alm.addons.seo = alm.listing.dataset.seo;
+		alm.addons.seo_offset = alm.listing.dataset.seoOffset;
 
 		// Preloaded
 		alm.addons.preloaded = alm.listing.dataset.preloaded; // Preloaded add-on
@@ -1714,31 +1834,37 @@ var alm_is_filtering = false;
 		// Extension Shortcode Params
 
 		// REST API.
-		alm.extensions.restapi = alm.listing.dataset.restapi; // REST API
-		alm.extensions.restapi_base_url = alm.listing.dataset.restapiBaseUrl;
-		alm.extensions.restapi_namespace = alm.listing.dataset.restapiNamespace;
-		alm.extensions.restapi_endpoint = alm.listing.dataset.restapiEndpoint;
-		alm.extensions.restapi_template_id = alm.listing.dataset.restapiTemplateId;
-		alm.extensions.restapi_debug = alm.listing.dataset.restapiDebug;
+		alm.extensions.restapi = alm.listing.dataset.restapi;
+		if (alm.extensions.restapi === 'true') {
+			alm.extensions.restapi_base_url = alm.listing.dataset.restapiBaseUrl;
+			alm.extensions.restapi_namespace = alm.listing.dataset.restapiNamespace;
+			alm.extensions.restapi_endpoint = alm.listing.dataset.restapiEndpoint;
+			alm.extensions.restapi_template_id = alm.listing.dataset.restapiTemplateId;
+			alm.extensions.restapi_debug = alm.listing.dataset.restapiDebug;
+		}
 
 		// ACF.
 		alm.extensions.acf = alm.listing.dataset.acf;
-		alm.extensions.acf_field_type = alm.listing.dataset.acfFieldType;
-		alm.extensions.acf_field_name = alm.listing.dataset.acfFieldName;
-		alm.extensions.acf_parent_field_name = alm.listing.dataset.acfParentFieldName;
-		alm.extensions.acf_post_id = alm.listing.dataset.acfPostId;
-		alm.extensions.acf = alm.extensions.acf === 'true' ? true : false;
-		// if field type, name or post ID is empty
-		if (alm.extensions.acf_field_type === undefined || alm.extensions.acf_field_name === undefined || alm.extensions.acf_post_id === undefined) {
-			alm.extensions.acf = false;
+		if (alm.extensions.acf === 'true') {
+			alm.extensions.acf_field_type = alm.listing.dataset.acfFieldType;
+			alm.extensions.acf_field_name = alm.listing.dataset.acfFieldName;
+			alm.extensions.acf_parent_field_name = alm.listing.dataset.acfParentFieldName;
+			alm.extensions.acf_post_id = alm.listing.dataset.acfPostId;
+			alm.extensions.acf = alm.extensions.acf === 'true' ? true : false;
+			// if field type, name or post ID is empty
+			if (alm.extensions.acf_field_type === undefined || alm.extensions.acf_field_name === undefined || alm.extensions.acf_post_id === undefined) {
+				alm.extensions.acf = false;
+			}
 		}
 
 		// Term Query.
-		alm.extensions.term_query = alm.listing.dataset.termQuery; // TERM QUERY
-		alm.extensions.term_query_taxonomy = alm.listing.dataset.termQueryTaxonomy;
-		alm.extensions.term_query_hide_empty = alm.listing.dataset.termQueryHideEmpty;
-		alm.extensions.term_query_number = alm.listing.dataset.termQueryNumber;
-		alm.extensions.term_query = alm.extensions.term_query === 'true' ? true : false;
+		alm.extensions.term_query = alm.listing.dataset.termQuery;
+		if (alm.extensions.term_query === 'true') {
+			alm.extensions.term_query_taxonomy = alm.listing.dataset.termQueryTaxonomy;
+			alm.extensions.term_query_hide_empty = alm.listing.dataset.termQueryHideEmpty;
+			alm.extensions.term_query_number = alm.listing.dataset.termQueryNumber;
+			alm.extensions.term_query = alm.extensions.term_query === 'true' ? true : false;
+		}
 
 		// Paging.
 		alm.addons.paging = alm.listing.dataset.paging; // Paging add-on
@@ -1775,10 +1901,11 @@ var alm_is_filtering = false;
 			alm.addons.filters_analtyics = alm.listing.dataset.filtersAnalytics;
 			alm.addons.filters_debug = alm.listing.dataset.filtersDebug;
 			alm.addons.filters_startpage = 0;
+			alm.facets = alm.listing.dataset.facets === 'true' ? true : false;
 
-			// Display warning if `filters_target` parameter is missing.
+			// Display warning when `filters_target` parameter is missing.
 			if (!alm.addons.filters_target) {
-				console.warn('Ajax Load More: Unable to locate target for Filters. Make sure you set a filters_target in core Ajax Load More.');
+				console.warn('Ajax Load More: Unable to locate target for Filters. Make sure you set a filters_target in core Ajax Load More - e.g. [ajax_load_more filters="true" target="filters"]');
 			}
 
 			// Get Paged Querystring Val
@@ -2056,58 +2183,69 @@ var alm_is_filtering = false;
 		}
 
 		/**
-   *  The function to get posts via Ajax
+   * The function to get posts via Ajax.
    *
-   *  @since 2.0.0
+   * @since 2.0.0
    */
 		alm.AjaxLoadMore.loadPosts = function () {
 			if (typeof almOnChange === 'function') {
 				window.almOnChange(alm);
 			}
 
+			// Check for ajax blocker.
+			if (alm.disable_ajax) {
+				return;
+			}
+
+			alm.loading = true;
 			(0, _placeholder.showPlaceholder)(alm);
 
-			if (!alm.disable_ajax) {
-				// Check for ajax blocker
-				if (!alm.addons.paging) {
+			// Add `.alm-loading` class to container.
+			alm.main.classList.add('alm-loading');
+
+			// Add loading styles to buttons.
+			if (!alm.addons.paging) {
+				if (alm.rel === 'prev') {
+					alm.buttonPrev.classList.add('loading');
+				} else {
 					alm.button.classList.add('loading');
 					if (alm.button_loading_label !== false) {
 						alm.button.innerHTML = alm.button_loading_label;
 					}
 				}
-				alm.main.classList.add('alm-loading');
-				alm.loading = true;
-				if (alm.addons.cache === 'true' && !alm.addons.cache_logged_in) {
-					// Cache
-					var cache_page = (0, _getCacheUrl2.default)(alm);
+			}
 
-					if (cache_page) {
-						// Load `.html` page
-						_axios2.default.get(cache_page).then(function (response) {
-							// Exists
-							alm.AjaxLoadMore.success(response.data, true);
-						}).catch(function (error) {
-							// Error || Page does not yet exist
-							alm.AjaxLoadMore.ajax('standard');
-						});
-					} else {
-						// Standard ALM query
-						alm.AjaxLoadMore.ajax('standard');
-					}
+			// Cache
+			if (alm.addons.cache === 'true' && !alm.addons.cache_logged_in) {
+				var cache_page = (0, _getCacheUrl2.default)(alm);
+				if (cache_page) {
+					_axios2.default.get(cache_page).then(function (response) {
+						// Exists
+						alm.AjaxLoadMore.success(response.data, true);
+					}).catch(function (error) {
+						// Error || Page does not yet exist
+						// console.log(error);
+						alm.AjaxLoadMore.ajax();
+					});
 				} else {
 					// Standard ALM query
-					alm.AjaxLoadMore.ajax('standard');
+					alm.AjaxLoadMore.ajax();
 				}
+			} else {
+				// Standard ALM query
+				alm.AjaxLoadMore.ajax();
 			}
 		};
 
 		/**
-   * Ajax Load Moe Ajax function
+   * The core Ajax Load More Ajax function.
    *
    * @param {string} queryType The type of Ajax request (standard/totalposts).
    * @since 2.6.0
    */
-		alm.AjaxLoadMore.ajax = function (queryType) {
+		alm.AjaxLoadMore.ajax = function () {
+			var queryType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'standard';
+
 			// Default ALM action
 			var action = 'alm_get_posts';
 
@@ -2223,16 +2361,12 @@ var alm_is_filtering = false;
 		/**
    * Send request to the admin-ajax.php
    *
-   * @param {*} alm | ALm object
-   * @param {*} action | Ajax action
-   * @param {*} queryType
+   * @param {object} alm The Ajax Load More object.
+   * @param {string} action The Ajax action.
+   * @param {string} queryType The type of Ajax request (standard/totalposts).
    * @since 5.0.0
    */
 		alm.AjaxLoadMore.adminajax = function (alm, action, queryType) {
-			if (alm.page != 1 && !alm.addons.paging) {
-				alm.button.classList.add('loading');
-			}
-
 			// Axios Interceptor for nested data objects
 			_axios2.default.interceptors.request.use(function (config) {
 				config.paramsSerializer = function (params) {
@@ -2260,13 +2394,13 @@ var alm_is_filtering = false;
 
 			// WooCommerce Add-on
 			if (alm.addons.woocommerce) {
-				ajaxURL = (0, _getButtonURL2.default)(alm);
+				ajaxURL = (0, _getButtonURL.getButtonURL)(alm, alm.rel);
 				params = '';
 			}
 
 			// Elementor Add-on
 			if (alm.addons.elementor && alm.addons.elementor_type && alm.addons.elementor_type === 'posts') {
-				ajaxURL = (0, _getButtonURL2.default)(alm);
+				ajaxURL = (0, _getButtonURL.getButtonURL)(alm, alm.rel);
 				params = '';
 			}
 
@@ -2314,9 +2448,9 @@ var alm_is_filtering = false;
 		};
 
 		/**
-   * Send request to the WP REST API.
+   * Ajax Load More Tab functionality.
    *
-   * @param {*} alm | ALm object
+   * @param {object} alm The Ajax Load More object.
    * @since 5.2.0
    */
 		alm.AjaxLoadMore.tabs = function (alm) {
@@ -2368,9 +2502,9 @@ var alm_is_filtering = false;
 		/**
    * Send request to the WP REST API
    *
-   * @param {*} alm | ALm object
-   * @param {*} action | Ajax action
-   * @param {*} queryType
+   * @param {object} alm The Ajax Load More object.
+   * @param {string} action The Ajax action.
+   * @param {string} queryType The type of Ajax request (standard/totalposts).
    * @since 5.0.0
    */
 		alm.AjaxLoadMore.restapi = function (alm, action, queryType) {
@@ -2394,13 +2528,16 @@ var alm_is_filtering = false;
 			_axios2.default.get(alm_rest_url, { params: params }).then(function (response) {
 				// Success
 				var results = response.data; // Get data from response
-				var data = '';
-				var html = results.html;
-				var meta = results.meta;
+				var _results$html = results.html,
+				    html = _results$html === undefined ? null : _results$html,
+				    _results$meta = results.meta,
+				    meta = _results$meta === undefined ? null : _results$meta;
+
 				var postcount = meta && meta.postcount ? meta.postcount : 0;
 				var totalposts = meta && meta.totalposts ? meta.totalposts : 0;
 
-				// loop results to get data from each
+				// loop results to get data from each.
+				var data = '';
 				for (var i = 0; i < html.length; i++) {
 					var result = html[i];
 					if (alm.restapi_debug === 'true') {
@@ -2437,7 +2574,7 @@ var alm_is_filtering = false;
 		/**
    * Success function after loading data.
    *
-   * @param {object} data      The results of the Ajax request.
+   * @param {object}  data     The results of the Ajax request.
    * @param {boolean} is_cache Are results of the Ajax request coming from cache?
    * @since 2.6.0
    */
@@ -2452,7 +2589,6 @@ var alm_is_filtering = false;
 			var isPaged = false;
 
 			// Create `.alm-reveal` element
-			//let reveal = document.createElement('div');
 			var reveal = alm.container_type === 'table' ? document.createElement('tbody') : document.createElement('div');
 			alm.el = reveal;
 			reveal.style.opacity = 0;
@@ -2539,14 +2675,19 @@ var alm_is_filtering = false;
 				}
 			}
 
-			/*
-    *  Display alm_debug results
+			// Set Filter Facets
+			if (alm.addons.filters && alm.facets && data.facets && typeof almFiltersFacets === 'function') {
+				window.almFiltersFacets(data.facets);
+			}
+
+			/**
+    * Display alm_debug results
     */
 
 			(0, _almDebug2.default)(alm);
 
-			/*
-    *  Set localized variables and Results Text
+			/**
+    * Set localized variables and Results Text
     */
 
 			_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -2565,8 +2706,8 @@ var alm_is_filtering = false;
 				}, _callee, _this);
 			}))();
 
-			/*
-    *  Render results
+			/**
+    * Render results
     */
 
 			if (total > 0) {
@@ -2608,7 +2749,7 @@ var alm_is_filtering = false;
 							if (alm.init && (alm.start_page > 1 || alm.addons.filters_startpage > 0)) {
 								// loop through items and break into separate .alm-reveal divs for paging
 
-								var return_data = [];
+								var _data = [];
 								var container_array = [];
 								var posts_per_page = parseInt(alm.posts_per_page);
 								var pages = Math.ceil(total / posts_per_page);
@@ -2622,15 +2763,15 @@ var alm_is_filtering = false;
 								}
 
 								// Parse returned HTML and strip empty nodes
-								var _data = (0, _stripEmptyNodes2.default)((0, _almDomParser2.default)(alm.html, 'text/html'));
+								var _html = (0, _stripEmptyNodes2.default)((0, _almDomParser2.default)(alm.html, 'text/html'));
 
-								// Slice data array into individual pages (array)
+								// Split data into array of individual page
 								for (var i = 0; i < total; i += posts_per_page) {
-									return_data.push(_data.slice(i, posts_per_page + i));
+									_data.push(_html.slice(i, posts_per_page + i));
 								}
 
-								// Loop return_data array to build .alm-reveal containers
-								for (var k = 0; k < return_data.length; k++) {
+								// Loop data array to build .alm-reveal containers
+								for (var k = 0; k < _data.length; k++) {
 									var p = alm.addons.preloaded === 'true' ? 1 : 0; // Add 1 page if items are preloaded.
 									var alm_reveal = document.createElement('div');
 
@@ -2639,7 +2780,7 @@ var alm_is_filtering = false;
 
 										if (alm.addons.seo) {
 											// SEO
-											alm_reveal = (0, _seo.createSEOAttributes)(alm, alm_reveal, querystring, seo_class, pagenum);
+											alm_reveal = (0, _seo.createSEOAttributes)(alm, alm_reveal, querystring, seo_class, (0, _seo.getSEOPageNum)(alm.addons.seo_offset, pagenum));
 										}
 
 										if (alm.addons.filters) {
@@ -2652,7 +2793,7 @@ var alm_is_filtering = false;
 										// First Page
 										if (alm.addons.seo) {
 											// SEO
-											alm_reveal = (0, _seo.createSEOAttributes)(alm, alm_reveal, querystring, seo_class, 1);
+											alm_reveal = (0, _seo.createSEOAttributes)(alm, alm_reveal, querystring, seo_class + preloaded_class, (0, _seo.getSEOPageNum)(alm.addons.seo_offset, 1));
 										}
 										if (alm.addons.filters) {
 											// Filters
@@ -2663,7 +2804,7 @@ var alm_is_filtering = false;
 									}
 
 									// Append children to `.alm-reveal` element
-									(0, _almAppendChildren2.default)(alm_reveal, return_data[k]);
+									(0, _almAppendChildren2.default)(alm_reveal, _data[k]);
 
 									// Run srcSet polyfill
 									(0, _srcsetPolyfill2.default)(alm_reveal, alm.ua);
@@ -2693,7 +2834,7 @@ var alm_is_filtering = false;
 
 										if (alm.addons.seo) {
 											// SEO
-											reveal = (0, _seo.createSEOAttributes)(alm, reveal, querystring, seo_class, pagenum);
+											reveal = (0, _seo.createSEOAttributes)(alm, reveal, querystring, seo_class, (0, _seo.getSEOPageNum)(alm.addons.seo_offset, pagenum));
 										} else if (alm.addons.filters) {
 											// Filters
 											reveal.setAttribute('class', 'alm-reveal' + filters_class + alm.tcc);
@@ -2711,7 +2852,7 @@ var alm_is_filtering = false;
 									} else {
 										if (alm.addons.seo) {
 											// SEO [Page 1]
-											reveal = (0, _seo.createSEOAttributes)(alm, reveal, querystring, seo_class, 1);
+											reveal = (0, _seo.createSEOAttributes)(alm, reveal, querystring, seo_class, (0, _seo.getSEOPageNum)(alm.addons.seo_offset, 1));
 										} else {
 											// Basic ALM
 											reveal.setAttribute('class', 'alm-reveal' + alm.tcc);
@@ -2726,7 +2867,6 @@ var alm_is_filtering = false;
 					// WooCommerce Add-on
 					if (alm.addons.woocommerce) {
 						_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-							var nextPageNum, nextPage;
 							return regeneratorRuntime.wrap(function _callee2$(_context2) {
 								while (1) {
 									switch (_context2.prev = _context2.next) {
@@ -2735,49 +2875,25 @@ var alm_is_filtering = false;
 											return (0, _woocommerce.woocommerce)(reveal, alm, data.pageTitle);
 
 										case 2:
-											nextPageNum = alm.page + 2;
+											(0, _woocommerce.woocommerceLoaded)(alm);
 
-											// Set button data attributes
-
-											alm.button.dataset.page = nextPageNum; // Page
-											nextPage = alm.addons.woocommerce_settings.paged_urls[nextPageNum - 1]; // URL
-
-											alm.button.dataset.url = nextPage ? nextPage : '';
-
-											alm.AjaxLoadMore.transitionEnd();
-
-											// almComplete
-											if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
-												window.almComplete(alm);
-											}
-
-											(0, _lazyImages2.default)(alm);
-
-											// ALM Done
-											if (nextPageNum > parseInt(alm.addons.woocommerce_settings.pages)) {
-												alm.AjaxLoadMore.triggerDone();
-											}
-
-										case 10:
+										case 3:
 										case 'end':
 											return _context2.stop();
 									}
 								}
 							}, _callee2, this);
 						}))().catch(function (e) {
-							console.log(e);
-							console.log('There was an error loading woocommerce products');
+							console.log('Ajax Load More: There was an error loading woocommerce products.', e);
 						});
 
 						alm.init = false;
-
-						return;
+						return; // Exit
 					}
 
 					// Elementor Add-on
 					if (alm.addons.elementor) {
 						_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
-							var nextPageNum, nextPage;
 							return regeneratorRuntime.wrap(function _callee3$(_context3) {
 								while (1) {
 									switch (_context3.prev = _context3.next) {
@@ -2786,43 +2902,20 @@ var alm_is_filtering = false;
 											return (0, _elementor.elementor)(reveal, alm, data.pageTitle);
 
 										case 2:
-											nextPageNum = alm.page + 1;
+											(0, _elementor.elementorLoaded)(alm);
 
-											// Set button data attributes
-
-											alm.button.dataset.page = nextPageNum; // Page
-											nextPage = alm.addons.elementor_next_page_url; // URL
-
-											alm.button.dataset.url = nextPage ? nextPage : '';
-
-											alm.AjaxLoadMore.transitionEnd();
-
-											// almComplete
-											if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
-												window.almComplete(alm);
-											}
-
-											(0, _lazyImages2.default)(alm);
-
-											// ALM Done
-											if (!nextPage) {
-												alm.AjaxLoadMore.triggerDone();
-											}
-
-										case 10:
+										case 3:
 										case 'end':
 											return _context3.stop();
 									}
 								}
 							}, _callee3, this);
 						}))().catch(function (e) {
-							console.log(e);
-							console.log('There was an error loading Elementor Post Widget items');
+							console.log('Ajax Load More: There was an error loading Elementor items.', e);
 						});
 
 						alm.init = false;
-
-						return;
+						return; // Exit
 					}
 
 					// Append `reveal` div to ALM Listing container
@@ -2851,9 +2944,9 @@ var alm_is_filtering = false;
 						}
 					}
 
-					// *****
-					// Transitions
-					// *****
+					/**
+      * Transitions
+      */
 
 					// Masonry
 					if (alm.transition === 'masonry') {
@@ -2878,7 +2971,8 @@ var alm_is_filtering = false;
 												window.almComplete(alm);
 											}
 
-											(0, _lazyImages2.default)(alm);
+											// Lazy load images if necessary.
+											(0, _lazyImages.lazyImages)(alm);
 
 										case 7:
 										case 'end':
@@ -2979,12 +3073,13 @@ var alm_is_filtering = false;
 					// Insert Script
 					_insertScript2.default.init(alm.el);
 
-					// almComplete
+					// Trigger almComplete
 					if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
 						window.almComplete(alm);
 					}
 
-					(0, _lazyImages2.default)(alm);
+					// Lazy load images if necessary
+					(0, _lazyImages.lazyImages)(alm);
 
 					// Filters Add-on Complete
 					if (alm_is_filtering && alm.addons.filters) {
@@ -3032,9 +3127,10 @@ var alm_is_filtering = false;
 					window.almFiltersOnload(alm);
 				}
 			} else {
-				/*
+				/**
      * No results from Ajax
      */
+
 				alm.AjaxLoadMore.noresults();
 			}
 
@@ -3048,13 +3144,16 @@ var alm_is_filtering = false;
 				}
 			}
 
-			/*
-    *  Display tableOfContents
+			/**
+    * Display Table of Contents
     */
 
 			(0, _tableofcontents.tableOfContents)(alm, alm.init);
 
-			// Set Focus for A11y
+			/**
+    * Set Focus for A11y
+    */
+
 			if (alm.transition !== 'masonry') {
 				(0, _setFocus2.default)(alm, reveal, total, alm_is_filtering);
 			}
@@ -3069,8 +3168,7 @@ var alm_is_filtering = false;
 		};
 
 		/**
-   * noresults
-   * Functions run when no results are returned.
+   * Function runs when no results are returned.
    *
    * @since 5.3.1
    */
@@ -3084,7 +3182,7 @@ var alm_is_filtering = false;
 				alm.AjaxLoadMore.resetBtnText();
 			}
 
-			// almComplete
+			// Trigger almComplete
 			if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
 				window.almComplete(alm);
 			}
@@ -3116,9 +3214,8 @@ var alm_is_filtering = false;
 		};
 
 		/**
-   * pagingPreloadedInit
-   * First run for Paging + Preloaded add-ons
-   * Moves preloaded content into ajax container
+   * First run for Paging + Preloaded add-ons.
+   * Moves preloaded content into ajax container.
    *
    * @param {data} Results of the Ajax request
    * @since 2.11.3
@@ -3143,9 +3240,8 @@ var alm_is_filtering = false;
 		};
 
 		/**
-   * pagingNextpageInit
-   * First run for Paging + Next Page add-ons
-   * Moves .alm-nextpage content into ajax container
+   * First run for Paging + Next Page add-ons.
+   * Moves .alm-nextpage content into ajax container.
    *
    * @param {data} Results of Ajax request
    * @since 2.14.0
@@ -3163,8 +3259,7 @@ var alm_is_filtering = false;
 		};
 
 		/**
-   * pagingInit
-   * First run for Paging + (Preloaded & Next Page) add-ons. Create required containers.
+   * First run for Paging to create required containers.
    *
    * @param {data} Ajax results
    * @param {classes} added classes
@@ -3173,42 +3268,42 @@ var alm_is_filtering = false;
 		alm.AjaxLoadMore.pagingInit = function (data) {
 			var classes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'alm-reveal';
 
-			data = data == null ? '' : data; // Check for null data object
+			data = data == null ? '' : data; // Check for null data object.
 
-			// Create `alm-reveal` container
+			// Create `alm-reveal` container.
 			var reveal = document.createElement('div');
 			reveal.setAttribute('class', classes);
 
-			// Create `alm-paging-loading` container
+			// Create `alm-paging-loading` container.
 			var content = document.createElement('div');
 			content.setAttribute('class', 'alm-paging-content' + alm.tcc);
 			content.innerHTML = data;
 			reveal.appendChild(content);
 
-			// Create `alm-paging-content` container
+			// Create `alm-paging-content` container.
 			var loader = document.createElement('div');
 			loader.setAttribute('class', 'alm-paging-loading');
 			reveal.appendChild(loader);
 
-			// Add div to container
+			// Add div to container.
 			alm.listing.appendChild(reveal);
 
-			// Get/Set height of .alm-listing div
+			// Get/Set height of .alm-listing div.
 			var styles = window.getComputedStyle(alm.listing);
 			var pTop = parseInt(styles.getPropertyValue('padding-top').replace('px', ''));
 			var pBtm = parseInt(styles.getPropertyValue('padding-bottom').replace('px', ''));
 			var h = reveal.offsetHeight;
 
-			// Set initial `.alm-listing` height
+			// Set initial `.alm-listing` height.
 			alm.listing.style.height = h + pTop + pBtm + 'px';
 
-			// Insert Script
+			// Insert Script.
 			_insertScript2.default.init(reveal);
 
-			// Reset button text
+			// Reset button text.
 			alm.AjaxLoadMore.resetBtnText();
 
-			// Delay reveal of paging to avoid positioning issues
+			// Delay reveal of paging to avoid positioning issues.
 			setTimeout(function () {
 				if (typeof almFadePageControls === 'function') {
 					window.almFadePageControls(alm.btnWrap);
@@ -3216,14 +3311,13 @@ var alm_is_filtering = false;
 				if (typeof almOnWindowResize === 'function') {
 					window.almOnWindowResize(alm);
 				}
-				// Remove loading class from main container
+				// Remove loading class from main container.
 				alm.main.classList.remove('loading');
 			}, alm.speed);
 		};
 
 		/**
-   *	nested
-   *	Automatically trigger nested ALM instances (Requies `.alm-reveal` container
+   *	Automatically trigger nested ALM instances - requires `.alm-reveal` container.
    *
    * @param {object} instance
    * @since 5.0
@@ -3344,6 +3438,7 @@ var alm_is_filtering = false;
 				}
 
 				alm.button.classList.add('done');
+				alm.button.removeAttribute('rel');
 				alm.button.disabled = true;
 			}
 
@@ -3357,13 +3452,43 @@ var alm_is_filtering = false;
 		};
 
 		/**
+   * Fires a set of actions once ALm Previous hits the first page.
+   *
+   * @since 5.5.0
+   */
+		alm.AjaxLoadMore.triggerDonePrev = function () {
+			alm.loading = false;
+			(0, _placeholder.hidePlaceholder)(alm);
+
+			if (!alm.addons.paging) {
+				// Update button text
+				// if (alm.button_done_label !== false) {
+				// 	setTimeout(function () {
+				// 		alm.button.innerHTML = alm.button_done_label;
+				// 	}, 75);
+				// }
+
+				alm.buttonPrev.classList.add('done');
+				alm.buttonPrev.removeAttribute('rel');
+				alm.buttonPrev.disabled = true;
+			}
+
+			// almDonePrev
+			if (typeof almDonePrev === 'function') {
+				// Delay done until animations complete
+				setTimeout(function () {
+					window.almDonePrev(alm);
+				}, alm.speed + 10);
+			}
+		};
+
+		/**
    * Resets the loading button text after loading has completed.
    *
    * @since 2.8.4
    */
 		alm.AjaxLoadMore.resetBtnText = function () {
 			if (alm.button_loading_label !== false && !alm.addons.paging) {
-				// Reset button text
 				alm.button.innerHTML = alm.button_label;
 			}
 		};
@@ -3412,10 +3537,12 @@ var alm_is_filtering = false;
 		/**
    * Button click handler to load posts.
    *
+   * @param {Object} e The target button element.
    * @since 4.2.0
    */
 		alm.AjaxLoadMore.click = function (e) {
 			var button = e.target || e.currentTarget;
+			alm.rel = 'next';
 			if (alm.pause === 'true') {
 				alm.pause = false;
 				alm.pause_override = false;
@@ -3427,6 +3554,35 @@ var alm_is_filtering = false;
 				alm.AjaxLoadMore.loadPosts();
 			}
 			button.blur(); // Remove button focus
+		};
+
+		/**
+   * Button click handler for previous load more.
+   *
+   * @param {Object} e The target button element.
+   * @since 5.5.0
+   */
+		alm.AjaxLoadMore.prevClick = function (e) {
+			var button = e.target || e.currentTarget;
+			e.preventDefault();
+			if (!alm.loading && !button.classList.contains('done')) {
+				alm.loading = true;
+				alm.pagePrev--;
+				alm.rel = 'prev';
+				alm.AjaxLoadMore.loadPosts();
+				button.blur(); // Remove button focus
+			}
+		};
+
+		/**
+   * Set the Load Previous button to alm object.
+   *
+   * @param {HTMLElement} button The button element.
+   * @since 5.5.0
+   */
+		alm.AjaxLoadMore.setPreviousButton = function (button) {
+			alm.pagePrev = alm.page;
+			alm.buttonPrev = button;
 		};
 
 		/**
@@ -3622,7 +3778,12 @@ var alm_is_filtering = false;
 			setTimeout(function () {
 				alm.AjaxLoadMore.resetBtnText();
 				alm.main.classList.remove('alm-loading');
-				alm.button.classList.remove('loading'); // Loading button
+				// Loading button
+				if (alm.rel === 'prev') {
+					alm.buttonPrev.classList.remove('loading');
+				} else {
+					alm.button.classList.remove('loading');
+				}
 				alm.AjaxLoadMore.triggerAddons(alm);
 				if (!alm.addons.paging) {
 					setTimeout(function () {
@@ -3777,8 +3938,9 @@ var alm_is_filtering = false;
 				}
 			}
 
-			// Window Load (Masonry + Preloaded).
+			// Window Load.
 			alm.window.addEventListener('load', function () {
+				// Masonry & Preloaded.
 				if (alm.transition === 'masonry' && alm.addons.preloaded === 'true') {
 					// Wrap almMasonry in anonymous async/await function
 					_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
@@ -3802,6 +3964,16 @@ var alm_is_filtering = false;
 						console.log('There was an error with ALM Masonry');
 					});
 				}
+
+				//  Filters, Facets & Preloaded Facets
+				if (alm.addons.preloaded === 'true' && alm.addons.filters && alm.facets) {
+					if (typeof almFiltersFacets === 'function') {
+						var facets = alm.localize && alm.localize.facets;
+						facets && window.almFiltersFacets(facets);
+					}
+				}
+
+				// Window Load Callback.
 				if (typeof almOnLoad === 'function') {
 					window.almOnLoad(alm);
 				}
@@ -3914,8 +4086,8 @@ var alm_is_filtering = false;
   */
 	var alm_instances = document.querySelectorAll('.ajax-load-more-wrap');
 	if (alm_instances.length) {
-		[].concat(_toConsumableArray(alm_instances)).forEach(function (alm, e) {
-			new ajaxloadmore(alm, e);
+		[].concat(_toConsumableArray(alm_instances)).forEach(function (alm, index) {
+			new ajaxloadmore(alm, index);
 		});
 	}
 })();
@@ -3998,6 +4170,92 @@ var reset = function reset() {
 exports.reset = reset;
 
 /**
+ * Get the total post count in the current query by ALM instance ID.
+ *
+ * @param  {string} id The ALM ID.
+ * @return {Number}    The results from the localized variable.
+ */
+
+var getPostCount = function getPostCount() {
+	var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'default';
+
+	var theID = window['ajax_load_more_' + id + '_vars'];
+	if (!theID && !theID.post_count) {
+		return null;
+	}
+	return parseInt(theID.post_count);
+};
+exports.getPostCount = getPostCount;
+
+/**
+ * Get the total number of posts by ALM instance ID.
+ *
+ * @param  {string} id The ALM ID.
+ * @return {Number}    The results from the localized variable.
+ */
+
+var getTotalPosts = function getTotalPosts() {
+	var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'default';
+
+	var theID = window['ajax_load_more_' + id + '_vars'];
+	if (!theID && !theID.total_posts) {
+		return null;
+	}
+	return parseInt(theID.total_posts);
+};
+exports.getTotalPosts = getTotalPosts;
+
+/**
+ * Track Page Views in Google Analytics.
+ *
+ * @since 5.0
+ * @param {string} path The URL path.
+ */
+
+var tracking = function tracking(path) {
+	setTimeout(function () {
+		// Delay to allow for state change.
+		path = path.replace(/\/\//g, '/'); // Replace instance of a double backslash.
+
+		if (typeof gtag === 'function') {
+			// Gtag GA Tracking
+			gtag('event', 'page_view', {
+				page_title: document.title,
+				page_location: window.location.href,
+				page_path: window.location.pathname
+			});
+			if (alm_localize.ga_debug) {
+				console.log('Pageview sent to Google Analytics (gtag)');
+			}
+		}
+
+		if (typeof ga === 'function') {
+			// Deprecated GA Tracking
+			ga('set', 'page', path);
+			ga('send', 'pageview');
+			if (alm_localize.ga_debug) {
+				console.log('Pageview sent to Google Analytics (ga)');
+			}
+		}
+
+		if (typeof __gaTracker === 'function') {
+			// Monster Insights
+			__gaTracker('set', 'page', path);
+			__gaTracker('send', 'pageview');
+			if (alm_localize.ga_debug) {
+				console.log('Pageview sent to Google Analytics (__gaTracker)');
+			}
+		}
+
+		// Dispatch global Analytics callback
+		if (typeof almAnalytics === 'function') {
+			window.almAnalytics(path);
+		}
+	}, 200);
+};
+exports.tracking = tracking;
+
+/**
  * Tabbed content for Ajax Load More instance.
  *
  * @since 5.2
@@ -4020,45 +4278,6 @@ var tab = function tab() {
 	(0, _filtering2.default)(transition, speed, data, 'tab');
 };
 exports.tab = tab;
-
-/**
- * Track Page Views in Google Analytics.
- *
- * @since 5.0
- * @param {*} path
- */
-
-var tracking = function tracking(path) {
-	if (typeof gtag === 'function') {
-		// Gtag GA Tracking
-		gtag('event', 'page_view', {
-			page_path: path
-		});
-		if (alm_localize.ga_debug) {
-			console.log('Pageview sent to Google Analytics (gtag)');
-		}
-	}
-	if (typeof ga === 'function') {
-		// Deprecated GA Tracking
-		ga('send', 'pageview', path);
-		if (alm_localize.ga_debug) {
-			console.log('Pageview sent to Google Analytics (ga)');
-		}
-	}
-	if (typeof __gaTracker === 'function') {
-		// Monster Insights
-		__gaTracker('send', 'pageview', path);
-		if (alm_localize.ga_debug) {
-			console.log('Pageview sent to Google Analytics (__gaTracker)');
-		}
-	}
-
-	// Dispatch global Analytics callback
-	if (typeof almAnalytics === 'function') {
-		window.almAnalytics(path);
-	}
-};
-exports.tracking = tracking;
 
 /**
  * Trigger Ajax Load More from other events.
@@ -4259,6 +4478,39 @@ var almDomParser = function almDomParser() {
   return data ? Array.prototype.slice.call(data.body.childNodes) : data;
 };
 exports.default = almDomParser;
+
+/***/ }),
+
+/***/ "./core/src/js/helpers/dispatchScrollEvent.js":
+/*!****************************************************!*\
+  !*** ./core/src/js/helpers/dispatchScrollEvent.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+/**
+ * Dispatch a window scroll event.
+ *
+ * @param {Boolean} delay Should this be delayed.
+ * @since 5.5
+ */
+var dispatchScrollEvent = function dispatchScrollEvent() {
+	var delay = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+	if (typeof Event === 'function') {
+		setTimeout(function () {
+			window.dispatchEvent(new CustomEvent('scroll'));
+		}, delay ? 150 : 1);
+	}
+};
+
+exports.default = dispatchScrollEvent;
 
 /***/ }),
 
@@ -4856,6 +5108,8 @@ function almGetAjaxParams(alm, action, queryType) {
 	if (alm.addons.filters) {
 		data.filters = alm.addons.filters;
 		data.filters_startpage = alm.addons.filters_startpage;
+		data.filters_target = alm.addons.filters_target;
+		data.facets = alm.facets;
 	}
 	if (alm.addons.paging) {
 		data.paging = alm.addons.paging;
@@ -5187,24 +5441,23 @@ exports.default = tableWrap;
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
-/**  
- * Display alm_debug results
- * https://connekthq.com/plugins/ajax-load-more/docs/filter-hooks/#alm_debug
+/**
+ * Display Ajax Load More debug results.
  *
+ * @see https://connekthq.com/plugins/ajax-load-more/docs/filter-hooks/#alm_debug
  * @param {object} alm     Global alm object
- * @since 5.1.6 
+ * @since 5.1.6
  */
-
 var almDebug = function almDebug(alm) {
-  if (alm && alm.debug) {
-    var obj = {
-      'query': alm.debug,
-      'localize': alm.localize
-    };
-    console.log('ALM Debug:', obj);
-  }
+	if (alm && alm.debug) {
+		var obj = {
+			query: alm.debug,
+			localize: alm.localize
+		};
+		console.log('ALM Debug:', obj);
+	}
 };
 
 exports.default = almDebug;
@@ -5349,7 +5602,6 @@ function _toConsumableArray(arr) {
 }
 
 /**
- * almFilter(type, speed, data)
  * Filter Ajax Load More
  *
  * @param {*} transition string;
@@ -5382,7 +5634,6 @@ var almFilter = function almFilter(transition, speed, data) {
 exports.default = almFilter;
 
 /**
- * almFilterTransition(transition, speed, data, el)
  * Transition Ajax Load More
  *
  * @param {*} transition string;
@@ -5425,7 +5676,6 @@ var almFilterTransition = function almFilterTransition(transition, speed, data, 
 };
 
 /**
- * almCompleteFilterTransition
  * Complete the filter transition
  *
  * @param {*} speed number;
@@ -5465,8 +5715,7 @@ var almCompleteFilterTransition = function almCompleteFilterTransition(speed, da
 };
 
 /**
- * almSetFilters
- * Set filter parameters on .alm-listing element
+ * Set filter parameters on .alm-listing element.
  *
  * @param {*} speed number;
  * @param {*} el element;
@@ -5476,7 +5725,7 @@ var almCompleteFilterTransition = function almCompleteFilterTransition(speed, da
  * @since 2.6.1
  */
 var almSetFilters = function almSetFilters() {
-	var speed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 250;
+	var speed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 150;
 	var data = arguments[1];
 	var el = arguments[2];
 	var type = arguments[3];
@@ -5586,22 +5835,46 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 /**
- * Get the next URL for Load More button
+ * Get the URL for Load More button.
  *
- * @param {object} alm
+ * @param {object} alm The Ajax Load More object.
+ * @param {string} rel The type of load more, `next` or `previous`.
  * @since 5.4.0
  */
+var getButtonURL = exports.getButtonURL = function getButtonURL(alm) {
+	var rel = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'next';
 
-var getButtonURL = function getButtonURL(alm) {
 	if (!alm || !alm.trigger) {
 		return false;
 	}
-	var button = alm.trigger.querySelector('button');
-	var url = button ? button.dataset.url : '';
+	var button = alm.trigger.querySelector('.alm-load-more-btn');
+	if (rel === 'prev') {
+		button = document.querySelector('.alm-load-more-btn--prev');
+	}
 
+	var url = button ? button.dataset.url : '';
 	return url ? url : '';
 };
-exports.default = getButtonURL;
+
+/**
+ * Set button dataset attributes.
+ *
+ * @param {*} button The HTML element.
+ * @param {*} page The current page number.
+ * @param {*} url The URL for updating.
+ */
+var setButtonAtts = exports.setButtonAtts = function setButtonAtts(button, page, url) {
+	if (!button) {
+		return;
+	}
+
+	if (button.rel && button.rel === 'prev') {
+		button.href = url;
+	}
+
+	button.dataset.page = page; // Set Page.
+	button.dataset.url = url ? url : ''; // Set URL.
+};
 
 /***/ }),
 
@@ -5743,6 +6016,8 @@ exports.default = insertScript;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.lazyImages = lazyImages;
+exports.lazyImagesReplace = lazyImagesReplace;
 /**
  * Lazy load images helper.
  * When a plugin or 3rd party script has hooked into WP Post Thumbnails to provide a lazy load solution, images will not load via Ajax.
@@ -5750,27 +6025,53 @@ Object.defineProperty(exports, "__esModule", {
  *
  * @param {Object} alm The Ajax Load More object.
  */
-var lazyImages = function lazyImages(alm) {
+function lazyImages(alm) {
 	if (!alm || !alm.lazy_images) {
 		return;
 	}
-	var images = alm.el.getElementsByTagName('img');
+	lazyImagesReplace(alm.el);
+}
+
+/**
+ * Loop all images in container and replace the src.
+ *
+ * @param {HTMLElement} container The element HTML.
+ */
+function lazyImagesReplace(container) {
+	var images = container.getElementsByTagName('img');
 	if (images) {
 		// Loop all images.
 		Array.prototype.forEach.call(images, function (img) {
 			if (img) {
-				if (img.dataset.src) {
-					img.src = img.dataset.src;
-				}
-				if (img.dataset.srcset) {
-					img.srcset = img.dataset.srcset;
-				}
+				replaceSrc(img);
 			}
 		});
 	}
-};
+}
 
-exports.default = lazyImages;
+/**
+ * Replace the image src with the value from data-src attributes.
+ *
+ * @param {HTMLElement} img The HTML image element.
+ */
+function replaceSrc(img) {
+	if (img) {
+		if (img.dataset.src) {
+			img.src = img.dataset.src;
+		}
+		if (img.dataset.srcset) {
+			img.srcset = img.dataset.srcset;
+		}
+		// Blocksy Pro.
+		// @see https://creativethemes.com/blocksy
+		if (img.dataset.ctLazy) {
+			img.src = img.dataset.ctLazy;
+		}
+		if (img.dataset.ctLazySet) {
+			img.srcset = img.dataset.ctLazySet;
+		}
+	}
+}
 
 /***/ }),
 
@@ -5792,6 +6093,8 @@ var _srcsetPolyfill = __webpack_require__(/*! ../helpers/srcsetPolyfill */ "./co
 
 var _srcsetPolyfill2 = _interopRequireDefault(_srcsetPolyfill);
 
+var _lazyImages = __webpack_require__(/*! ./lazyImages */ "./core/src/js/modules/lazyImages.js");
+
 function _interopRequireDefault(obj) {
 	return obj && obj.__esModule ? obj : { default: obj };
 }
@@ -5801,20 +6104,32 @@ var imagesLoaded = __webpack_require__(/*! imagesloaded */ "./node_modules/image
 /**
  * Load the image with imagesLoaded
  *
- * @param {HTMLElement} container
- * @param {HTMLElement} item
- * @param {String} ua
+ * @param {HTMLElement} container The HTML container.
+ * @param {HTMLElement} item      The element to load.
+ * @param {string}      ua        Browser user-agent.
+ * @param {string}      rel       The loading direction, next or prev.
  */
 var loadImage = function loadImage(container, item, ua) {
+	var rel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'next';
+
 	return new Promise(function (resolve) {
 		imagesLoaded(item, function () {
 			// Add CSS transition
 			item.style.transition = 'all 0.4s ease';
 			// Append to container
-			container.appendChild(item);
+			if (rel === 'prev') {
+				container.insertBefore(item, container.childNodes[0]);
+			} else {
+				container.appendChild(item);
+			}
+
+			// Lazy Load images
+			(0, _lazyImages.lazyImagesReplace)(item);
+
 			// Run srcset fix
 			(0, _srcsetPolyfill2.default)(item, ua);
-			// Send await callback
+
+			// Send Promise callback
 			resolve(true);
 		});
 	});
@@ -5877,9 +6192,9 @@ function _asyncToGenerator(fn) {
  * @param {HTMLElement} container
  * @param {HTMLElement} items
  * @param {Object} alm
- * @param {String} pageTitle
- * @param {String} url
- * @param {String} className
+ * @param {string} pageTitle
+ * @param {string} url
+ * @param {string} className
  */
 var loadItems = function loadItems(container, items, alm, pageTitle) {
 	var url = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : window.location;
@@ -5890,6 +6205,16 @@ var loadItems = function loadItems(container, items, alm, pageTitle) {
 		var index = 0;
 		var count = 1;
 
+		// Get load direction.
+		var rel = alm.rel ? alm.rel : 'next';
+
+		// Set load properties.
+		var matchVal = rel === 'prev' ? total : 1; // The item to attach data attributes.
+		var page = rel === 'prev' ? alm.pagePrev : alm.page + 1; // Get the page number.
+
+		// Reverse items array if rel is 'prev'.
+		items = rel === 'prev' ? items.reverse() : items;
+
 		function loadItem() {
 			if (count <= total) {
 				_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -5899,22 +6224,22 @@ var loadItems = function loadItems(container, items, alm, pageTitle) {
 								case 0:
 									items[index].style.opacity = 0;
 
-									// First item only
-									if (count == 1) {
+									// Add data attributes to first or last item for URL updates.
+									if (count == matchVal) {
 										items[index].classList.add(className);
 
 										// Set URL
 										items[index].dataset.url = url;
 
 										// Set page num
-										items[index].dataset.page = alm.page + 1;
+										items[index].dataset.page = page;
 
 										// Set page title
 										items[index].dataset.pageTitle = pageTitle;
 									}
 
 									_context.next = 4;
-									return (0, _loadImage2.default)(container, items[index], alm.ua);
+									return (0, _loadImage2.default)(container, items[index], alm.ua, rel);
 
 								case 4:
 
@@ -5939,7 +6264,11 @@ var loadItems = function loadItems(container, items, alm, pageTitle) {
 						item.style.opacity = 1;
 					});
 					if (items[0]) {
-						(0, _setFocus2.default)(alm, items[0], null, false);
+						// Get the item to focus.
+						var focusItem = rel === 'prev' ? items[items.length - 1] : items[0];
+
+						// Set the focus.
+						(0, _setFocus2.default)(alm, focusItem, null, false);
 					}
 				}, 50);
 
@@ -5952,6 +6281,73 @@ var loadItems = function loadItems(container, items, alm, pageTitle) {
 };
 
 exports.default = loadItems;
+
+/***/ }),
+
+/***/ "./core/src/js/modules/loadPrevious.js":
+/*!*********************************************!*\
+  !*** ./core/src/js/modules/loadPrevious.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.createLoadPreviousButton = createLoadPreviousButton;
+/**
+ * Create a Load Previous button.
+ *
+ * @param {HTMLElement} content
+ * @param {object} alm The Ajax Load More object.
+ * @param {object} container The container element.
+ * @param {number} page The previous page number.
+ * @param {string} url The previous page url.
+ * @param {string} label The label for the button.
+ * @since 5.5.0
+ */
+function createLoadPreviousButton(alm, container) {
+	var page = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+	var url = arguments[3];
+	var label = arguments[4];
+
+	if (!label) {
+		return;
+	}
+
+	// Create wrapper.
+	var btnWrap = document.createElement('div');
+	btnWrap.classList.add('alm-btn-wrap--prev');
+
+	// Create button.
+	var button = document.createElement('a');
+	button.href = url;
+	button.innerHTML = label;
+	button.setAttribute('rel', 'prev');
+	button.dataset.page = page;
+	button.dataset.url = url;
+	button.setAttribute('class', 'alm-load-more-btn alm-load-more-btn--prev ' + alm.loading_style);
+
+	// Click event.
+	button.addEventListener('click', function (e) {
+		alm.AjaxLoadMore.prevClick(e);
+	});
+
+	// Set alm previous button to this button.
+	alm.AjaxLoadMore.setPreviousButton(button);
+
+	// Append button to wrap.
+	btnWrap.appendChild(button);
+
+	// Get parent element.
+	var parent = container.parentNode;
+
+	// Append button before container.
+	parent.insertBefore(btnWrap, container);
+}
 
 /***/ }),
 
@@ -6264,7 +6660,7 @@ function _interopRequireDefault(obj) {
 }
 
 function showPlaceholder(alm) {
-	if (!alm || !alm.main || alm.addons.paging) {
+	if (!alm || !alm.main || alm.addons.paging || alm.rel === 'prev') {
 		return false;
 	}
 	if (alm.placeholder) {
@@ -6298,158 +6694,158 @@ function hidePlaceholder(alm) {
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 exports.almResultsText = almResultsText;
 exports.almGetResultsText = almGetResultsText;
 exports.almInitResultsText = almInitResultsText;
-/**  
+/**
  * Set the results text if required.
- * 
- * @param {object} alm     Global alm object
- * @param {string} type    Type of results
+ *
+ * @param {object} alm  Global alm object.
+ * @param {string} type Type of results.
  * @since 5.1
  */
 function almResultsText(alm) {
-  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
+	var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
 
-  if (!alm.resultsText || alm.nested === 'true') return false;
-  var resultsType = type === 'nextpage' || type === 'woocommerce' ? type : 'standard';
+	if (!alm.resultsText || alm.nested === 'true') return false;
+	var resultsType = type === 'nextpage' || type === 'woocommerce' ? type : 'standard';
 
-  almGetResultsText(alm, resultsType);
+	almGetResultsText(alm, resultsType);
 }
 
-/**  
- *  Get values for showing results text.
- * 
- *  @param {Object} alm
- *  @param {String} type
- *  @since 4.1
+/**
+ * Get values for showing results text.
+ *
+ * @param {object} alm  Global alm object.
+ * @param {string} type Type of results.
+ * @since 4.1
  */
 function almGetResultsText(alm) {
-  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
+	var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
 
-  if (!alm.resultsText || !alm.localize || alm.nested === 'true') {
-    return false;
-  }
+	if (!alm.resultsText || !alm.localize || alm.nested === 'true') {
+		return false;
+	}
 
-  var page = 0;
-  var pages = 0;
-  var post_count = 0;
-  var total_posts = 0;
-  var preloaded = alm.addons.preloaded === 'true' ? true : false;
-  var paging = alm.addons.paging ? true : false;
-  var posts_per_page = alm.orginal_posts_per_page;
+	var page = 0;
+	var pages = 0;
+	var post_count = 0;
+	var total_posts = 0;
+	var preloaded = alm.addons.preloaded === 'true' ? true : false;
+	var paging = alm.addons.paging ? true : false;
+	var posts_per_page = alm.orginal_posts_per_page;
 
-  switch (type) {
+	switch (type) {
+		// Nextpage
+		case 'nextpage':
+			page = parseInt(alm.localize.page);
+			post_count = page;
+			pages = parseInt(alm.localize.total_posts);
+			total_posts = parseInt(pages);
+			almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, posts_per_page);
 
-    // Nextpage
-    case 'nextpage':
+			break;
 
-      page = parseInt(alm.localize.page);
-      post_count = page;
-      pages = parseInt(alm.localize.total_posts);
-      total_posts = parseInt(pages);
-      almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts);
+		// WooCommerce
+		case 'woocommerce':
+			// Don't do anything
+			break;
 
-      break;
+		default:
+			page = parseInt(alm.page) + 1;
+			pages = Math.ceil(alm.localize.total_posts / posts_per_page);
+			post_count = parseInt(alm.localize.post_count);
+			total_posts = parseInt(alm.localize.total_posts);
 
-    // WooCommerce
-    case 'woocommerce':
-      // Don't do anything
-      break;
+			// Add 1 page if Preloaded
+			if (preloaded) {
+				page = paging ? alm.page + 1 : page + 1;
+			}
 
-    default:
-
-      page = parseInt(alm.page) + 1;
-      pages = Math.ceil(alm.localize.total_posts / posts_per_page);
-      post_count = parseInt(alm.localize.post_count);
-      total_posts = parseInt(alm.localize.total_posts);
-
-      // Add 1 page if Preloaded
-      if (preloaded) {
-        page = paging ? alm.page + 1 : page + 1;
-      }
-
-      almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts);
-
-  }
+			almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, posts_per_page);
+	}
 }
 
-/**  
- *  Display `Showing {x} of {y} pages` text.
+/**
+ * Display `Showing {x} of {y} pages` text.
  *
- *  @param {Object} alm
- *  @param {String} type
- *  @since 4.1
+ * @param {object} alm  Global alm object.
+ * @param {string} type Type of results.
+ * @since 4.1
  */
 function almInitResultsText(alm) {
-  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
+	var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
 
-  if (!alm.resultsText || !alm.localize || alm.nested === 'true') return false;
+	if (!alm.resultsText || !alm.localize || alm.nested === 'true') return false;
 
-  var page = 0;
-  var pages = Math.ceil(alm.localize.total_posts / alm.orginal_posts_per_page);
-  var post_count = parseInt(alm.localize.post_count);
-  var total_posts = parseInt(alm.localize.total_posts);
+	var page = 0;
+	var pages = Math.ceil(alm.localize.total_posts / alm.orginal_posts_per_page);
+	var post_count = parseInt(alm.localize.post_count);
+	var total_posts = parseInt(alm.localize.total_posts);
 
-  switch (type) {
+	switch (type) {
+		// Nextpage
+		case 'nextpage':
+			page = alm.addons.nextpage_startpage;
+			post_count = page;
+			pages = total_posts;
+			almRenderResultsText(alm.resultsText, page, total_posts, post_count, total_posts, alm.posts_per_page);
+			break;
 
-    // Nextpage
-    case 'nextpage':
-      page = alm.addons.nextpage_startpage;
-      post_count = page;
-      pages = total_posts;
-      almRenderResultsText(alm.resultsText, page, total_posts, post_count, total_posts);
-      break;
+		// Preloaded
+		case 'preloaded':
+			page = alm.addons.paging && alm.addons.seo ? parseInt(alm.start_page) + 1 : parseInt(alm.page) + 1;
+			almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, alm.posts_per_page);
+			break;
 
-    // Preloaded
-    case 'preloaded':
-      page = alm.addons.paging && alm.addons.seo ? parseInt(alm.start_page) + 1 : parseInt(alm.page) + 1;
-      almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts);
-      break;
+		// WooCommerce
+		case 'woocommerce':
+			// Don't do anything
+			break;
 
-    // WooCommerce
-    case 'woocommerce':
-      // Don't do anything
-      break;
-
-    default:
-
-      console.log('No results to set.');
-
-  }
+		default:
+			console.log('No results to set.');
+	}
 }
 
-/**  
+/**
  *  Render `Showing {x} of {y} results` text.
- * 
- *  @param {Element} el
- *  @param {String} page
- *  @param {String} pages
- *  @param {String} post_count
- *  @param {String} total_posts
+ *
+ *  @param {Element} el          The results text HTML element.
+ *  @param {string}  page        The current page number.
+ *  @param {string}  pages       The total pages.
+ *  @param {string}  post_count  Total posts displayed.
+ *  @param {string}  total_posts Total amount of posts in query.
+ *  @param {string}  per_page    Total amount of posts per page.
  *  @since 4.1
  */
-var almRenderResultsText = function almRenderResultsText(el, page, pages, post_count, total_posts) {
+var almRenderResultsText = function almRenderResultsText(el, page, pages, post_count, total_posts, per_page) {
+	el.forEach(function (result) {
+		pages = parseInt(pages);
+		var text = pages > 0 ? alm_localize.results_text : alm_localize.no_results_text;
 
-  el.forEach(function (result) {
+		// Paging add-on.
+		// Start and End values for posts in view.
+		var start = page * per_page - per_page + 1;
+		var end_val = page * per_page;
+		var end = end_val <= total_posts ? end_val : total_posts;
 
-    pages = parseInt(pages);
-    var text = pages > 0 ? alm_localize.results_text : alm_localize.no_results_text;
-
-    if (pages > 0) {
-      text = text.replace('{num}', '<span class="alm-results-num">' + page + '</span>'); // Deprecated
-      text = text.replace('{page}', '<span class="alm-results-page">' + page + '</span>');
-      text = text.replace('{total}', '<span class="alm-results-total">' + pages + '</span>'); // Deprecated
-      text = text.replace('{pages}', '<span class="alm-results-pages">' + pages + '</span>');
-      text = text.replace('{post_count}', '<span class="alm-results-post_count">' + post_count + '</span>');
-      text = text.replace('{total_posts}', '<span class="alm-results-total_posts">' + total_posts + '</span>');
-      result.innerHTML = text;
-    } else {
-      result.innerHTML = text;
-    }
-  });
+		if (pages > 0) {
+			text = text.replace('{num}', '<span class="alm-results-num">' + page + '</span>'); // Deprecated
+			text = text.replace('{page}', '<span class="alm-results-page">' + page + '</span>');
+			text = text.replace('{start}', '<span class="alm-results-start">' + start + '</span>');
+			text = text.replace('{end}', '<span class="alm-results-start">' + end + '</span>');
+			text = text.replace('{total}', '<span class="alm-results-total">' + pages + '</span>'); // Deprecated
+			text = text.replace('{pages}', '<span class="alm-results-pages">' + pages + '</span>');
+			text = text.replace('{post_count}', '<span class="alm-results-post_count">' + post_count + '</span>');
+			text = text.replace('{total_posts}', '<span class="alm-results-total_posts">' + total_posts + '</span>');
+			result.innerHTML = text;
+		} else {
+			result.innerHTML = text;
+		}
+	});
 };
 
 /***/ }),
@@ -6955,11 +7351,24 @@ var buildFullPath = __webpack_require__(/*! ../core/buildFullPath */ "./node_mod
 var parseHeaders = __webpack_require__(/*! ./../helpers/parseHeaders */ "./node_modules/axios/lib/helpers/parseHeaders.js");
 var isURLSameOrigin = __webpack_require__(/*! ./../helpers/isURLSameOrigin */ "./node_modules/axios/lib/helpers/isURLSameOrigin.js");
 var createError = __webpack_require__(/*! ../core/createError */ "./node_modules/axios/lib/core/createError.js");
+var defaults = __webpack_require__(/*! ../defaults */ "./node_modules/axios/lib/defaults.js");
+var Cancel = __webpack_require__(/*! ../cancel/Cancel */ "./node_modules/axios/lib/cancel/Cancel.js");
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
     var requestData = config.data;
     var requestHeaders = config.headers;
+    var responseType = config.responseType;
+    var onCanceled;
+    function done() {
+      if (config.cancelToken) {
+        config.cancelToken.unsubscribe(onCanceled);
+      }
+
+      if (config.signal) {
+        config.signal.removeEventListener('abort', onCanceled);
+      }
+    }
 
     if (utils.isFormData(requestData)) {
       delete requestHeaders['Content-Type']; // Let the browser set it
@@ -6980,23 +7389,14 @@ module.exports = function xhrAdapter(config) {
     // Set the request timeout in MS
     request.timeout = config.timeout;
 
-    // Listen for ready state
-    request.onreadystatechange = function handleLoad() {
-      if (!request || request.readyState !== 4) {
+    function onloadend() {
+      if (!request) {
         return;
       }
-
-      // The request errored out and we didn't get a response, this will be
-      // handled by onerror instead
-      // With one exception: request that using file: protocol, most browsers
-      // will return status as 0 even though it's a successful request
-      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
-        return;
-      }
-
       // Prepare the response
       var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
-      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+      var responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+        request.responseText : request.response;
       var response = {
         data: responseData,
         status: request.status,
@@ -7006,11 +7406,40 @@ module.exports = function xhrAdapter(config) {
         request: request
       };
 
-      settle(resolve, reject, response);
+      settle(function _resolve(value) {
+        resolve(value);
+        done();
+      }, function _reject(err) {
+        reject(err);
+        done();
+      }, response);
 
       // Clean up request
       request = null;
-    };
+    }
+
+    if ('onloadend' in request) {
+      // Use onloadend if available
+      request.onloadend = onloadend;
+    } else {
+      // Listen for ready state to emulate onloadend
+      request.onreadystatechange = function handleLoad() {
+        if (!request || request.readyState !== 4) {
+          return;
+        }
+
+        // The request errored out and we didn't get a response, this will be
+        // handled by onerror instead
+        // With one exception: request that using file: protocol, most browsers
+        // will return status as 0 even though it's a successful request
+        if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+          return;
+        }
+        // readystate handler is calling before onerror or ontimeout handlers,
+        // so we should call onloadend on the next 'tick'
+        setTimeout(onloadend);
+      };
+    }
 
     // Handle browser request cancellation (as opposed to a manual cancellation)
     request.onabort = function handleAbort() {
@@ -7036,11 +7465,15 @@ module.exports = function xhrAdapter(config) {
 
     // Handle timeout
     request.ontimeout = function handleTimeout() {
-      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+      var timeoutErrorMessage = config.timeout ? 'timeout of ' + config.timeout + 'ms exceeded' : 'timeout exceeded';
+      var transitional = config.transitional || defaults.transitional;
       if (config.timeoutErrorMessage) {
         timeoutErrorMessage = config.timeoutErrorMessage;
       }
-      reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
+      reject(createError(
+        timeoutErrorMessage,
+        config,
+        transitional.clarifyTimeoutError ? 'ETIMEDOUT' : 'ECONNABORTED',
         request));
 
       // Clean up request
@@ -7080,16 +7513,8 @@ module.exports = function xhrAdapter(config) {
     }
 
     // Add responseType to request if needed
-    if (config.responseType) {
-      try {
-        request.responseType = config.responseType;
-      } catch (e) {
-        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
-        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
-        if (config.responseType !== 'json') {
-          throw e;
-        }
-      }
+    if (responseType && responseType !== 'json') {
+      request.responseType = config.responseType;
     }
 
     // Handle progress if needed
@@ -7102,18 +7527,22 @@ module.exports = function xhrAdapter(config) {
       request.upload.addEventListener('progress', config.onUploadProgress);
     }
 
-    if (config.cancelToken) {
+    if (config.cancelToken || config.signal) {
       // Handle cancellation
-      config.cancelToken.promise.then(function onCanceled(cancel) {
+      // eslint-disable-next-line func-names
+      onCanceled = function(cancel) {
         if (!request) {
           return;
         }
-
+        reject(!cancel || (cancel && cancel.type) ? new Cancel('canceled') : cancel);
         request.abort();
-        reject(cancel);
-        // Clean up request
         request = null;
-      });
+      };
+
+      config.cancelToken && config.cancelToken.subscribe(onCanceled);
+      if (config.signal) {
+        config.signal.aborted ? onCanceled() : config.signal.addEventListener('abort', onCanceled);
+      }
     }
 
     if (!requestData) {
@@ -7160,6 +7589,11 @@ function createInstance(defaultConfig) {
   // Copy context to instance
   utils.extend(instance, context);
 
+  // Factory for creating new instances
+  instance.create = function create(instanceConfig) {
+    return createInstance(mergeConfig(defaultConfig, instanceConfig));
+  };
+
   return instance;
 }
 
@@ -7169,15 +7603,11 @@ var axios = createInstance(defaults);
 // Expose Axios class to allow class inheritance
 axios.Axios = Axios;
 
-// Factory for creating new instances
-axios.create = function create(instanceConfig) {
-  return createInstance(mergeConfig(axios.defaults, instanceConfig));
-};
-
 // Expose Cancel & CancelToken
 axios.Cancel = __webpack_require__(/*! ./cancel/Cancel */ "./node_modules/axios/lib/cancel/Cancel.js");
 axios.CancelToken = __webpack_require__(/*! ./cancel/CancelToken */ "./node_modules/axios/lib/cancel/CancelToken.js");
 axios.isCancel = __webpack_require__(/*! ./cancel/isCancel */ "./node_modules/axios/lib/cancel/isCancel.js");
+axios.VERSION = __webpack_require__(/*! ./env/data */ "./node_modules/axios/lib/env/data.js").version;
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -7251,11 +7681,42 @@ function CancelToken(executor) {
   }
 
   var resolvePromise;
+
   this.promise = new Promise(function promiseExecutor(resolve) {
     resolvePromise = resolve;
   });
 
   var token = this;
+
+  // eslint-disable-next-line func-names
+  this.promise.then(function(cancel) {
+    if (!token._listeners) return;
+
+    var i;
+    var l = token._listeners.length;
+
+    for (i = 0; i < l; i++) {
+      token._listeners[i](cancel);
+    }
+    token._listeners = null;
+  });
+
+  // eslint-disable-next-line func-names
+  this.promise.then = function(onfulfilled) {
+    var _resolve;
+    // eslint-disable-next-line func-names
+    var promise = new Promise(function(resolve) {
+      token.subscribe(resolve);
+      _resolve = resolve;
+    }).then(onfulfilled);
+
+    promise.cancel = function reject() {
+      token.unsubscribe(_resolve);
+    };
+
+    return promise;
+  };
+
   executor(function cancel(message) {
     if (token.reason) {
       // Cancellation has already been requested
@@ -7273,6 +7734,37 @@ function CancelToken(executor) {
 CancelToken.prototype.throwIfRequested = function throwIfRequested() {
   if (this.reason) {
     throw this.reason;
+  }
+};
+
+/**
+ * Subscribe to the cancel signal
+ */
+
+CancelToken.prototype.subscribe = function subscribe(listener) {
+  if (this.reason) {
+    listener(this.reason);
+    return;
+  }
+
+  if (this._listeners) {
+    this._listeners.push(listener);
+  } else {
+    this._listeners = [listener];
+  }
+};
+
+/**
+ * Unsubscribe from the cancel signal
+ */
+
+CancelToken.prototype.unsubscribe = function unsubscribe(listener) {
+  if (!this._listeners) {
+    return;
+  }
+  var index = this._listeners.indexOf(listener);
+  if (index !== -1) {
+    this._listeners.splice(index, 1);
   }
 };
 
@@ -7328,7 +7820,9 @@ var buildURL = __webpack_require__(/*! ../helpers/buildURL */ "./node_modules/ax
 var InterceptorManager = __webpack_require__(/*! ./InterceptorManager */ "./node_modules/axios/lib/core/InterceptorManager.js");
 var dispatchRequest = __webpack_require__(/*! ./dispatchRequest */ "./node_modules/axios/lib/core/dispatchRequest.js");
 var mergeConfig = __webpack_require__(/*! ./mergeConfig */ "./node_modules/axios/lib/core/mergeConfig.js");
+var validator = __webpack_require__(/*! ../helpers/validator */ "./node_modules/axios/lib/helpers/validator.js");
 
+var validators = validator.validators;
 /**
  * Create a new instance of Axios
  *
@@ -7368,20 +7862,71 @@ Axios.prototype.request = function request(config) {
     config.method = 'get';
   }
 
-  // Hook up interceptors middleware
-  var chain = [dispatchRequest, undefined];
-  var promise = Promise.resolve(config);
+  var transitional = config.transitional;
 
+  if (transitional !== undefined) {
+    validator.assertOptions(transitional, {
+      silentJSONParsing: validators.transitional(validators.boolean),
+      forcedJSONParsing: validators.transitional(validators.boolean),
+      clarifyTimeoutError: validators.transitional(validators.boolean)
+    }, false);
+  }
+
+  // filter out skipped interceptors
+  var requestInterceptorChain = [];
+  var synchronousRequestInterceptors = true;
   this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-    chain.unshift(interceptor.fulfilled, interceptor.rejected);
+    if (typeof interceptor.runWhen === 'function' && interceptor.runWhen(config) === false) {
+      return;
+    }
+
+    synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
+
+    requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
   });
 
+  var responseInterceptorChain = [];
   this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-    chain.push(interceptor.fulfilled, interceptor.rejected);
+    responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
   });
 
-  while (chain.length) {
-    promise = promise.then(chain.shift(), chain.shift());
+  var promise;
+
+  if (!synchronousRequestInterceptors) {
+    var chain = [dispatchRequest, undefined];
+
+    Array.prototype.unshift.apply(chain, requestInterceptorChain);
+    chain = chain.concat(responseInterceptorChain);
+
+    promise = Promise.resolve(config);
+    while (chain.length) {
+      promise = promise.then(chain.shift(), chain.shift());
+    }
+
+    return promise;
+  }
+
+
+  var newConfig = config;
+  while (requestInterceptorChain.length) {
+    var onFulfilled = requestInterceptorChain.shift();
+    var onRejected = requestInterceptorChain.shift();
+    try {
+      newConfig = onFulfilled(newConfig);
+    } catch (error) {
+      onRejected(error);
+      break;
+    }
+  }
+
+  try {
+    promise = dispatchRequest(newConfig);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+
+  while (responseInterceptorChain.length) {
+    promise = promise.then(responseInterceptorChain.shift(), responseInterceptorChain.shift());
   }
 
   return promise;
@@ -7444,10 +7989,12 @@ function InterceptorManager() {
  *
  * @return {Number} An ID used to remove interceptor later
  */
-InterceptorManager.prototype.use = function use(fulfilled, rejected) {
+InterceptorManager.prototype.use = function use(fulfilled, rejected, options) {
   this.handlers.push({
     fulfilled: fulfilled,
-    rejected: rejected
+    rejected: rejected,
+    synchronous: options ? options.synchronous : false,
+    runWhen: options ? options.runWhen : null
   });
   return this.handlers.length - 1;
 };
@@ -7560,6 +8107,7 @@ var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/util
 var transformData = __webpack_require__(/*! ./transformData */ "./node_modules/axios/lib/core/transformData.js");
 var isCancel = __webpack_require__(/*! ../cancel/isCancel */ "./node_modules/axios/lib/cancel/isCancel.js");
 var defaults = __webpack_require__(/*! ../defaults */ "./node_modules/axios/lib/defaults.js");
+var Cancel = __webpack_require__(/*! ../cancel/Cancel */ "./node_modules/axios/lib/cancel/Cancel.js");
 
 /**
  * Throws a `Cancel` if cancellation has been requested.
@@ -7567,6 +8115,10 @@ var defaults = __webpack_require__(/*! ../defaults */ "./node_modules/axios/lib/
 function throwIfCancellationRequested(config) {
   if (config.cancelToken) {
     config.cancelToken.throwIfRequested();
+  }
+
+  if (config.signal && config.signal.aborted) {
+    throw new Cancel('canceled');
   }
 }
 
@@ -7583,7 +8135,8 @@ module.exports = function dispatchRequest(config) {
   config.headers = config.headers || {};
 
   // Transform request data
-  config.data = transformData(
+  config.data = transformData.call(
+    config,
     config.data,
     config.headers,
     config.transformRequest
@@ -7609,7 +8162,8 @@ module.exports = function dispatchRequest(config) {
     throwIfCancellationRequested(config);
 
     // Transform response data
-    response.data = transformData(
+    response.data = transformData.call(
+      config,
       response.data,
       response.headers,
       config.transformResponse
@@ -7622,7 +8176,8 @@ module.exports = function dispatchRequest(config) {
 
       // Transform response data
       if (reason && reason.response) {
-        reason.response.data = transformData(
+        reason.response.data = transformData.call(
+          config,
           reason.response.data,
           reason.response.headers,
           config.transformResponse
@@ -7682,7 +8237,8 @@ module.exports = function enhanceError(error, config, code, request, response) {
       stack: this.stack,
       // Axios
       config: this.config,
-      code: this.code
+      code: this.code,
+      status: this.response && this.response.status ? this.response.status : null
     };
   };
   return error;
@@ -7716,17 +8272,6 @@ module.exports = function mergeConfig(config1, config2) {
   config2 = config2 || {};
   var config = {};
 
-  var valueFromConfig2Keys = ['url', 'method', 'data'];
-  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy', 'params'];
-  var defaultToConfig2Keys = [
-    'baseURL', 'transformRequest', 'transformResponse', 'paramsSerializer',
-    'timeout', 'timeoutMessage', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
-    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'decompress',
-    'maxContentLength', 'maxBodyLength', 'maxRedirects', 'transport', 'httpAgent',
-    'httpsAgent', 'cancelToken', 'socketPath', 'responseEncoding'
-  ];
-  var directMergeKeys = ['validateStatus'];
-
   function getMergedValue(target, source) {
     if (utils.isPlainObject(target) && utils.isPlainObject(source)) {
       return utils.merge(target, source);
@@ -7738,51 +8283,74 @@ module.exports = function mergeConfig(config1, config2) {
     return source;
   }
 
+  // eslint-disable-next-line consistent-return
   function mergeDeepProperties(prop) {
     if (!utils.isUndefined(config2[prop])) {
-      config[prop] = getMergedValue(config1[prop], config2[prop]);
+      return getMergedValue(config1[prop], config2[prop]);
     } else if (!utils.isUndefined(config1[prop])) {
-      config[prop] = getMergedValue(undefined, config1[prop]);
+      return getMergedValue(undefined, config1[prop]);
     }
   }
 
-  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {
+  // eslint-disable-next-line consistent-return
+  function valueFromConfig2(prop) {
     if (!utils.isUndefined(config2[prop])) {
-      config[prop] = getMergedValue(undefined, config2[prop]);
+      return getMergedValue(undefined, config2[prop]);
     }
-  });
+  }
 
-  utils.forEach(mergeDeepPropertiesKeys, mergeDeepProperties);
-
-  utils.forEach(defaultToConfig2Keys, function defaultToConfig2(prop) {
+  // eslint-disable-next-line consistent-return
+  function defaultToConfig2(prop) {
     if (!utils.isUndefined(config2[prop])) {
-      config[prop] = getMergedValue(undefined, config2[prop]);
+      return getMergedValue(undefined, config2[prop]);
     } else if (!utils.isUndefined(config1[prop])) {
-      config[prop] = getMergedValue(undefined, config1[prop]);
+      return getMergedValue(undefined, config1[prop]);
     }
-  });
+  }
 
-  utils.forEach(directMergeKeys, function merge(prop) {
+  // eslint-disable-next-line consistent-return
+  function mergeDirectKeys(prop) {
     if (prop in config2) {
-      config[prop] = getMergedValue(config1[prop], config2[prop]);
+      return getMergedValue(config1[prop], config2[prop]);
     } else if (prop in config1) {
-      config[prop] = getMergedValue(undefined, config1[prop]);
+      return getMergedValue(undefined, config1[prop]);
     }
+  }
+
+  var mergeMap = {
+    'url': valueFromConfig2,
+    'method': valueFromConfig2,
+    'data': valueFromConfig2,
+    'baseURL': defaultToConfig2,
+    'transformRequest': defaultToConfig2,
+    'transformResponse': defaultToConfig2,
+    'paramsSerializer': defaultToConfig2,
+    'timeout': defaultToConfig2,
+    'timeoutMessage': defaultToConfig2,
+    'withCredentials': defaultToConfig2,
+    'adapter': defaultToConfig2,
+    'responseType': defaultToConfig2,
+    'xsrfCookieName': defaultToConfig2,
+    'xsrfHeaderName': defaultToConfig2,
+    'onUploadProgress': defaultToConfig2,
+    'onDownloadProgress': defaultToConfig2,
+    'decompress': defaultToConfig2,
+    'maxContentLength': defaultToConfig2,
+    'maxBodyLength': defaultToConfig2,
+    'transport': defaultToConfig2,
+    'httpAgent': defaultToConfig2,
+    'httpsAgent': defaultToConfig2,
+    'cancelToken': defaultToConfig2,
+    'socketPath': defaultToConfig2,
+    'responseEncoding': defaultToConfig2,
+    'validateStatus': mergeDirectKeys
+  };
+
+  utils.forEach(Object.keys(config1).concat(Object.keys(config2)), function computeConfigValue(prop) {
+    var merge = mergeMap[prop] || mergeDeepProperties;
+    var configValue = merge(prop);
+    (utils.isUndefined(configValue) && merge !== mergeDirectKeys) || (config[prop] = configValue);
   });
-
-  var axiosKeys = valueFromConfig2Keys
-    .concat(mergeDeepPropertiesKeys)
-    .concat(defaultToConfig2Keys)
-    .concat(directMergeKeys);
-
-  var otherKeys = Object
-    .keys(config1)
-    .concat(Object.keys(config2))
-    .filter(function filterAxiosKeys(key) {
-      return axiosKeys.indexOf(key) === -1;
-    });
-
-  utils.forEach(otherKeys, mergeDeepProperties);
 
   return config;
 };
@@ -7838,6 +8406,7 @@ module.exports = function settle(resolve, reject, response) {
 
 
 var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var defaults = __webpack_require__(/*! ./../defaults */ "./node_modules/axios/lib/defaults.js");
 
 /**
  * Transform the data for a request or a response
@@ -7848,9 +8417,10 @@ var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/util
  * @returns {*} The resulting transformed data
  */
 module.exports = function transformData(data, headers, fns) {
+  var context = this || defaults;
   /*eslint no-param-reassign:0*/
   utils.forEach(fns, function transform(fn) {
-    data = fn(data, headers);
+    data = fn.call(context, data, headers);
   });
 
   return data;
@@ -7871,6 +8441,7 @@ module.exports = function transformData(data, headers, fns) {
 
 var utils = __webpack_require__(/*! ./utils */ "./node_modules/axios/lib/utils.js");
 var normalizeHeaderName = __webpack_require__(/*! ./helpers/normalizeHeaderName */ "./node_modules/axios/lib/helpers/normalizeHeaderName.js");
+var enhanceError = __webpack_require__(/*! ./core/enhanceError */ "./node_modules/axios/lib/core/enhanceError.js");
 
 var DEFAULT_CONTENT_TYPE = {
   'Content-Type': 'application/x-www-form-urlencoded'
@@ -7894,12 +8465,35 @@ function getDefaultAdapter() {
   return adapter;
 }
 
+function stringifySafely(rawValue, parser, encoder) {
+  if (utils.isString(rawValue)) {
+    try {
+      (parser || JSON.parse)(rawValue);
+      return utils.trim(rawValue);
+    } catch (e) {
+      if (e.name !== 'SyntaxError') {
+        throw e;
+      }
+    }
+  }
+
+  return (encoder || JSON.stringify)(rawValue);
+}
+
 var defaults = {
+
+  transitional: {
+    silentJSONParsing: true,
+    forcedJSONParsing: true,
+    clarifyTimeoutError: false
+  },
+
   adapter: getDefaultAdapter(),
 
   transformRequest: [function transformRequest(data, headers) {
     normalizeHeaderName(headers, 'Accept');
     normalizeHeaderName(headers, 'Content-Type');
+
     if (utils.isFormData(data) ||
       utils.isArrayBuffer(data) ||
       utils.isBuffer(data) ||
@@ -7916,20 +8510,32 @@ var defaults = {
       setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
       return data.toString();
     }
-    if (utils.isObject(data)) {
-      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
-      return JSON.stringify(data);
+    if (utils.isObject(data) || (headers && headers['Content-Type'] === 'application/json')) {
+      setContentTypeIfUnset(headers, 'application/json');
+      return stringifySafely(data);
     }
     return data;
   }],
 
   transformResponse: [function transformResponse(data) {
-    /*eslint no-param-reassign:0*/
-    if (typeof data === 'string') {
+    var transitional = this.transitional || defaults.transitional;
+    var silentJSONParsing = transitional && transitional.silentJSONParsing;
+    var forcedJSONParsing = transitional && transitional.forcedJSONParsing;
+    var strictJSONParsing = !silentJSONParsing && this.responseType === 'json';
+
+    if (strictJSONParsing || (forcedJSONParsing && utils.isString(data) && data.length)) {
       try {
-        data = JSON.parse(data);
-      } catch (e) { /* Ignore */ }
+        return JSON.parse(data);
+      } catch (e) {
+        if (strictJSONParsing) {
+          if (e.name === 'SyntaxError') {
+            throw enhanceError(e, this, 'E_JSON_PARSE');
+          }
+          throw e;
+        }
+      }
     }
+
     return data;
   }],
 
@@ -7947,12 +8553,12 @@ var defaults = {
 
   validateStatus: function validateStatus(status) {
     return status >= 200 && status < 300;
-  }
-};
+  },
 
-defaults.headers = {
-  common: {
-    'Accept': 'application/json, text/plain, */*'
+  headers: {
+    common: {
+      'Accept': 'application/json, text/plain, */*'
+    }
   }
 };
 
@@ -7967,6 +8573,19 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../process/browser.js */ "./node_modules/process/browser.js")))
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/env/data.js":
+/*!********************************************!*\
+  !*** ./node_modules/axios/lib/env/data.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = {
+  "version": "0.24.0"
+};
 
 /***/ }),
 
@@ -8423,6 +9042,100 @@ module.exports = function spread(callback) {
 
 /***/ }),
 
+/***/ "./node_modules/axios/lib/helpers/validator.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/validator.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var VERSION = __webpack_require__(/*! ../env/data */ "./node_modules/axios/lib/env/data.js").version;
+
+var validators = {};
+
+// eslint-disable-next-line func-names
+['object', 'boolean', 'number', 'function', 'string', 'symbol'].forEach(function(type, i) {
+  validators[type] = function validator(thing) {
+    return typeof thing === type || 'a' + (i < 1 ? 'n ' : ' ') + type;
+  };
+});
+
+var deprecatedWarnings = {};
+
+/**
+ * Transitional option validator
+ * @param {function|boolean?} validator - set to false if the transitional option has been removed
+ * @param {string?} version - deprecated version / removed since version
+ * @param {string?} message - some message with additional info
+ * @returns {function}
+ */
+validators.transitional = function transitional(validator, version, message) {
+  function formatMessage(opt, desc) {
+    return '[Axios v' + VERSION + '] Transitional option \'' + opt + '\'' + desc + (message ? '. ' + message : '');
+  }
+
+  // eslint-disable-next-line func-names
+  return function(value, opt, opts) {
+    if (validator === false) {
+      throw new Error(formatMessage(opt, ' has been removed' + (version ? ' in ' + version : '')));
+    }
+
+    if (version && !deprecatedWarnings[opt]) {
+      deprecatedWarnings[opt] = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        formatMessage(
+          opt,
+          ' has been deprecated since v' + version + ' and will be removed in the near future'
+        )
+      );
+    }
+
+    return validator ? validator(value, opt, opts) : true;
+  };
+};
+
+/**
+ * Assert object's properties type
+ * @param {object} options
+ * @param {object} schema
+ * @param {boolean?} allowUnknown
+ */
+
+function assertOptions(options, schema, allowUnknown) {
+  if (typeof options !== 'object') {
+    throw new TypeError('options must be an object');
+  }
+  var keys = Object.keys(options);
+  var i = keys.length;
+  while (i-- > 0) {
+    var opt = keys[i];
+    var validator = schema[opt];
+    if (validator) {
+      var value = options[opt];
+      var result = value === undefined || validator(value, opt, options);
+      if (result !== true) {
+        throw new TypeError('option ' + opt + ' must be ' + result);
+      }
+      continue;
+    }
+    if (allowUnknown !== true) {
+      throw Error('Unknown option ' + opt);
+    }
+  }
+}
+
+module.exports = {
+  assertOptions: assertOptions,
+  validators: validators
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/axios/lib/utils.js":
 /*!*****************************************!*\
   !*** ./node_modules/axios/lib/utils.js ***!
@@ -8434,8 +9147,6 @@ module.exports = function spread(callback) {
 
 
 var bind = __webpack_require__(/*! ./helpers/bind */ "./node_modules/axios/lib/helpers/bind.js");
-
-/*global toString:true*/
 
 // utils is a library of generic helper functions non-specific to axios
 
@@ -8620,7 +9331,7 @@ function isURLSearchParams(val) {
  * @returns {String} The String freed of excess whitespace
  */
 function trim(str) {
-  return str.replace(/^\s*/, '').replace(/\s*$/, '');
+  return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
 }
 
 /**

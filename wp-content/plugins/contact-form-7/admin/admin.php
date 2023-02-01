@@ -135,7 +135,7 @@ function wpcf7_admin_enqueue_scripts( $hook_suffix ) {
 
 	$args = array(
 		'apiSettings' => array(
-			'root' => esc_url_raw( rest_url( 'contact-form-7/v1' ) ),
+			'root' => sanitize_url( rest_url( 'contact-form-7/v1' ) ),
 			'namespace' => 'contact-form-7/v1',
 			'nonce' => ( wp_installing() && ! is_multisite() )
 				? '' : wp_create_nonce( 'wp_rest' ),
@@ -177,22 +177,6 @@ function wpcf7_admin_enqueue_scripts( $hook_suffix ) {
 		array( 'jquery', 'thickbox', 'wpcf7-admin' ),
 		WPCF7_VERSION,
 		true
-	);
-}
-
-
-add_action(
-	'doing_dark_mode',
-	'wpcf7_dark_mode_support',
-	10, 1
-);
-
-function wpcf7_dark_mode_support( $user_id ) {
-	wp_enqueue_style( 'contact-form-7-admin-dark-mode',
-		wpcf7_plugin_url( 'admin/css/styles-dark-mode.css' ),
-		array( 'contact-form-7-admin' ),
-		WPCF7_VERSION,
-		'screen'
 	);
 }
 
@@ -514,6 +498,17 @@ function wpcf7_admin_integration_page() {
 <div class="wrap" id="wpcf7-integration">
 
 <h1><?php echo esc_html( __( 'Integration with External API', 'contact-form-7' ) ); ?></h1>
+
+<p><?php
+	echo sprintf(
+		/* translators: %s: link labeled 'Integration with external APIs' */
+		esc_html( __( "You can expand the possibilities of your contact forms by integrating them with external services. For details, see %s.", 'contact-form-7' ) ),
+		wpcf7_link(
+			__( 'https://contactform7.com/integration-with-external-apis/', 'contact-form-7' ),
+			__( 'Integration with external APIs', 'contact-form-7' )
+		)
+	);
+?></p>
 
 <?php
 	do_action( 'wpcf7_admin_warnings',

@@ -1,3 +1,5 @@
+<?php defined( 'ABSPATH' ) || exit; ?>
+
 <div class="wrap wpmdb">
 
     <?php /* This is a hack to get sitewide notices to appear above the visible title. https://github.com/deliciousbrains/wp-migrate-db-pro/issues/1436 */ ?>
@@ -9,7 +11,7 @@
         <?php
         printf(
             __(
-                'This version of %1$s requires WordPress %2$s+. We recommend updating WordPress, but if that\'s not an option you can download version 1.9.x of WP Migrate DB Pro from <a href="%3$s">My Account</a>.',
+                'This version of %1$s requires WordPress %2$s+. We recommend updating WordPress, but if that\'s not an option you can download version 1.9.x of WP Migrate from <a href="%3$s">My Account</a>.',
                 'wp-migrate-db'
             ),
             esc_html($this->plugin_manager->get_plugin_title()),

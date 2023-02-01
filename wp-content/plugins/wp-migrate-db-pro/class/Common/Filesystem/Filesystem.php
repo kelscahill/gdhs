@@ -36,7 +36,7 @@ class Filesystem
 	 */
 	private $chmod_file;
 	/**
-	 * @var \DeliciousBrains\WPMDB\League\Container\Container|null
+	 * @var Container|null
 	 */
 	private $container;
 
@@ -500,19 +500,20 @@ class Filesystem
     /**
      * Get a list of files/folders under specified directory
      *
-     * @param $abs_path
+     * @param string $abs_path
+     * @param int $offset
+     * @param int $limit
+     * @param int $scan_count
+     * @param string $stage
      *
      * @return array|bool|\WP_error
      */
-    public function scandir($abs_path)
+    public function scandir($abs_path, $offset = 0, $limit = -1, &$scan_count = 0, $stage = '')
     {
-        if (is_link($abs_path)) {
-            return new \WP_Error('wpmdb_transfers_symlink', sprintf(__('The directory `%s` is a symlink. Symlinked folders cannot be migrated. Please exclude this folder and try again.', 'wp-migrate-db'), $abs_path));
-        }
+        $symlink = is_link($abs_path);
+        $dirlist = @scandir($abs_path, SCANDIR_SORT_DESCENDING);
 
-        $dirlist = @scandir($abs_path);
-
-        if (false === $dirlist) {
+        if (false === $dirlist || empty($dirlist)) {
             if ($this->use_filesystem) {
                 $abs_path = $this->get_sanitized_path($abs_path);
 
@@ -522,15 +523,20 @@ class Filesystem
             return false;
         }
 
+        if (-1 !== $limit) {
+            $dirlist = array_slice($dirlist, $offset, $limit, true);
+            $scan_count = count($dirlist);
+        }
+
         $return = array();
 
         // normalize return to look somewhat like the return value for WP_Filesystem::dirlist
         foreach ($dirlist as $entry) {
-            if ('.' === $entry || '..' === $entry || is_link($abs_path . $entry)) {
+            if ('.' === $entry || '..' === $entry) {
                 continue;
             }
 
-            $return[$entry] = $this->get_file_info($entry, $abs_path);
+            $return[$entry] = $this->get_file_info($entry, $abs_path, $symlink, $stage);
         }
 
         return $return;
@@ -539,26 +545,37 @@ class Filesystem
     /**
      * @param string $entry
      * @param string $abs_path
+     * @param bool   $symlink
+     * @param string $stage
      *
      * @return array
      */
-    public function get_file_info($entry, $abs_path)
+    public function get_file_info($entry, $abs_path, $symlink = false, $stage = '')
     {
         $abs_path  = $this->slash_one_direction($abs_path);
-        $full_path = realpath(trailingslashit($abs_path) . $entry);
+        $full_path = trailingslashit($abs_path) . $entry;
+        $real_path = realpath($full_path); // Might be different due to symlinks.
 
-        $upload_info = wp_get_upload_dir();
-        $uploads_folder = wp_basename($upload_info['basedir']);
+        $upload_info                  = wp_get_upload_dir();
+        $uploads_basedir              = $upload_info['basedir'];
+        $uploads_folder               = wp_basename($uploads_basedir);
+        $is_uploads_in_content        = strpos($uploads_basedir, WP_CONTENT_DIR);
+        $content_path                 = false !== $is_uploads_in_content ? WP_CONTENT_DIR : dirname($uploads_basedir);
+        $return                       = array();
+        $return['name']               = $entry;
+        $return['relative_path']      = str_replace($abs_path, '', $full_path);
+        $return['wp_content_path']    = str_replace($this->slash_one_direction($content_path) . DIRECTORY_SEPARATOR, '', $full_path);
+        $return['relative_root_path'] = str_replace($this->slash_one_direction(ABSPATH), '', $full_path);
+        $return['absolute_path']      = $full_path;
+        $return['type']               = $this->is_dir($abs_path . DIRECTORY_SEPARATOR . $entry) ? 'd' : 'f';
+        $return['size']               = $this->filesize($abs_path . DIRECTORY_SEPARATOR . $entry);
+        $return['filemtime']          = filemtime($abs_path . DIRECTORY_SEPARATOR . $entry);
 
-        $return                    = array();
-        $return['name']            = $entry;
-        $return['relative_path']   = str_replace($abs_path, '', $full_path);
-        $return['wp_content_path'] = str_replace($this->slash_one_direction(WP_CONTENT_DIR) . DIRECTORY_SEPARATOR, '', $full_path);
-        $return['subpath']         = preg_replace("#^(themes|plugins|{$uploads_folder})#", '', $return['wp_content_path']);
-        $return['absolute_path']   = $full_path;
-        $return['type']            = $this->is_dir($abs_path . DIRECTORY_SEPARATOR . $entry) ? 'd' : 'f';
-        $return['size']            = $this->filesize($abs_path . DIRECTORY_SEPARATOR . $entry);
-        $return['filemtime']       = filemtime($abs_path . DIRECTORY_SEPARATOR . $entry);
+        if ($symlink) {
+            $return['subpath'] = DIRECTORY_SEPARATOR . basename(dirname($real_path)) . DIRECTORY_SEPARATOR . $entry;
+        } else {
+            $return['subpath'] = str_replace(Util::get_stage_base_dir($stage), '', $full_path);
+        }
 
         $exploded              = explode(DIRECTORY_SEPARATOR, $return['subpath']);
         $return['folder_name'] = isset($exploded[1]) ? $exploded[1] : $return['relative_path'];
@@ -750,15 +767,24 @@ class Filesystem
 
     function download_file()
     {
+        $is_full_site_export = !empty($_GET['fullSiteExport']);
+        if ($is_full_site_export) {
+            do_action('wpmdb_migration_complete');
+        }
+
         $util         = $this->container->get(Util::class);
         $table_helper = $this->container->get(TableHelper::class);
+
         // don't need to check for user permissions as our 'add_management_page' already takes care of this
         $util->set_time_limit();
 
         $raw_dump_name = filter_input(INPUT_GET, 'download', FILTER_SANITIZE_STRIPPED);
         $dump_name     = $table_helper->format_dump_name($raw_dump_name);
+        $diskfile      = $this->get_upload_info('path') . DIRECTORY_SEPARATOR . $dump_name;
+        if ($is_full_site_export) {
+            $diskfile = $this->get_upload_info('path') . DIRECTORY_SEPARATOR . $raw_dump_name . '.zip';
+        }
 
-        $diskfile         = $this->get_upload_info('path') . DIRECTORY_SEPARATOR . $dump_name;
         $filename         = basename($diskfile);
         $last_dash        = strrpos($filename, '-');
         $salt             = substr($filename, $last_dash, 6);
@@ -767,11 +793,21 @@ class Filesystem
         $backup = filter_input(INPUT_GET, 'backup', FILTER_SANITIZE_STRIPPED);
 
         if (file_exists($diskfile)) {
+            $filesize = $this->filesize($diskfile);
             if (!headers_sent()) {
+
+                ob_end_clean();
+
                 header('Content-Description: File Transfer');
                 header('Content-Type: application/octet-stream');
-                header('Content-Length: ' . $this->filesize($diskfile));
+                header('Content-Length: ' . $filesize);
                 header('Content-Disposition: attachment; filename=' . $filename_no_salt);
+                header('Connection: Keep-Alive');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+
+                ob_end_flush();
+
                 readfile($diskfile);
 
                 Persistence::cleanupStateOptions();
@@ -889,7 +925,7 @@ class Filesystem
     }
 
 
-    function open($filename = '', $mode = 'a', $gzip = false)
+    function open($filename = '', $mode = 'a', $is_full_site_export = false)
     {
         $form_data_class = $this->container->get(FormData::class);
         $form_data       = $form_data_class->getFormData();
@@ -900,7 +936,7 @@ class Filesystem
             return false;
         }
 
-        if ($util->gzip() && $form_data['gzip_file']) {
+        if ($util->gzip() && $form_data['gzip_file'] && !$is_full_site_export) {
             $fp = gzopen($filename, $mode);
         } else {
             $fp = fopen($filename, $mode);
@@ -909,13 +945,13 @@ class Filesystem
         return $fp;
     }
 
-    function close($fp)
+    function close($fp, $is_full_site_export = false)
     {
         $form_data_class = $this->container->get(FormData::class);
         $form_data       = $form_data_class->getFormData();
         $util            = $this->container->get(Util::class);
 
-        if ($util->gzip() && $form_data['gzip_file']) {
+        if ($util->gzip() && $form_data['gzip_file'] && !$is_full_site_export) {
             gzclose($fp);
         } else {
             fclose($fp);
@@ -924,7 +960,7 @@ class Filesystem
 
     public function format_backup_name($file_name)
     {
-        $new_name = preg_replace('/-\w{5}.sql/', '.sql${1}', $file_name);
+        $new_name = preg_replace('/-\w{5}.sql/', '.sql', $file_name);
 
         return $new_name;
     }
@@ -985,6 +1021,15 @@ class Filesystem
                 $network_plugins = array_keys($network_plugins);
                 $active_plugins  = array_merge($active_plugins, $network_plugins);
             }
+            $sites = get_sites();
+            if (!empty($sites)) {
+                foreach($sites as $site) {
+                    $site_plugins   = get_blog_option($site->blog_id, 'active_plugins');
+                    if (is_array($site_plugins)) {
+                        $active_plugins = array_merge($active_plugins, $site_plugins);
+                    }
+                }
+            }
         }
 
         return $active_plugins;
@@ -1006,9 +1051,6 @@ class Filesystem
                     continue;
                 }
 
-                if (stristr($file, 'wp-migrate-db')) {
-                    continue;
-                }
 
                 if (is_dir($plugin_root . DIRECTORY_SEPARATOR . $file)) {
                     $plugin_files[$file] = $plugin_root . DIRECTORY_SEPARATOR . $file;
@@ -1044,9 +1086,10 @@ class Filesystem
             $plugin_path       = array_key_exists($base_folder, $plugin_paths) ? $plugin_paths[$base_folder] : false;
             $plugin_list[$key] = array(
                 array(
-                    'name'   => $plugin['Name'],
-                    'active' => in_array($key, $active_plugins),
-                    'path'   => $plugin_path,
+                    'name'    => $plugin['Name'],
+                    'active'  => in_array($key, $active_plugins),
+                    'path'    => $plugin_path,
+                    'version' => $plugin['Version'],
                 ),
             );
         }

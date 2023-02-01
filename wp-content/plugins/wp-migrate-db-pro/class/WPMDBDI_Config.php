@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 use DeliciousBrains\WPMDB\SetupProviders;
 
 $providers = new SetupProviders();
@@ -25,6 +27,9 @@ if ($providers !== null) {
     }
 }
 
+if ($is_pro) {
+    DeliciousBrains\WPMDB\Pro\Compatibility\Layers\Addons\Addons::substitute_classes($classes);
+}
 
 if (!empty($classes)) {
     return $classes;

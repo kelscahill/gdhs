@@ -1,23 +1,22 @@
 <?php
 
-if(!class_exists('ALM_NAG')) :
+// phpcs:ignorefile
+
+if ( ! class_exists( 'ALM_NAG' ) ) :
 
 	class ALM_NAG {
 
-		const OPTION_INSTALL_DATE = 'alm-install-date';
+		const OPTION_INSTALL_DATE     = 'alm-install-date';
 		const OPTION_ADMIN_NOTICE_KEY = 'alm-hide-notice';
-		const OPTION_NAG_DELAY = '-7 days';
+		const OPTION_NAG_DELAY        = '-7 days';
 
 		/**
-		 * Setup the class
+		 * Setup the class.
 		 */
 		public function setup() {
-			// catch nag hide
 			$this->catch_hide_notice();
-			// bind nag
 			$this->bind();
 		}
-
 
 		/**
 		 * Catch the hide nag request
@@ -48,7 +47,6 @@ if(!class_exists('ALM_NAG')) :
 			}
 		}
 
-
 		/**
 		 * Bind nag message
 		 */
@@ -70,7 +68,6 @@ if(!class_exists('ALM_NAG')) :
 			}
 		}
 
-
 		/**
 		 * Get the install data
 		 *
@@ -85,18 +82,17 @@ if(!class_exists('ALM_NAG')) :
 			return new DateTime( $date_string );
 		}
 
-
 		/**
 		 * Parse the admin query string
 		 *
 		 * @return array
 		 */
 		private function get_admin_querystring_array() {
-			parse_str( $_SERVER['QUERY_STRING'], $params );
-
-			return $params;
+			if ( isset( $_SERVER['QUERY_STRING'] ) ) {
+				parse_str( $_SERVER['QUERY_STRING'], $params );
+				return $params;
+			}
 		}
-
 
 		/**
 		 * Insert the install date
@@ -104,7 +100,7 @@ if(!class_exists('ALM_NAG')) :
 		 * @return string
 		 */
 		public static function insert_install_date() {
-			if(!get_site_option(ALM_Nag::OPTION_INSTALL_DATE)){
+			if ( ! get_site_option( ALM_Nag::OPTION_INSTALL_DATE ) ) {
 				$datetime_now = new DateTime();
 				$date_string  = $datetime_now->format( 'Y-m-d' );
 				add_site_option( ALM_Nag::OPTION_INSTALL_DATE, $date_string, '', 'no' );
@@ -112,24 +108,20 @@ if(!class_exists('ALM_NAG')) :
 			}
 		}
 
-
 		/**
 		 * Display the admin notice
 		 */
 		public function display_admin_notice() {
-
 			$query_params = $this->get_admin_querystring_array();
 			$query_string = '?' . http_build_query( array_merge( $query_params, array( ALM_Nag::OPTION_ADMIN_NOTICE_KEY => '1' ) ) );
 
 			echo '<div class="updated" style="padding: 15px;">';
-				printf( __( "<p style='padding: 0; margin: 0 0 15px;'>You've been using <b style='color: #222;'><a href='%s'>Ajax Load More</a></b> for some time now, could you please give it a review at wordpress.org?<br/>All reviews, both good and bad are important as they help the plugin grow and improve over time.</p><p style='padding: 0; margin: 0 0 15px;'><a href='%s' target='_blank' class='button button-primary'>Yes, I'll leave a review</a> &nbsp; <a href='%s' class='button'>No thanks</a> &nbsp; <a href='%s' class='button-no'>I've already done this</a></p><p style='padding: 10px 0 0; margin: 0;'><small><a href='http://connekthq.com/plugins/' target='_blank'>Check out our other <b>Connekt</b> WordPress plugins</a></small></p>" ), get_admin_url() . 'admin.php?page=ajax-load-more', 'http://wordpress.org/support/view/plugin-reviews/ajax-load-more', $query_string, $query_string );
+				printf( __( "<p style='padding: 0; margin: 0 0 15px;'>You've been using <b style='color: #222;'><a href='%1\$s'>Ajax Load More</a></b> for some time now, could you please give it a review at wordpress.org?<br/>All reviews, both good and bad are important as they help the plugin grow and improve over time.</p><p style='padding: 0; margin: 0 0 15px;'><a href='%2\$s' target='_blank' class='button button-primary'>Yes, I'll leave a review</a> &nbsp; <a href='%3\$s' class='button'>No thanks</a> &nbsp; <a href='%4\$s' class='button-no'>I've already done this</a></p><p style='padding: 10px 0 0; margin: 0;'><small><a href='http://connekthq.com/plugins/' target='_blank'>Check out our other <b>Connekt</b> WordPress plugins</a></small></p>" ), get_admin_url() . 'admin.php?page=ajax-load-more', 'http://wordpress.org/support/view/plugin-reviews/ajax-load-more', $query_string, $query_string );
 			echo '</div>';
-
 		}
 	}
 
-
-	function alm_nag_notice(){
+	function alm_nag_notice() {
 		$alm_nag = new ALM_NAG();
 		$alm_nag->setup();
 	}

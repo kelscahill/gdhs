@@ -1300,12 +1300,35 @@ jQuery(document).ready(function ($) {
 					console.log('Ajax Load More successfully connected to the WordPress REST API.');
 				}
 			},
-			error: function error(xhr, status, _error) {
+			error: function error(status) {
 				console.log(status);
 				$('.restapi-access').fadeIn();
 			}
 		});
 	}
+
+	/**
+  * Build the header admin menu based on the sidebar.
+  */
+	function createAdminMenu() {
+		var adminmenu = document.querySelector('#adminmenu .toplevel_page_ajax-load-more > ul');
+		if (!adminmenu) {
+			return;
+		}
+
+		var alm_header = document.querySelector('.ajax-load-more header.header-wrap');
+		if (!alm_header) {
+			return;
+		}
+
+		var menu = adminmenu.cloneNode(true);
+		menu.setAttribute('class', '');
+
+		var nav = document.createElement('nav');
+		nav.appendChild(menu);
+		alm_header.appendChild(nav);
+	}
+	createAdminMenu();
 
 	/**
   * Tabbed Navigation Elements
@@ -1638,16 +1661,14 @@ jQuery(document).ready(function ($) {
 		}
 	});
 
-	/*
-  *  Activate License
+	/**
+  * Activate License.
   *
-  *  @since 2.8.3
+  * @since 2.8.3
   */
-
 	var almActivating = false;
 	$(document).on('click', '.license-btn', function (e) {
 		e.preventDefault();
-
 		if (!almActivating) {
 			$('.license-btn-wrap .msg').remove();
 			almActivating = true;
@@ -1709,8 +1730,8 @@ jQuery(document).ready(function ($) {
 					almActivating = false;
 				},
 
-				error: function error(xhr, status, _error2) {
-					console.log(status);
+				error: function error(status, _error) {
+					console.log(status, _error);
 					$('.loading', parent).delay(250).fadeOut(300);
 					almActivating = false;
 				}
@@ -1718,9 +1739,10 @@ jQuery(document).ready(function ($) {
 		}
 	});
 
-	/*
-  *  Get layout value Ajax
-  *  @since 2.8.7
+	/**
+  * Get layout value Ajax.
+  *
+  * @since 2.8.7
   */
 	$(document).on('click', '.alm-layout-selection li a.layout', function (e) {
 		e.preventDefault();
@@ -1769,7 +1791,7 @@ jQuery(document).ready(function ($) {
 						}, 400);
 					}, 400);
 				},
-				error: function error(xhr, status, _error3) {
+				error: function error(xhr, status, _error2) {
 					console.log(status);
 					textarea.removeClass('loading');
 				}
@@ -1777,35 +1799,10 @@ jQuery(document).ready(function ($) {
 		}
 	});
 
-	/*
-  *  Dismiss Sharing (Transient)
-  *  @since 2.8.7
-  */
-	$(document).on('click', '.alm-notification--dismiss', function (e) {
-		e.preventDefault();
-		var el = $(this),
-		    container = el.parent('.cta');
-
-		// Get value from Ajax
-		$.ajax({
-			type: 'POST',
-			url: alm_admin_localize.ajax_admin_url,
-			data: {
-				action: 'alm_dismiss_sharing',
-				nonce: alm_admin_localize.alm_admin_nonce
-			},
-			success: function success(data) {
-				container.fadeOut();
-			},
-			error: function error(xhr, status, _error4) {
-				console.log(status);
-			}
-		});
-	});
-
-	/*
-  *  Set Transient (Transient)
-  *  @since 4.0
+	/**
+  * Set Transient (Transient).
+  *
+  * @since 4.0
   */
 	$(document).on('click', '.alm-transient button.notice-dismiss', function (e) {
 		e.preventDefault();
@@ -1827,17 +1824,17 @@ jQuery(document).ready(function ($) {
 			success: function success(data) {
 				container.fadeOut();
 			},
-			error: function error(xhr, status, _error5) {
+			error: function error(xhr, status, _error3) {
 				console.log(status);
 			}
 		});
 	});
 
-	/*
-  *  Scroll to setting section
-  *  @since 2.7.3
+	/**
+  * Scroll to setting section.
+  *
+  * @since 2.7.3
   */
-
 	$(document).on('change', '#alm-settings-nav', function (e) {
 		e.preventDefault();
 		var el = $(this),

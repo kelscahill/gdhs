@@ -144,63 +144,63 @@ add_filter( 'manage_edit-events_sortable_columns', 'my_sortable_events_column' )
  * Change post status to `Draft` for events that are old
  */
 
-// Add a new interval of 1 seconds
-function gdhs_add_seconds($schedules) {
-  $schedules['everysecond'] = array(
-    'interval' => 60,
-    'display' => __('Every Second')
-  );
-  return $schedules;
-}
-add_filter('cron_schedules', 'gdhs_add_seconds');
+// // Add a new interval of 1 seconds
+// function gdhs_add_seconds($schedules) {
+//   $schedules['everysecond'] = array(
+//     'interval' => 60,
+//     'display' => __('Every Second')
+//   );
+//   return $schedules;
+// }
+// add_filter('cron_schedules', 'gdhs_add_seconds');
 
-// Schedule an action if it's not already scheduled
-if (!wp_next_scheduled('expire_posts') ) {
-  wp_schedule_event(time(), 'everysecond', 'expire_posts');
-}
+// // Schedule an action if it's not already scheduled
+// if (!wp_next_scheduled('expire_posts') ) {
+//   wp_schedule_event(time(), 'everysecond', 'expire_posts');
+// }
 
-// Hook into that action that'll fire every three minutes
-add_action('expire_posts', 'expire_posts_function');
-function expire_posts_function() {
-  date_default_timezone_set('US/Eastern');
-  $today = new DateTime(date('Y-m-d'));
-  $today = $today->modify('-1 day');
-  $today = $today->format('Y-m-d');
-  $timezone = date('T');
-  $today = $today . ' 11:59:00 PM ' . $timezone;
-  $args = array(
-    'post_type' => 'events',
-    'posts_per_page' => -1
-  );
-  $events = get_posts($args);
-  foreach ($events as $event) {
-    $id = $event->ID;
-    $start_date = get_post_meta($id, 'event_start_date', true);
-    $end_date = get_post_meta($id, 'event_end_date', true);
-    $start_time = get_post_meta($id, 'event_start_date', true);
-    $end_time = get_post_meta($id, 'event_end_date', true);
-    if ($end_date) {
-      $event_date = date("Y-m-d", strtotime($end_date));
-    } else {
-      $event_date = date("Y-m-d", strtotime($start_date));
-    }
-    if ($end_time) {
-      $event_time = date("h:i:s A T", strtotime($end_time));
-    } elseif ($start_time) {
-      $event_time = date("h:i:s A T", strtotime($start_time));
-    } else {
-      $event_time = date("h:i:s A T", strtotime('12:00 AM'));
-    }
-    $date = $event_date . ' ' . $event_time;
-    if ($date < $today) {
-      $postdata = array(
-        'ID' => $id,
-        'post_status' => 'draft'
-      );
-      wp_update_post($postdata);
-    }
-  }
-}
+// // Hook into that action that'll fire every three minutes
+// add_action('expire_posts', 'expire_posts_function');
+// function expire_posts_function() {
+//   date_default_timezone_set('US/Eastern');
+//   $today = new DateTime(date('Y-m-d'));
+//   $today = $today->modify('-1 day');
+//   $today = $today->format('Y-m-d');
+//   $timezone = date('T');
+//   $today = $today . ' 11:59:00 PM ' . $timezone;
+//   $args = array(
+//     'post_type' => 'events',
+//     'posts_per_page' => -1
+//   );
+//   $events = get_posts($args);
+//   foreach ($events as $event) {
+//     $id = $event->ID;
+//     $start_date = get_post_meta($id, 'event_start_date', true);
+//     $end_date = get_post_meta($id, 'event_end_date', true);
+//     $start_time = get_post_meta($id, 'event_start_date', true);
+//     $end_time = get_post_meta($id, 'event_end_date', true);
+//     if ($end_date) {
+//       $event_date = date("Y-m-d", strtotime($end_date));
+//     } else {
+//       $event_date = date("Y-m-d", strtotime($start_date));
+//     }
+//     if ($end_time) {
+//       $event_time = date("h:i:s A T", strtotime($end_time));
+//     } elseif ($start_time) {
+//       $event_time = date("h:i:s A T", strtotime($start_time));
+//     } else {
+//       $event_time = date("h:i:s A T", strtotime('12:00 AM'));
+//     }
+//     $date = $event_date . ' ' . $event_time;
+//     if ($date < $today) {
+//       $postdata = array(
+//         'ID' => $id,
+//         'post_status' => 'draft'
+//       );
+//       wp_update_post($postdata);
+//     }
+//   }
+// }
 
 /**
  * Load ajax script on news template

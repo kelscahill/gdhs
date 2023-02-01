@@ -4,6 +4,7 @@ namespace Yoast\WP\SEO\Integrations;
 
 use WPSEO_Replace_Vars;
 use Yoast\WP\SEO\Conditionals\Front_End_Conditional;
+use Yoast\WP\SEO\Context\Meta_Tags_Context;
 use Yoast\WP\SEO\Helpers\Options_Helper;
 use Yoast\WP\SEO\Helpers\Request_Helper;
 use Yoast\WP\SEO\Memoizers\Meta_Tags_Context_Memoizer;
@@ -100,6 +101,7 @@ class Front_End_Integration implements Integration_Interface {
 		'Open_Graph\Article_Published_Time',
 		'Open_Graph\Article_Modified_Time',
 		'Open_Graph\Image',
+		'Meta_Author',
 	];
 
 	/**
@@ -155,6 +157,7 @@ class Front_End_Integration implements Integration_Interface {
 	 * @var string[]
 	 */
 	protected $singular_presenters = [
+		'Meta_Author',
 		'Open_Graph\Article_Author',
 		'Open_Graph\Article_Publisher',
 		'Open_Graph\Article_Published_Time',
@@ -219,6 +222,8 @@ class Front_End_Integration implements Integration_Interface {
 		\add_action( 'wp_head', [ $this, 'call_wpseo_head' ], 1 );
 		// Filter the title for compatibility with other plugins and themes.
 		\add_filter( 'wp_title', [ $this, 'filter_title' ], 15 );
+		// Filter the title for compatibility with block-based themes.
+		\add_filter( 'pre_get_document_title', [ $this, 'filter_title' ], 15 );
 
 		// Removes our robots presenter from the list when wp_robots is handling this.
 		\add_filter( 'wpseo_frontend_presenter_classes', [ $this, 'filter_robots_presenter' ] );
@@ -231,6 +236,7 @@ class Front_End_Integration implements Integration_Interface {
 		\remove_action( 'wp_head', 'adjacent_posts_rel_link_wp_head' );
 		\remove_action( 'wp_head', 'noindex', 1 );
 		\remove_action( 'wp_head', '_wp_render_title_tag', 1 );
+		\remove_action( 'wp_head', '_block_template_render_title_tag', 1 );
 		\remove_action( 'wp_head', 'gutenberg_render_title_tag', 1 );
 	}
 
@@ -249,7 +255,11 @@ class Front_End_Integration implements Integration_Interface {
 		$title_presenter->replace_vars = $this->replace_vars;
 		$title_presenter->helpers      = $this->helpers;
 
-		return \esc_html( $title_presenter->get() );
+		\remove_filter( 'pre_get_document_title', [ $this, 'filter_title' ], 15 );
+		$title = \esc_html( $title_presenter->get() );
+		\add_filter( 'pre_get_document_title', [ $this, 'filter_title' ], 15 );
+
+		return $title;
 	}
 
 	/**
@@ -298,7 +308,7 @@ class Front_End_Integration implements Integration_Interface {
 	 */
 	public function present_head() {
 		$context    = $this->context_memoizer->for_current_page();
-		$presenters = $this->get_presenters( $context->page_type );
+		$presenters = $this->get_presenters( $context->page_type, $context );
 
 		/**
 		 * Filter 'wpseo_frontend_presentation' - Allow filtering the presentation used to output our meta values.
@@ -325,11 +335,16 @@ class Front_End_Integration implements Integration_Interface {
 	/**
 	 * Returns all presenters for this page.
 	 *
-	 * @param string $page_type The page type.
+	 * @param string                 $page_type The page type.
+	 * @param Meta_Tags_Context|null $context   The meta tags context for the current page.
 	 *
 	 * @return Abstract_Indexable_Presenter[] The presenters.
 	 */
-	public function get_presenters( $page_type ) {
+	public function get_presenters( $page_type, $context = null ) {
+		if ( \is_null( $context ) ) {
+			$context = $this->context_memoizer->for_current_page();
+		}
+
 		$needed_presenters = $this->get_needed_presenters( $page_type );
 
 		$callback   = static function( $presenter ) {
@@ -343,9 +358,12 @@ class Front_End_Integration implements Integration_Interface {
 		/**
 		 * Filter 'wpseo_frontend_presenters' - Allow filtering the presenter instances in or out of the request.
 		 *
+		 * @param array             $presenters The presenters.
+		 * @param Meta_Tags_Context $context    The meta tags context for the current page.
+		 *
 		 * @api Abstract_Indexable_Presenter[] List of presenter instances.
 		 */
-		$presenter_instances = \apply_filters( 'wpseo_frontend_presenters', $presenters );
+		$presenter_instances = \apply_filters( 'wpseo_frontend_presenters', $presenters, $context );
 
 		if ( ! \is_array( $presenter_instances ) ) {
 			$presenter_instances = $presenters;
@@ -373,10 +391,7 @@ class Front_End_Integration implements Integration_Interface {
 	private function get_needed_presenters( $page_type ) {
 		$presenters = $this->get_presenters_for_page_type( $page_type );
 
-		if ( ! \get_theme_support( 'title-tag' ) && ! $this->options->get( 'forcerewritetitle', false ) ) {
-			// Remove the title presenter if the theme is hardcoded to output a title tag so we don't have two title tags.
-			$presenters = \array_diff( $presenters, [ 'Title' ] );
-		}
+		$presenters = $this->maybe_remove_title_presenter( $presenters );
 
 		$callback   = static function ( $presenter ) {
 			return "Yoast\WP\SEO\Presenters\\{$presenter}_Presenter";
@@ -440,5 +455,35 @@ class Front_End_Integration implements Integration_Interface {
 		}
 
 		return \array_merge( $presenters, $this->closing_presenters );
+	}
+
+	/**
+	 * Whether the title presenter should be removed.
+	 *
+	 * @return bool True when the title presenter should be removed, false otherwise.
+	 */
+	public function should_title_presenter_be_removed() {
+		return ! \get_theme_support( 'title-tag' ) && ! $this->options->get( 'forcerewritetitle', false );
+	}
+
+	/**
+	 * Checks if the Title presenter needs to be removed.
+	 *
+	 * @param string[] $presenters The presenters.
+	 *
+	 * @return string[] The presenters.
+	 */
+	private function maybe_remove_title_presenter( $presenters ) {
+		// Do not remove the title if we're on a REST request.
+		if ( $this->request->is_rest_request() ) {
+			return $presenters;
+		}
+
+		// Remove the title presenter if the theme is hardcoded to output a title tag so we don't have two title tags.
+		if ( $this->should_title_presenter_be_removed() ) {
+			$presenters = \array_diff( $presenters, [ 'Title' ] );
+		}
+
+		return $presenters;
 	}
 }

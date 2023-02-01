@@ -3,6 +3,7 @@
 namespace DeliciousBrains\WPMDB\Pro;
 
 use DeliciousBrains\WPMDB\Common\Error\ErrorLog;
+use DeliciousBrains\WPMDB\Common\Helpers;
 use DeliciousBrains\WPMDB\Common\Http\Helper;
 use DeliciousBrains\WPMDB\Common\Http\Http;
 use DeliciousBrains\WPMDB\Common\Http\RemotePost;
@@ -11,7 +12,6 @@ use DeliciousBrains\WPMDB\Common\Http\WPMDBRestAPIServer;
 use DeliciousBrains\WPMDB\Common\MigrationState\MigrationStateManager;
 use DeliciousBrains\WPMDB\Common\Properties\DynamicProperties;
 use DeliciousBrains\WPMDB\Common\Properties\Properties;
-use DeliciousBrains\WPMDB\Common\Sanitize;
 use DeliciousBrains\WPMDB\Common\Settings\Settings;
 use DeliciousBrains\WPMDB\Common\Util\Util;
 use DeliciousBrains\WPMDB\Pro\Beta\BetaManager;
@@ -88,7 +88,7 @@ class License
 		$this->scrambler               = $scrambler;
 		$this->remote_post             = $remote_post;
 
-		self::$license_key     = $this->settings['licence'];
+		self::$license_key     = $this->get_licence_key();
 		self::$static_settings = $this->settings;
 		$this->rest_API_server = $rest_API_server;
 	}
@@ -104,10 +104,20 @@ class License
 		add_action( 'wp_ajax_wpmdb_reactivate_licence', array( $this, 'ajax_reactivate_licence' ) );
 		add_action( 'wp_ajax_nopriv_wpmdb_copy_licence_to_remote_site', array( $this, 'respond_to_copy_licence_to_remote_site' ) );
 
-		$this->license_response_messages = $this->setup_license_responses( $this->props->plugin_base );
-
 		// REST endpoints
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
+
+		// Init license response messages
+		add_action('admin_init', [$this, 'init_license_response_messages']);
+	}
+
+	/**
+	 * Initializes license response messages.
+	 * Hooked to admin_init
+	 */
+	public function init_license_response_messages()
+	{
+		$this->license_response_messages = $this->setup_license_responses( $this->props->plugin_base );
 	}
 
 	public function register_rest_routes()
@@ -144,7 +154,7 @@ class License
 
 		set_site_transient( 'wpmdb_temporarily_disable_ssl', '1', 60 * 60 * 24 * 30 ); // 30 days
 		// delete the licence transient as we want to attempt to fetch the licence details again
-		$deleted = delete_site_transient( 'wpmdb_licence_response' );
+		delete_site_transient( Helpers::get_licence_response_transient_key() );
 
 		// @TODO we're not checking if this fails
 		return $this->http->end_ajax( 'ssl disabled' );
@@ -164,12 +174,12 @@ class License
 			$this->http->end_ajax( 'license not removed' );
 		}
 
-		$this->settings['licence'] = '';
-		update_site_option( 'wpmdb_settings', $this->settings );
+		$this->set_licence_key( '' );
 		// delete these transients as they contain information only valid for authenticated licence holders
 		delete_site_transient( 'update_plugins' );
 		delete_site_transient( 'wpmdb_upgrade_data' );
-		delete_site_transient( 'wpmdb_licence_response' );
+        delete_site_transient( Helpers::get_licence_response_transient_key() );
+        delete_site_transient($this->get_available_addons_list_transient_key(get_current_user_id()));
 
 		$this->http->end_ajax( 'license removed' );
 	}
@@ -262,6 +272,8 @@ class License
 			// Save the addons list for use when installing
 			// Don't really need to expire it ever, but let's clean it up after 60 days
 			set_site_transient( 'wpmdb_addons', $decoded_response['addon_list'], HOUR_IN_SECONDS * 24 * 60 );
+            $this->set_available_addons_list_transient($decoded_response['addons_available_list'],
+                get_current_user_id());
 
 			foreach ( $decoded_response['addon_list'] as $key => $addon ) {
 				$plugin_file = sprintf( '%1$s/%1$s.php', $key );
@@ -336,7 +348,12 @@ class License
 				$decoded_response['masked_licence'] = $this->util->mask_licence( $state_data['licence_key'] );
 			}
 
-			set_site_transient( 'wpmdb_licence_response', $response, $this->props->transient_timeout );
+			set_site_transient( Helpers::get_licence_response_transient_key(), $response, $this->props->transient_timeout );
+			
+			if (isset($decoded_response['available_addons_list'])) {
+				$this->set_available_addons_list_transient($decoded_response['available_addons_list'], get_current_user_id());
+			}
+			
 			if ( true === $this->dynamic_props->doing_cli_migration ) {
 				$decoded_response['errors'] = array(
 					$this->get_licence_status_message( $decoded_response, $state_data['context'], $message_context ),
@@ -353,7 +370,6 @@ class License
 				$decoded_response['errors'][] = $decoded_response['dbrains_api_down'];
 			}
 		}
-
 		$result = $this->http->end_ajax( $decoded_response );
 
 		return $result;
@@ -377,9 +393,13 @@ class License
 		);
 		$state_data = $this->migration_state_manager->set_post_data( $key_rules );
 
+		$current_user = wp_get_current_user();
+
 		$data = array(
-			'action'  => 'wpmdb_copy_licence_to_remote_site',
-			'licence' => $this->get_licence_key(),
+            'action'     => 'wpmdb_copy_licence_to_remote_site',
+            'licence'    => $this->get_licence_key(),
+            'user_id'    => $current_user->ID,
+            'user_email' => $current_user->user_email,
 		);
 
 		$data['sig'] = $this->http_helper->create_signature( $data, $state_data['key'] );
@@ -403,15 +423,17 @@ class License
 		add_filter( 'wpmdb_before_response', array( $this->scrambler, 'scramble' ) );
 
 		$key_rules  = array(
-			'action'  => 'key',
-			'licence' => 'string',
-			'sig'     => 'string',
+			'action'     => 'key',
+			'licence'    => 'string',
+			'sig'        => 'string',
+			'user_id'    => 'numeric',
+			'user_email' => 'string',
 		);
 
 		$state_data    = $this->migration_state_manager->set_post_data( $key_rules );
-		$filtered_post = $this->http_helper->filter_post_elements( $state_data, array( 'action', 'licence' ) );
+		$filtered_post = $this->http_helper->filter_post_elements( $state_data, array( 'action', 'licence', 'user_id', 'user_email' ) );
 
-		if ( ! $this->http_helper->verify_signature( $filtered_post, $this->settings['key'] ) ) {
+        if ( ! $this->http_helper->verify_signature( $filtered_post, $this->settings['key'] ) ) {
 			return $this->http->end_ajax(
 				new \WP_Error(
 					'wpmdb_invalid_content_verification_error',
@@ -420,9 +442,14 @@ class License
 			);
 		}
 
-		$this->set_licence_key( trim( $state_data['licence'] ) );
-		$licence        = $this->get_licence_key();
-		$licence_status = json_decode( $this->check_licence( $licence ), true );
+        $user = get_user_by( 'id', $state_data['user_id'] );
+        if ( $user && $user->user_email === $state_data['user_email'] ) {
+            update_user_meta( $user->ID, Helpers::USER_LICENCE_META_KEY, trim( $state_data['licence'] ) );
+        } else {
+            $this->set_global_licence_key( trim( $state_data['licence'] ) );
+        }
+
+		$licence_status = json_decode( $this->check_licence( trim( $state_data['licence'] ), $state_data['user_id'] ), true );
 
 		if ( isset( $licence_status['errors'] ) && !isset( $licence_status['errors']['subscription_expired'] ) ) {
 			$message = reset( $licence_status['errors'] );
@@ -442,10 +469,7 @@ class License
 
 	public static function get_license()
 	{
-		$settings = self::$static_settings;
-		$license  = defined( 'WPMDB_LICENCE' ) ? WPMDB_LICENCE : $settings['licence'];
-
-		return $license;
+		return self::$license_key;
 	}
 
 	public function setup_license_responses( $plugin_base )
@@ -484,9 +508,9 @@ class License
 				'cli'      => sprintf( __( 'Login to your account to renew (%s)', 'wp-migrate-db' ), 'https://deliciousbrains.com/my-account/' ),
 			),
 			'no_activations_left'          => array(
-				'ui'       => sprintf( __( '<strong>No Activations Left</strong> &mdash; Please visit <a href="%s" target="_blank">My Account</a> to upgrade your license or deactivate a previous activation and enable push and pull.', 'wp-migrate-db' ), 'https://deliciousbrains.com/my-account/?utm_campaign=support%2Bdocs&utm_source=MDB%2BPaid&utm_medium=insideplugin' ),
-				'settings' => sprintf( __( '<strong>No Activations Left</strong> &mdash; Please visit <a href="%s" target="_blank">My Account</a> to upgrade your license or deactivate a previous activation and enable push and pull.', 'wp-migrate-db' ), 'https://deliciousbrains.com/my-account/?utm_campaign=support%2Bdocs&utm_source=MDB%2BPaid&utm_medium=insideplugin' ),
-				'cli'      => sprintf( __( 'No Activations Left - Please visit your account (%s) to upgrade your license or deactivate a previous activation and enable push and pull.', 'wp-migrate-db' ), 'https://deliciousbrains.com/my-account/?utm_campaign=support%2Bdocs&utm_source=MDB%2BPaid&utm_medium=insideplugin' ),
+				'ui'       => sprintf( __( '<strong>No Activations Left</strong> &mdash; Please visit <a href="%s" target="_blank">My Account</a> to upgrade your license and enable push and pull.', 'wp-migrate-db' ), 'https://deliciousbrains.com/my-account/?utm_campaign=support%2Bdocs&utm_source=MDB%2BPaid&utm_medium=insideplugin' ),
+				'settings' => sprintf( __( '<strong>No Activations Left</strong> &mdash; Please visit <a href="%s" target="_blank">My Account</a> to upgrade your license and enable push and pull.', 'wp-migrate-db' ), 'https://deliciousbrains.com/my-account/?utm_campaign=support%2Bdocs&utm_source=MDB%2BPaid&utm_medium=insideplugin' ),
+				'cli'      => sprintf( __( 'No Activations Left - Please visit your account (%s) to upgrade your license and enable push and pull.', 'wp-migrate-db' ), 'https://deliciousbrains.com/my-account/?utm_campaign=support%2Bdocs&utm_source=MDB%2BPaid&utm_medium=insideplugin' ),
 			),
 			'licence_not_found_api_failed' => array(
 				'ui'       => sprintf( __( '<strong>License Not Found</strong> &mdash; The license key below cannot be found in our database. Please remove it and enter a valid license key.  <br /><br />Your license key can be found in <a href="%s" target="_blank">My Account</a> . If you don\'t have an account yet, <a href="%s" target="_blank">purchase a new license</a>.', 'wp-migrate-db' ),
@@ -520,7 +544,23 @@ class License
 
 	public function get_licence_key()
 	{
-		return $this->is_licence_constant() ? WPMDB_LICENCE : $this->settings['licence'];
+        $user_id = Helpers::get_current_or_first_user_id_with_licence_key();
+        if ( $user_id ) {
+            $licence = Helpers::get_user_licence_key( $user_id );
+            if ( $licence ) {
+                return $licence;
+            }
+        }
+
+        if ( $this->is_licence_constant() ) {
+            return WPMDB_LICENCE;
+        }
+
+        if ( isset( $this->settings['licence'] ) && '' !== $this->settings['licence'] ) {
+            return $this->settings['licence'];
+        }
+
+        return false;
 	}
 
 	/**
@@ -530,9 +570,23 @@ class License
 	 */
 	function set_licence_key( $key )
 	{
-		$this->settings['licence'] = $key;
-		update_site_option( 'wpmdb_settings', $this->settings );
+        if ( isset( $this->settings['licence'] ) ) {
+            unset( $this->settings['licence'] );
+            update_site_option( 'wpmdb_settings', $this->settings );
+        }
+
+        update_user_meta( get_current_user_id(), Helpers::USER_LICENCE_META_KEY, $key );
 	}
+
+    /**
+     * Set Global licence key, stored in Options table.
+     *
+     * @param string $key License key.
+     */
+	public function set_global_licence_key( $key ) {
+        $this->settings['licence'] = $key;
+        update_site_option( 'wpmdb_settings', $this->settings );
+    }
 
 	public function check_license_status()
 	{
@@ -570,6 +624,10 @@ class License
 	 */
 	function is_valid_licence( $skip_transient_check = false )
 	{
+        if (empty($this->get_available_addons_list(get_current_user_id()))) {
+            $skip_transient_check = true;
+        }
+
 		$response = $this->get_license_status( $skip_transient_check );
 
 		if ( isset( $response['dbrains_api_down'] ) ) {
@@ -590,21 +648,26 @@ class License
 
 		if ( empty( $licence ) ) {
 			$settings_link = sprintf( '<a href="%s">%s</a>', network_admin_url( $this->props->plugin_base ) . '#settings/enter', _x( 'Settings', 'Plugin configuration and preferences', 'wp-migrate-db' ) );
-			$message       = sprintf( __( 'To finish activating WP Migrate DB Pro, please go to %1$s and enter your license key. If you don\'t have a license key, you may <a href="%2$s">purchase one</a>.', 'wp-migrate-db' ), $settings_link, 'http://deliciousbrains.com/wp-migrate-db-pro/pricing/' );
+			$message       = sprintf( __( 'To finish activating WP Migrate, please go to %1$s and enter your license key. If you don\'t have a license key, you may <a href="%2$s">purchase one</a>.', 'wp-migrate-db' ), $settings_link, 'http://deliciousbrains.com/wp-migrate-db-pro/pricing/' );
 
 			return array( 'errors' => array( 'no_licence' => $message ) );
 		}
 
 		if ( !$skip_transient_check
 		     && ( !defined( 'WPMDB_SKIP_LICENSE_TRANSIENT' ) ) ) {
-			$trans = get_site_transient( 'wpmdb_licence_response' );
+			$trans = get_site_transient( Helpers::get_licence_response_transient_key() );
 
 			if ( false !== $trans ) {
-				return json_decode( $trans, true );
+                $decoded_transient = json_decode( $trans, true );
+                $user_id = get_current_user_id();
+                if (false === $this->get_available_addons_list($user_id)) {
+                    $this->set_available_addons_list_transient($decoded_transient['addons_available_list'], $user_id);
+                }
+				return $decoded_transient;
 			}
 		}
 
-		return json_decode( $this->check_licence( $licence ), true );
+		return json_decode( $this->check_licence( $licence, get_current_user_id() ), true );
 	}
 
 	/**
@@ -614,15 +677,20 @@ class License
 	 */
 	public function get_api_data()
 	{
-		$api_data = get_site_transient( 'wpmdb_licence_response' );
+		$api_data = get_site_transient( Helpers::get_licence_response_transient_key() );
 		if ( !empty( $api_data ) ) {
 			return json_decode( $api_data, true );
 		}
 
+        $response = $this->check_licence( $this->get_licence_key(), get_current_user_id() );
+        if ( ! empty( $response ) ) {
+            return json_decode( $response, true );
+        }
+
 		return false;
 	}
 
-	function check_licence( $licence_key )
+	function check_licence( $licence_key, $user_id = false )
 	{
 		if ( empty( $licence_key ) ) {
 			return false;
@@ -635,7 +703,11 @@ class License
 
 		$response = $this->api->dbrains_api_request( 'check_support_access', $args );
 
-		set_site_transient( 'wpmdb_licence_response', $response, $this->props->transient_timeout );
+		set_site_transient( Helpers::get_licence_response_transient_key( $user_id, false ), $response, $this->props->transient_timeout );
+
+        //Store available addons list
+        $decoded_response = json_decode($response, true);
+        $this->set_available_addons_list_transient($decoded_response['addons_available_list'], $user_id);
 
 		return $response;
 	}
@@ -721,7 +793,7 @@ class License
 		if ( empty( $licence ) && !$trans ) {
 		    $message = [];
 			$message['default'] = sprintf( __( '<strong>Activate Your License</strong> &mdash; Please <a href="%s" class="%s">enter your license key</a> to enable push and pull functionality, priority support and plugin updates.', 'wp-migrate-db' ), network_admin_url( $this->props->plugin_base . '#settings/enter' ), 'js-action-link enter-licence' );
-			$message['addons'] = sprintf( __( '<strong>Activate Your License</strong> &mdash; Please <a href="%s">enter your license key</a> to install addons. If your license includes the addons below, you will be able to install them from here with one-click.', 'wp-migrate-db' ), network_admin_url( $this->props->plugin_base . '#settings/enter' ), 'js-action-link enter-licence' );
+			$message['addons'] = sprintf( __( '<strong>Activate Your License</strong> &mdash; Please <a href="%s">enter your license key</a> to activate any upgrades associated with your license.', 'wp-migrate-db' ), network_admin_url( $this->props->plugin_base . '#settings/enter' ), 'js-action-link enter-licence' );
 
 			if ('update' === $context) {
 				return $message['default'];
@@ -731,7 +803,7 @@ class License
 		}
 
 		if ( !$trans ) {
-			$trans = get_site_transient( 'wpmdb_licence_response' );
+			$trans = get_site_transient( Helpers::get_licence_response_transient_key() );
 
 			if ( false === $trans ) {
 				$trans = $this->check_licence( $licence );
@@ -759,7 +831,7 @@ class License
 			}
 
 			// Don't cache the license response so we can try again
-			delete_site_transient( 'wpmdb_licence_response' );
+            delete_site_transient( Helpers::get_licence_response_transient_key() );
 		} elseif ( isset( $errors['subscription_cancelled'] ) ) {
 			$message = $this->get_contextual_message_string( $messages, 'subscription_cancelled', $message_context );
 		} elseif ( isset( $errors['subscription_expired'] ) ) {
@@ -810,12 +882,11 @@ class License
 	function http_remove_license()
 	{
 		if ( isset( $_GET['wpmdb-remove-licence'] ) && wp_verify_nonce( $_GET['nonce'], 'wpmdb-remove-licence' ) ) {
-			$this->settings['licence'] = '';
-			update_site_option( 'wpmdb_settings', $this->settings );
+            $this->set_licence_key( '' );
 			// delete these transients as they contain information only valid for authenticated licence holders
 			delete_site_transient( 'update_plugins' );
 			delete_site_transient( 'wpmdb_upgrade_data' );
-			delete_site_transient( 'wpmdb_licence_response' );
+            delete_site_transient( Helpers::get_licence_response_transient_key() );
 			// redirecting here because we don't want to keep the query string in the web browsers address bar
 			wp_redirect( network_admin_url( $this->props->plugin_base . '#settings' ) );
 			exit;
@@ -834,7 +905,7 @@ class License
 			set_site_transient( 'wpmdb_temporarily_disable_ssl', '1', 60 * 60 * 24 * 30 ); // 30 days
 			$hash = ( isset( $_GET['hash'] ) ) ? '#' . sanitize_title( $_GET['hash'] ) : '';
 			// delete the licence transient as we want to attempt to fetch the licence details again
-			delete_site_transient( 'wpmdb_licence_response' );
+            delete_site_transient( Helpers::get_licence_response_transient_key() );
 			// redirecting here because we don't want to keep the query string in the web browsers address bar
 			wp_redirect( network_admin_url( $this->props->plugin_base . $hash ) );
 			exit;
@@ -852,7 +923,7 @@ class License
 		if ( isset( $_GET['wpmdb-check-licence'] ) && wp_verify_nonce( $_GET['nonce'], 'wpmdb-check-licence' ) ) {
 			$hash = ( isset( $_GET['hash'] ) ) ? '#' . sanitize_title( $_GET['hash'] ) : '';
 			// delete the licence transient as we want to attempt to fetch the licence details again
-			delete_site_transient( 'wpmdb_licence_response' );
+            delete_site_transient( Helpers::get_licence_response_transient_key() );
 			// redirecting here because we don't want to keep the query string in the web browsers address bar
 			wp_redirect( network_admin_url( $this->props->plugin_base . $hash ) );
 			exit;
@@ -863,7 +934,7 @@ class License
 	{
 		return sprintf(
 			'<p class="masked-licence">%s <a href="%s">%s</a></p>',
-			$this->util->mask_licence( $this->settings['licence'] ),
+			$this->util->mask_licence( $this->get_licence_key() ),
 			network_admin_url( $this->props->plugin_base . '&nonce=' . Util::create_nonce( 'wpmdb-remove-licence' ) . '&wpmdb-remove-licence=1#settings' ),
 			_x( 'Remove', 'Delete license', 'wp-migrate-db' )
 		);
@@ -913,10 +984,33 @@ class License
 		}
 
 		delete_site_transient( 'wpmdb_upgrade_data' );
-		delete_site_transient( 'wpmdb_licence_response' );
+        delete_site_transient( Helpers::get_licence_response_transient_key() );
 
 		$result = $this->http->end_ajax( json_encode( array() ) );
 
 		return $result;
 	}
+
+
+    private function get_available_addons_list_transient_key($user_id = null)
+    {
+        $transient_key = 'wpmdb_available_addons';
+        if ( !empty($user_id) && 0 !== $user_id ) {
+            $transient_key = 'wpmdb_available_addons_per_user_' . $user_id;
+        }
+
+        return $transient_key;
+    }
+
+
+    private function set_available_addons_list_transient($list, $user_id = null)
+    {
+        set_site_transient($this->get_available_addons_list_transient_key($user_id), $list);
+    }
+
+
+    public function get_available_addons_list($user_id = null)
+    {
+        return get_site_transient($this->get_available_addons_list_transient_key($user_id));
+    }
 }
