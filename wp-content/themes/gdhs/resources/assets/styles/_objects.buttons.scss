@@ -5,7 +5,7 @@
 .o-button,
 button,
 input[type="submit"],
-a.fasc-button {
+.wpforms-submit {
   cursor: pointer;
   box-shadow: none;
   border: 0;
@@ -18,7 +18,7 @@ a.fasc-button {
   text-align: center;
   width: auto;
   background: $button-color;
-  color: $button-hover;
+  color: white;
   border-radius: rem(50);
 
   @include u-font--secondary--s;

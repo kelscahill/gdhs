@@ -38,7 +38,12 @@
   } elseif (get_post_type($id) == 'exhibit') {
     $kicker = 'Exhibition';
   } elseif (get_post_type($id) == 'events') {
-    $kicker = 'Event';
+    $date_now = date('Y-m-d 24:00:00', mktime(date('H'),date('i'),date('s'), date('m'),date('d')-1,date('Y')));
+    if (get_field('event_start_date', false, $id) >= $date_now) {
+      $kicker = 'Upcoming Event';
+    } else {
+      $kicker = 'Past Event';
+    }
   } elseif (get_post_type($id)) {
     $kicker = get_post_type($id);
   } else {

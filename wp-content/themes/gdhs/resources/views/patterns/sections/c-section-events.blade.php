@@ -24,7 +24,7 @@
 @if ($posts->have_posts())
   <section class="c-section c-section-events u-background--texture">
     <div class="c-section--inner l-container u-spacing--double u-text-align--center">
-      <h3 class="u-font--primary--m u-color--white c-section-events__title">Programs & Events</h3>
+      <h3 class="u-font--primary--m u-color--white c-section-events__title">Upcoming Programs & Events</h3>
       <div class="c-section-events__feed c-section-events--inner u-spacing--double l-narrow l-narrow--l ">
         <div class="c-section-events__blocks">
           @while ($posts->have_posts()) @php $posts->the_post() @endphp

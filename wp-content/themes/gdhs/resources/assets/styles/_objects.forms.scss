@@ -109,31 +109,6 @@ input[type=submit] {
   cursor: pointer;
 }
 
-div.wpcf7 {
-  margin: 0 auto;
-}
-
-.wpcf7-form-control.wpcf7-checkbox,
-.wpcf7-form-control.wpcf7-radio {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  margin-top: $space;
-
-  .wpcf7-list-item {
-    margin-top: $space/4;
-    margin-left: 0;
-  }
-}
-
-label + .wpcf7-form-control-wrap {
-  .wpcf7-form-control {
-    margin-top: 0;
-  }
-}
-
 .o-filter-select {
   padding: 0;
   border: 0;
@@ -142,5 +117,16 @@ label + .wpcf7-form-control-wrap {
   width: rem(125);
   margin-left: $space;
 
+  @include p;
+}
+
+.wpforms-field-sublabel {
+  margin-top: 0;
+  margin-bottom: $space;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: normal;
+
+  @include u-font--s;
   @include p;
 }
