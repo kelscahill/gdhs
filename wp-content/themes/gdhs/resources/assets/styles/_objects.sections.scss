@@ -84,7 +84,7 @@
     z-index: 1;
 
     &::after {
-      content: "Upcoming";
+      content: "Happenings";
       font-size: rem(144);
       line-height: 1;
       color: $white;
@@ -100,10 +100,6 @@
 
       @include media('>medium') {
         display: block;
-      }
-
-      .c-section-past-events & {
-        content: "Past";
       }
     }
   }

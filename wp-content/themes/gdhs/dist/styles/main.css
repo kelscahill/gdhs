@@ -2308,7 +2308,7 @@ a.fasc-button:hover {
 }
 
 .c-section-events__title::after {
-  content: "Upcoming";
+  content: "Happenings";
   font-size: 9rem;
   line-height: 1;
   color: #fff;
@@ -2327,10 +2327,6 @@ a.fasc-button:hover {
   .c-section-events__title::after {
     display: block;
   }
-}
-
-.c-section-past-events .c-section-events__title::after {
-  content: "Past";
 }
 
 .c-section-events__feed {
