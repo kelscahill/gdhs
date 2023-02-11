@@ -11,6 +11,7 @@
   $disable_link = get_field('disable_link', $id);
   $location = get_field('event_location', $id);
 
+  $date_override = get_field('event_date_override', false, false);
   $start_date = get_field('event_start_date', false, false);
   $start_date = new DateTime($start_date);
   $start_date_formatted = $start_date->format('F j, Y');
@@ -60,12 +61,16 @@
             {!! $title !!}
           </h3>
           <span class="u-font--s">
-            {{ $start_date_formatted }}, @if(!empty($start_time)){{ $start_time }}@endif
-            @if(!empty($end_time))
-              @if($start_date_formatted != $end_date_formatted)
-                {{ ' to ' . $end_date_formatted . ', ' . $end_time }}
-              @else
-                {{ ' to ' . $end_time }}
+            @if($date_override)
+              {{ $date_override }}
+            @else
+              {{ $start_date_formatted }}, @if(!empty($start_time)){{ $start_time }}@endif
+              @if(!empty($end_time))
+                @if($start_date_formatted != $end_date_formatted)
+                  {{ ' to ' . $end_date_formatted . ', ' . $end_time }}
+                @else
+                  {{ ' to ' . $end_time }}
+                @endif
               @endif
             @endif
             @if($location){{ '- ' . $location }}@endif

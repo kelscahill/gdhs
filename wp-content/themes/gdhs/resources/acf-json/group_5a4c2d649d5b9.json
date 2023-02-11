@@ -1,0 +1,42 @@
+{
+    "key": "group_5a4c2d649d5b9",
+    "title": "Footer Settings",
+    "fields": [
+        {
+            "key": "field_5a4c2d71a9a93",
+            "label": "Footer Annual Report",
+            "name": "footer_annual_report",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "Enter the link to the current annual report.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1676157181
+}

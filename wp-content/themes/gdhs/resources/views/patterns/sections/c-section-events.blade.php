@@ -32,7 +32,7 @@
           @endwhile
           @php wp_reset_query() @endphp
         </div>
-        <a href="/calendar" class="o-button u-button--green u-center-block">View All Upcoming Programs & Events</a>
+        <a href="/calendar/upcoming-events" class="o-button u-button--green u-center-block">View All Upcoming Programs & Events</a>
       </div><!-- ./l-narrow -->
     </div><!-- ./l-container -->
   </section>

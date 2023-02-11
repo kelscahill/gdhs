@@ -8,7 +8,12 @@
   $thumb_id = get_post_thumbnail_id($id);
   $link = get_permalink($id);
   $date = get_the_date('F j, Y');
-  $date_formatted = get_the_date('c');
+  print_r(get_post_type($id));
+  if (get_post_type($id) == 'events') {
+    $date = '';
+  } else {
+    $date_formatted = get_the_date('c');
+  }
   if (is_search() || is_single()) {
     $category = '';
   } else {
@@ -76,9 +81,11 @@
           @endif
         </p>
       </div>
-      <div class="c-block__date">
-        <time class="u-font--s" datetime="{{ $date_formatted }}">{{ $date }}</time>
-      </div>
+      @if (!empty($date))
+        <div class="c-block__date">
+          <time class="u-font--s" datetime="{{ $date_formatted }}">{{ $date }}</time>
+        </div>
+      @endif
     </div>
   </a>
   <a href="{{ $link }}" class="c-block__button u-padding--half u-font--secondary--s">Read More<span class="u-icon u-icon--s">@include('patterns.icons.o-arrow--short')</span></a>
