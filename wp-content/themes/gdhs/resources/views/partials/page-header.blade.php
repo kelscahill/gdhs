@@ -41,7 +41,7 @@
     $meta = true;
     // Find date time now
     date_default_timezone_set('America/New_York');
-    $date_now = date('Y-m-d 24:00:00', mktime(date('H'),date('i'),date('s'), date('m'),date('d')-1,date('Y')));
+    $date_now = date('Y-m-d 00:00:00', mktime(date('H'),date('i'),date('s'), date('m'),date('d')-1,date('Y')));
     if (get_field('event_start_date', false, false) >= $date_now) {
       $kicker = 'Upcoming Event';
     } else {

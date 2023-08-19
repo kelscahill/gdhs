@@ -3,3 +3,6 @@ recipe: wordpress
 config:
   webroot: .
   php: '8.1'
+services:
+  myservice:
+    type: phpmyadmin
