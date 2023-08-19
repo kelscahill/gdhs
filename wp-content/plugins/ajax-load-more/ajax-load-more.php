@@ -1,4 +1,4 @@
-<?php // phpcs:ignore
+<?php
 /**
  * Plugin Name: Ajax Load More
  * Plugin URI: https://connekthq.com/plugins/ajax-load-more
@@ -7,19 +7,19 @@
  * Author: Darren Cooney
  * Twitter: @KaptonKaos
  * Author URI: https://connekthq.com
- * Version: 5.5.5
+ * Version: 6.1.0.1
  * License: GPL
  * Copyright: Darren Cooney & Connekt Media
  *
  * @package AjaxLoadMore
  */
 
-define( 'ALM_VERSION', '5.5.5' );
-define( 'ALM_RELEASE', 'January 5, 2023' );
+define( 'ALM_VERSION', '6.1.0.1' );
+define( 'ALM_RELEASE', 'August 8, 2023' );
 define( 'ALM_STORE_URL', 'https://connekthq.com' );
 
 // Plugin installation helpers.
-require_once plugin_dir_path( __FILE__ ) . 'core/install.php';
+require_once plugin_dir_path( __FILE__ ) . 'core/functions/install.php';
 
 /**
  * Activation hook - Create table & repeater.
@@ -55,7 +55,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 		/**
 		 * Shortcode attributes.
 		 *
-		 * @var $shortcode_atts
+		 * @var array|null
 		 */
 		public static $shortcode_atts = null;
 
@@ -98,7 +98,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 				require_once 'admin/vendor/connekt-plugin-installer/class-connekt-plugin-installer.php';
 				if ( ! class_exists( 'EDD_SL_Plugin_Updater' ) ) {
 					// Only include this EDD helper if other plugins have not.
-					require_once dirname( __FILE__ ) . '/includes/EDD_SL_Plugin_Updater.php';
+					require_once dirname( __FILE__ ) . '/core/libs/EDD_SL_Plugin_Updater.php';
 				}
 			}
 		}
@@ -117,6 +117,12 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			define( 'ALM_REST_NAMESPACE', 'ajaxloadmore' );
 			define( 'ALM_SETTINGS', 'alm_settings' );
 
+			// CSS constants.
+			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+			define( 'ALM_CSS_PATH', ALM_PATH . 'build/frontend/ajax-load-more' . $suffix . '.css' );
+			define( 'ALM_CSS_URL', ALM_URL . '/build/frontend/ajax-load-more' . $suffix . '.css' );
+
+			// Add-on constants.
 			if ( ! defined( 'ALM_CACHE_ITEM_NAME' ) ) {
 				define( 'ALM_CACHE_ITEM_NAME', '4878' );
 			}
@@ -334,30 +340,28 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 		 * @since 2.0.0
 		 */
 		public function alm_enqueue_scripts() {
-
 			// Get ALM Options.
 			$options = get_option( 'alm_settings' );
 
 			// Core ALM JS.
-			$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min'; // Use minified libraries if SCRIPT_DEBUG is turned off.
-			wp_register_script( 'ajax-load-more', plugins_url( '/core/dist/js/ajax-load-more' . $suffix . '.js', __FILE__ ), '', ALM_VERSION, true );
+			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+			wp_register_script( 'ajax-load-more', plugins_url( '/build/frontend/ajax-load-more' . $suffix . '.js', __FILE__ ), [], ALM_VERSION, true );
 
 			// LiteSpeed Cache compatability.
 			wp_script_add_data( 'ajax-load-more', 'data-no-optimize', '1' );
 
 			// Progress Bar JS.
-			wp_register_script( 'ajax-load-more-progress', plugins_url( '/core/dist/vendor/js/pace/pace.min.js', __FILE__ ), 'ajax-load-more', ALM_VERSION, true );
+			wp_register_script( 'ajax-load-more-progress', plugins_url( '/core/libs/pace/pace.min.js', __FILE__ ), 'ajax-load-more', ALM_VERSION, true );
 
 			// Masonry JS.
-			wp_register_script( 'ajax-load-more-masonry', plugins_url( '/core/dist/vendor/js/masonry/masonry.pkgd.min.js', __FILE__ ), 'ajax-load-more', '4.2.1', true );
+			wp_register_script( 'ajax-load-more-masonry', plugins_url( '/core/libs/masonry/masonry.pkgd.min.js', __FILE__ ), 'ajax-load-more', '4.2.1', true );
 
 			// Callback Helpers.
-			wp_register_script( 'ajax-load-more-legacy-callbacks', plugins_url( '/core/dist/vendor/js/alm/legacy-callbacks.js', __FILE__ ), 'jquery', ALM_VERSION, false );
+			wp_register_script( 'ajax-load-more-legacy-callbacks', plugins_url( '/core/libs/alm/legacy-callbacks.js', __FILE__ ), 'jquery', ALM_VERSION, false );
 
 			// Core CSS.
 			if ( ! alm_do_inline_css( '_alm_inline_css' ) && ! alm_css_disabled( '_alm_disable_css' ) ) { // Not inline or disabled.
-				$file = plugins_url( '/core/dist/css/' . ALM_SLUG . '.min.css', __FILE__ );
-				ALM_ENQUEUE::alm_enqueue_css( ALM_SLUG, $file );
+				ALM_ENQUEUE::alm_enqueue_css( ALM_SLUG, ALM_CSS_URL );
 			}
 
 			// Localized JS variables.
@@ -365,10 +369,13 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 				'ajax-load-more',
 				'alm_localize',
 				[
+					'version'         => ALM_VERSION,
 					'ajaxurl'         => apply_filters( 'alm_ajaxurl', admin_url( 'admin-ajax.php' ) ),
 					'alm_nonce'       => wp_create_nonce( 'ajax_load_more_nonce' ),
 					'rest_api'        => esc_url_raw( rest_url() ),
 					'rest_nonce'      => wp_create_nonce( 'wp_rest' ),
+					'trailing_slash'  => substr( get_option( 'permalink_structure' ), -1 ) === '/' ? 'true' : 'false', // Trailing slash in permalink structure.
+					'is_front_page'   => is_home() || is_front_page() ? 'true' : 'false',
 					'pluginurl'       => ALM_URL,
 					'speed'           => apply_filters( 'alm_speed', 200 ),
 					'ga_debug'        => apply_filters( 'alm_ga_debug', 'false' ),
@@ -408,7 +415,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 		 * @since 2.0.0
 		 */
 		public function alm_query_posts() {
-			$params = filter_input_array( INPUT_GET, FILTER_SANITIZE_STRING );
+			$params = filter_input_array( INPUT_GET );
 
 			// WPML fix for category/tag/taxonomy archives.
 			if ( ( isset( $params['category'] ) && $params['category'] ) || ( isset( $params['taxonomy'] ) && $params['taxonomy'] ) || ( isset( $params['tag'] ) && $params['tag'] ) ) {
@@ -430,7 +437,8 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			$filters_startpage = isset( $params['filters_startpage'] ) && $is_filters ? $params['filters_startpage'] : 0;
 
 			// Cache.
-			$cache_id        = isset( $params['cache_id'] ) ? $params['cache_id'] : '';
+			$cache_id        = isset( $params['cache_id'] ) && $params['cache_id'] ? $params['cache_id'] : false;
+			$cache_slug      = isset( $params['cache_slug'] ) && $params['cache_slug'] ? $params['cache_slug'] : '';
 			$cache_logged_in = isset( $params['cache_logged_in'] ) ? $params['cache_logged_in'] : false;
 			$do_create_cache = $cache_logged_in === 'true' && is_user_logged_in() ? false : true;
 
@@ -471,13 +479,14 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			// CTA Add-on.
 			$cta      = false;
 			$cta_data = isset( $params['cta'] ) ? $params['cta'] : false;
+
 			if ( $cta_data ) {
 				$cta                = true;
 				$cta_position       = isset( $cta_data['cta_position'] ) ? $cta_data['cta_position'] : 'before:1';
 				$cta_position_array = explode( ':', $cta_position );
 				$cta_pos            = (string) $cta_position_array[0];
-				$cta_val            = (string) $cta_position_array[1];
 				$cta_pos            = $cta_pos !== 'after' ? 'before' : $cta_pos;
+				$cta_val            = (string) $cta_position_array[1];
 				$cta_repeater       = isset( $cta_data['cta_repeater'] ) ? $cta_data['cta_repeater'] : 'null';
 				$cta_theme_repeater = isset( $cta_data['cta_theme_repeater'] ) ? sanitize_file_name( $cta_data['cta_theme_repeater'] ) : 'null';
 			}
@@ -511,7 +520,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 
 			/**
 			 * Single Post Add-on hook
-			 * Hijack $args and and return single post only $args
+			 * Hijack $args and and return single post query args.
 			 *
 			 * @return array
 			 */
@@ -526,9 +535,10 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			$args = apply_filters( 'alm_modify_query_args', $args, $slug );
 
 			/**
-			 * ALM Core Query Filter Hook
+			 * ALM Core Query Filter Hook.
 			 *
-			 * @return array;
+			 * @see https://connekthq.com/plugins/ajax-load-more/docs/filter-hooks/#alm_query_args
+			 * @return array
 			 */
 			$args = apply_filters( 'alm_query_args_' . $id, $args, $post_id );
 
@@ -538,11 +548,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			 */
 			$args['alm_query'] = $single_post ? 'single_posts' : 'alm';
 
-			/**
-			 * Custom WP_Query.
-			 *
-			 * @return $alm_query;
-			 */
+			// Dispatch WP_Query.
 			$alm_query = new WP_Query( $args );
 
 			/**
@@ -552,7 +558,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			 */
 			$alm_query = apply_filters( 'alm_query_after_' . $id, $alm_query, $post_id );
 
-			// If preloaded, update our loop count and total posts.
+			// If preloaded, update loop counter and total posts.
 			if ( has_action( 'alm_preload_installed' ) && 'true' === $preloaded ) {
 				$alm_total_posts = $alm_query->found_posts - $offset + $preloaded_amount;
 				if ( $old_offset > 0 ) {
@@ -563,19 +569,6 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			} else {
 				$alm_total_posts = $alm_query->found_posts - $offset;
 				$alm_loop_count  = 0;
-			}
-
-			/**
-			 * Cache Add-on hook - Create cache directory + info .txt file.
-			 */
-			if ( ! empty( $cache_id ) && has_action( 'alm_cache_create_dir' ) && $do_create_cache ) {
-				apply_filters( 'alm_cache_create_dir', $cache_id, $canonical_url );
-
-				// Filters || WooCommerce Cache Support.
-				if ( $is_filters && has_filter( 'alm_cache_create_nested_id' ) ) {
-					$cache_id = apply_filters( 'alm_cache_create_nested_id', $cache_id );
-					apply_filters( 'alm_cache_create_dir', $cache_id, $_SERVER['HTTP_REFERER'] );
-				}
 			}
 
 			if ( $query_type === 'totalposts' ) {
@@ -591,11 +584,9 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 				/**
 				 * ALM Core Filter Hook
 				 *
-				 * @return $alm_query/false;
+				 * @see https://connekthq.com/plugins/ajax-load-more/docs/filter-hooks/#alm_debug
 				 */
 				$debug = apply_filters( 'alm_debug', false ) ? $args : false;
-
-				// Run the loop.
 
 				if ( $alm_query->have_posts() ) {
 
@@ -604,14 +595,12 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 					$alm_current     = 0;
 					$alm_has_cta     = false;
 
-					$cta_array = [];
-					if ( $cta && has_action( 'alm_cta_pos_array' ) ) {
-						// Build CTA Position Array.
-						$cta_array = apply_filters( 'alm_cta_pos_array', $seo_start_page, $page, $posts_per_page, $alm_post_count, $cta_val, $paging );
-					}
+					// Build CTA Position Array.
+					$cta_array = $cta && has_action( 'alm_cta_pos_array' ) ? $cta_array = apply_filters( 'alm_cta_pos_array', $seo_start_page, $page, $posts_per_page, $alm_post_count, $cta_val, $paging ) : [];
 
 					ob_start();
 
+					// Run the loop.
 					while ( $alm_query->have_posts() ) :
 						$alm_query->the_post();
 
@@ -621,7 +610,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 						$alm_item = ( $alm_page_count * $posts_per_page ) - $posts_per_page + $alm_loop_count;
 
 						// Call to Action [Before].
-						if ( $cta && has_action( 'alm_cta_inc' ) && $cta_pos === 'before' && in_array( (string) $alm_current, $cta_array, true ) ) {
+						if ( $cta && has_action( 'alm_cta_inc' ) && $cta_pos === 'before' && in_array( $alm_current, $cta_array ) ) { // phpcs:ignore
 							do_action( 'alm_cta_inc', $cta_repeater, $cta_theme_repeater, $alm_found_posts, $alm_page, $alm_item, $alm_current, false, $args );
 							$alm_has_cta = true;
 						}
@@ -630,44 +619,22 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 						alm_loop( $repeater, $type, $theme_repeater, $alm_found_posts, $alm_page, $alm_item, $alm_current, $args, false );
 
 						// Call to Action [After].
-						if ( $cta && has_action( 'alm_cta_inc' ) && $cta_pos === 'after' && in_array( (string) $alm_current, $cta_array, true ) ) {
+						if ( $cta && has_action( 'alm_cta_inc' ) && $cta_pos === 'after' && in_array( $alm_current, $cta_array ) ) { // phpcs:ignore
 							do_action( 'alm_cta_inc', $cta_repeater, $cta_theme_repeater, $alm_found_posts, $alm_page, $alm_item, $alm_current, false, $args );
 							$alm_has_cta = true;
 						}
 
 					endwhile; wp_reset_query(); // phpcs:ignore
-
 					// End Ajax Load More Loop.
 
 					$data = ob_get_clean();
 
 					/**
-					 * Cache Add-on hook - If Cache is enabled, check the cache file
-					 *
-					 * @param string $cache_id ID of the ALM cache
-					 * @param boolean $do_create_cache Should cache be created for this user
-					 * @since 3.2.1
+					 * Cache Add-on.
+					 * Create the cache file.
 					 */
-					if ( ! empty( $cache_id ) && has_action( 'alm_cache_installed' ) && $do_create_cache ) {
-						if ( $single_post ) {
-							// Single Post Cache.
-							apply_filters( 'alm_previous_post_cache_file', $cache_id, $single_post_id, $data );
-
-						} else {
-							// Standard Cache.
-
-							// Filters.
-							$startpage = $is_filters ? $filters_startpage : $seo_start_page;
-
-							// Filters and Preloaded.
-							// - add 2 pages to maintain paging compatibility when returning to the same listing via filter.
-							// - set $page to $startpage.
-							if ( $is_filters && $preloaded === 'true' ) {
-								$startpage = $startpage + 1; // phpcs:ignore
-								$page      = $page + 1; // phpcs:ignore
-							}
-							apply_filters( 'alm_cache_file', $cache_id, $page, $startpage, $data, $preloaded );
-						}
+					if ( $cache_id && method_exists( 'ALMCache', 'create_cache_file' ) && $do_create_cache ) {
+						ALMCache::create_cache_file( $cache_id, $cache_slug, $canonical_url, $data, $alm_current, $alm_found_posts );
 					}
 
 					$return = [

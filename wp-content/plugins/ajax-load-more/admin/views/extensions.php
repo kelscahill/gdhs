@@ -1,46 +1,49 @@
-<div class="admin ajax-load-more" id="alm-extensions">
-	<div class="wrap main-cnkt-wrap">
-	  <header class="header-wrap">
-		 <h1>
-			<?php echo ALM_TITLE; ?>: <strong><?php _e( 'Extensions', 'ajax-load-more' ); ?></strong>
-			<em><?php _e( 'Free extensions that provide compatibility with popular plugins and core WordPress functionality', 'ajax-load-more' ); ?>.</em>
-		 </h1>
-		 <?php alm_render_transient_notification(); ?>
-	  </header>
+<?php
+/**
+ * Extensions Page.
+ *
+ * @package AjaxLoadMore
+ * @since   2.0.0
+ */
 
-	  <div class="ajax-load-more-inner-wrapper">
-
-		   <div class="cnkt-main full">
+$alm_admin_heading = __( 'Extensions', 'ajax-load-more' );
+?>
+<div class="wrap ajax-load-more main-cnkt-wrap" id="alm-extensions">
+	<?php require_once ALM_PATH . 'admin/includes/components/header.php'; ?>
+	<div class="ajax-load-more-inner-wrapper">
+		<div class="cnkt-main">
 			<?php
-				$plugin_array = array(
-					array(
-						'slug' => 'ajax-load-more-for-acf',
-					),
-					array(
-						'slug' => 'ajax-load-more-for-relevanssi',
-					),
-					array(
-						'slug' => 'ajax-load-more-rest-api',
-					),
-					array(
-						'slug' => 'ajax-load-more-for-searchwp',
-					),
-					array(
-						'slug' => 'ajax-load-more-for-terms',
-					),
-				);
-				if ( class_exists( 'Connekt_Plugin_Installer' ) ) {
-					Connekt_Plugin_Installer::init( $plugin_array );
-				}
-				?>
-
-			  <div class="call-out light no-shadow" style="width: 100%;">
-				 <p><?php _e( 'Extensions are installed as stand alone plugins and receive update notifications in the <a href="plugins.php">plugin dashboard</a>.', 'ajax-load-more' ); ?></p>
-			 </div>
-		  </div>
-
-	   <div class="clear"></div>
-	  </div>
-
+			$alm_extension_array = array(
+				array(
+					'slug' => 'ajax-load-more-for-acf',
+				),
+				array(
+					'slug' => 'ajax-load-more-for-relevanssi',
+				),
+				array(
+					'slug' => 'ajax-load-more-rest-api',
+				),
+				array(
+					'slug' => 'ajax-load-more-for-searchwp',
+				),
+				array(
+					'slug' => 'ajax-load-more-for-terms',
+				),
+				array(
+					'slug' => 'ajax-load-more-for-users',
+				),
+			);
+			if ( class_exists( 'Connekt_Plugin_Installer' ) ) {
+				Connekt_Plugin_Installer::init( $alm_extension_array );
+			}
+			?>
+			<div class="spacer lg"></div>
+			<div class="call-out call-out--centered light no-shadow" style="width: 100%;">
+				<p><?php echo wp_kses_post( __( 'Extensions are installed as standalone plugins and receive update notifications in the <a href="plugins.php">plugin dashboard</a>.', 'ajax-load-more' ) ); ?></p>
+			</div>
+		</div>
+		<aside class="cnkt-sidebar" data-sticky>
+			<?php require_once ALM_PATH . 'admin/includes/cta/extensions.php'; ?>
+		</aside>
 	</div>
 </div>

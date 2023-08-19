@@ -4,8 +4,8 @@ Donate link: https://connekthq.com/donate/
 Tags: infinite scroll, load more, ajax, lazy load, endless scroll, infinite scrolling, lazy loading, pagination, ajax, ajax posts, woocommerce, ajax load more, masonry
 Requires at least: 4.4
 Requires PHP: 5.6
-Tested up to: 6.1
-Stable tag: 5.5.5
+Tested up to: 6.3
+Stable tag: 6.1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,22 +23,22 @@ Ajax Load More is compatible for endless scrolling with popular eCommerce plugin
 
 ### Features
 
--  **Shortcode Builder** - Create your own custom Ajax Load More shortcode by adjusting the various WordPress query parameters in our easy-to-use shortcode builder (see Shortcode Parameters).
--  **Query Parameters** - Ajax Load More allows you to query WordPress by many different content types. Query by Post Type, Post Format, Date, Category, Tags, Custom Taxonomies, Search Term, Authors and more!
--  **Repeater Templates** - Edit and extend the functionality of Ajax Load More by creating your own repeater template to match the look and feel of your website (see screenshots).
--  **Multiple Instances** - You can include multiple instances of Ajax Load More on a single page, post or template.
+-  **Shortcode Builder** - Create a custom Ajax Load More shortcode in seconds by adjusting various WordPress query parameters in the inuitive shortcode builder.
+-  **Query Parameters** - Query WordPress by many different content types. Query by Post Type, Post Format, Date, Category, Tags, Custom Taxonomies, Search Term, Authors and more!
+-  **Repeater Templates** - Edit and extend the functionality of Ajax Load More by creating your own repeater template to match the look and feel of your website.
+-  **Multiple Instances** - Include multiple instances of Ajax Load More on a single page, post or template.
 -  **Ajax Filtering** - The Ajax Load More [custom filtering](https://connekthq.com/plugins/ajax-load-more/examples/filtering/) method will allow you to filter and update your Ajax query results.
--  **Multisite Compatibility** - Manage repeater templates across all sites in your network.
--  **Setting Panel** - Customize your version of Ajax Load More by updating various plugin settings.
+-  **Multisite Compatibility** - Manage Repeater Templates across all sites in your network.
+-  **Setting Panel** - Customize Ajax Load More by configuring the various plugin settings.
 
 Check out the **[website](https://connekthq.com/plugins/ajax-load-more/)** for more information on the features and functionality of Ajax Load More.
 
 ### What's New
 
--  **[Elementor Add-on](https://connekthq.com/plugins/ajax-load-more/add-ons/elementor/)** - Infinite scroll Elementor Posts Widget and WooCommerce widget content with Ajax Load More.
--  **[WooCommerce Add-on](https://connekthq.com/plugins/ajax-load-more/add-ons/woocommerce/)** - Infinite scroll WooCommerce products without updating a line of template code.
 -  **[Pro Bundle](https://connekthq.com/plugins/ajax-load-more/pro/)** - Access to all premium Ajax Load More add-ons in a single installation.
 -  **[Filters Add-on](https://connekthq.com/plugins/ajax-load-more/add-ons/filters/)** - The Filters add-on provides front-end and admin functionality for building and managing Ajax filters.
+-  **[Elementor Add-on](https://connekthq.com/plugins/ajax-load-more/add-ons/elementor/)** - Infinite scroll Elementor Posts Widget and WooCommerce widget content with Ajax Load More.
+-  **[WooCommerce Add-on](https://connekthq.com/plugins/ajax-load-more/add-ons/woocommerce/)** - Infinite scroll WooCommerce products without updating a line of template code.
 -  **[Advanced Custom Fields](https://connekthq.com/plugins/ajax-load-more/examples/advanced-custom-fields/)** - Compatibility and integration added for infinite scrolling Flexible Content, Gallery, Relationship and Repeater fields for Advanced Custom Fields.
 -  **[Masonry](https://connekthq.com/plugins/ajax-load-more/examples/masonry/)** - Built-in support and functionality for Masonry layouts.
 -  **[Progress Bars](https://connekthq.com/plugins/ajax-load-more/examples/progress-bar/)** - Display a Progress Bar load indicator with each Ajax request.
@@ -128,7 +128,6 @@ The following [add-ons](https://connekthq.com/plugins/ajax-load-more/add-ons/) a
 -  **[SEO](https://connekthq.com/plugins/ajax-load-more/add-ons/search-engine-optimization/)**: Generate unique paging URLs with each Ajax Load More query.
 -  **[Single Post](https://connekthq.com/plugins/ajax-load-more/add-ons/single-post/)**: Enable infinite scrolling of single posts on your WordPress post templates.
 -  **[Theme Repeaters](https://connekthq.com/plugins/ajax-load-more/add-ons/theme-repeaters/)**: Manage Ajax Load More repeater templates from within your current theme directory.
--  **[Users](https://connekthq.com/plugins/ajax-load-more/add-ons/users/)**: Lazy loading WordPress Users with Ajax Load More.
 -  **[WooCommerce](https://connekthq.com/plugins/ajax-load-more/add-ons/woocommerce/)**: Infinite scroll WooCommerce products with Ajax Load More.
 
 ### Extensions
@@ -139,7 +138,8 @@ The following free [extensions](https://connekthq.com/plugins/ajax-load-more/ext
 -  **[Relevanssi](https://connekthq.com/plugins/ajax-load-more/extensions/relevanssi/)**: Display Relevanssi search results with Ajax Load More.
 -  **[REST API](https://connekthq.com/plugins/ajax-load-more/extensions/rest-api/)**: Enable compatibility with the WordPress REST API.
 -  **[SearchWP](https://connekthq.com/plugins/ajax-load-more/extensions/searchwp/)**: Display SearchWP query results with Ajax Load More.
--  **[Term Query](https://wordpress.org/plugins/ajax-load-more-for-terms/)**: Infinite scroll WordPress Terms.
+-  **[Term Query](https://connekthq.com/plugins/ajax-load-more/extensions/terms/)**: Infinite scroll WordPress Terms.
+-  **[Users](https://connekthq.com/plugins/ajax-load-more/extensions/users/)**: Lazy loading WordPress Users with Ajax Load More.
 
 ### Callback Functions
 
@@ -253,15 +253,94 @@ How to install Ajax Load More.
 
 == Screenshots ==
 
-1. Settings screen
-2. Available Repeater Templates
-3. Custom Repeaters Add-On
-4. Shortcode Builder
-5. Content Editor shortcode icon
-6. Edit Page Shortcode Builder
-7. Shortcode and implementation examples
+1. Settings: Customize Ajax Load More by configuring the various plugin settings.
+2. Repeater Templates: Manage the front-end display and styling of Ajax loaded content.
+3. Custom Repeaters: Unlock the ability to create an infinite number of Repeater Templates.
+4. Shortcode Builder: Create complex WordPress queries in seconds using the intuitive Shortcode Builder.
+5. Implementation: Insert the Ajax Load More shortcode directly into the WordPress content editor or a theme template file.
 
 == Changelog ==
+
+= 6.1.0.1 - August 8, 2023 =
+* HOTFIX: Fixed issue with querying data using `custom_args` parameter.
+* HOTFIX: Fixed issue with querying data using the `vars` parameter.
+
+
+= 6.1.0 - July 27, 2023 =
+
+UPGRADE NOTICE:
+This ALM update adds a new `sort_key` parameter that is used for ordering results by custom field values.
+Users who were previously using `meta_key` for custom field ordering will need to update their shortcodes as this update is NOT backwards compatible.
+
+* NEW: Added new `sort_key` parameter to make it easier to sort query results by custom field.
+* NEW: Admin interface refresh.
+* FIX: Fixed issue with Canonical URL not being set correctly.
+* FIX: Fixed issue with Nextpage and Paging add-on not working in some instances.
+* FIX: Added fix for frontpage canonical URL fetching returning incorrect URL.
+* UPDATE: Updated ALM build process to use wp-scripts.
+* UPDATE: Code cleanup and organization.
+
+= 6.0.2 - June 27, 2023 =
+* HOTFIX: Fixed issue with Single Posts add-on not receiving correct post ID and caused issues with loading the proper post.
+* FIX: Attempted compatibility fix for WPML and Single Posts add-on loading incorrect language because of WPML language cookies.
+* Fix: Fixed issue with broken [Results Text](https://connekthq.com/plugins/ajax-load-more/docs/results-text/)
+
+
+= 6.0.1 - June 13, 2023 =
+* HOTFIX: Fixed issue with Shortcode Builder JavaScript error causing issues in admin.
+* HOTFIX: Fixed issue with posts_per_page="-1" unintentionally not loading any posts.
+
+
+= 6.0.0 - June 11, 2023 =
+* NOTICE: Ajax Load More 6.0 is a major update and includes a breaking changes with regards to the Cache add-on. Please review the information below before updating.
+* NOTICE: Cache add-on < 2.0 is no longer supported by Ajax Load More. Please update to the latest version of the add-on to continue using the Cache functionality.
+
+
+* NEW: Adding required functionality for the Cache 2.0 update. This introduces a new cache structure using MD5 hash for many cache URLs.
+* UPDATE: Core ALM JavaScript refactoring to stremline content loading using async/await and promises.
+* UPDATE: Updated WooCommerce and Elementor add-on functionality to load content in a normalized manner.
+* UPDATE: Code refactoring, cleanup and overall improvements across the Ajax Load More.
+* UPDATE: Added support for ACF extension and row index.
+* FIX: Fixed issue with Elementor and Cache add-ons not working in some instances.
+* FIX: Fixed issue with WooCommerce and Cache add-ons not working in some instances.
+* FIX: Fixed issue with ACF extension and Paging add-on not getting correct amount of posts loaded.
+
+
+= 5.6.0.5 - April 3, 2023 =
+* HOTFIX: Fixed issue with `taxonomy_relation` parameter resolving to `AND`.
+
+
+= 5.6.0.4 - March 8, 2023 =
+* UPDATE: Restricting ALM ID to contain alphanumeric characters, dashes and underscores only.
+* FIX: Fixed issue with Filters target parameter and the security updates in ALM 5.6.0.3
+* FIX: Fix for `total_posts` value in new `getTotals()` method.
+
+
+= 5.6.0.3 - February 24, 2023 =
+* NEW: Add new `getTotalRemaining` public JS function that returns the total number of posts remaining to be loaded  by ALM instance ID. [See Docs](https://connekthq.com/plugins/ajax-load-more/docs/public-functions/#getTotalRemaining)
+* Update: Added support for disabling Images Loaded functionality in WooCommerce add-on.
+* Update: Cleaned up localized post count variables to make it easier to access across the plugin.
+* UPDATE: Various code cleanup and refactoring.
+* FIX: Added further security fixes to shortcode attribute rendering and escaping params.
+
+= 5.6.0.2 - February 17, 2023 =
+* HOTFIX: Fixed error with compiled Ajax Load More JS causing issues with addons.
+* FIX: Adding fix for new ALM JavaScript Object not rendering when using default ID.
+
+= 5.6.0.1 - February 16, 2023 =
+* FIX: Added security fix for missing escaping on various shortcode params.
+* FIX: Added fix for new alm object parameter.
+* UPDATE: HTML data-attribute clean up on rendered shortcode parameters.
+
+= 5.6.0 - February 14, 2023 =
+* NEW: Added new ajaxloadmore.click() public JS function to manually trigger an Ajax Load More load action from any element on the screen.
+* NEW: Added support for new Filter facets in Filters add-on version 2.0.
+* NEW: Added alm JavaScript object to the global `window` object so accessing config params can be done in browser. e.g. `window.ajax_load_more`
+* NEW: Added support for `include_children` when running a taxonomy query.
+* FIX: Fixed issue with localized data variables not working in Full Site Editing (FSE) themes.
+* FIX: Fixed deprecation notice in Elementor widgetregistration
+* UPDATE: Security fix for escaping data attributes in shortcode.
+* UPDATE: Code cleanup.
 
 = 5.5.5 - January 5, 2013 =
 * UPDATE: Removed requirement of `transition_container` to be present when using Preloaded.
@@ -465,4 +544,8 @@ What's New in 5.1.0
 
 == Upgrade Notice ==
 
--  None
+= 6.1.0 =
+Varsion 6.1.0 includes a breaking change for ordering by `meta_key`. Ordering by `meta_key` (Custom Field) is now handled by the new `sort_key` parameter. Please update your shortcodes accordingly.
+
+= 6.0.0 =
+Version 6.0+ of Ajax Load More includes breaking changes with the Cache-addon version 1.x. Please upgrade the add-on to 2.0 or greater if you wish to continue using the Cache add-on.

@@ -8,7 +8,6 @@
   $thumb_id = get_post_thumbnail_id($id);
   $link = get_permalink($id);
   $date = get_the_date('F j, Y');
-  print_r(get_post_type($id));
   if (get_post_type($id) == 'events') {
     $date = '';
   } else {
