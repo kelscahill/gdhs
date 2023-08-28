@@ -1,12 +1,12 @@
 <?php
-/**
+/*
  * Do not edit anything in this file unless you know what you're doing
  */
 
 use Roots\Sage\Config;
 use Roots\Sage\Container;
 
-/**
+/*
  * Helper function for prettying up errors
  * @param string $message
  * @param string $subtitle
@@ -19,21 +19,21 @@ $sage_error = function ($message, $subtitle = '', $title = '') {
   wp_die($message, $title);
 };
 
-/**
+/*
  * Ensure compatible version of PHP is used
  */
 if (version_compare('7', phpversion(), '>=')) {
   $sage_error(__('You must be using PHP 7 or greater.', 'sage'), __('Invalid PHP version', 'sage'));
 }
 
-/**
+/*
  * Ensure compatible version of WordPress is used
  */
 if (version_compare('5.0.0', get_bloginfo('version'), '>=')) {
   $sage_error(__('You must be using WordPress 5.0.0 or greater.', 'sage'), __('Invalid WordPress version', 'sage'));
 }
 
-/**
+/*
  * Ensure dependencies are loaded
  */
 if (!class_exists('Roots\\Sage\\Container')) {
@@ -46,7 +46,7 @@ if (!class_exists('Roots\\Sage\\Container')) {
   require_once $composer;
 }
 
-/**
+/*
  * Sage required files
  *
  * The mapped array determines the code library included in your theme.
@@ -59,7 +59,7 @@ array_map(function ($file) use ($sage_error) {
   }
 }, ['helpers', 'setup', 'filters', 'admin', 'timber']);
 
-/**
+/*
  * Here's what's happening with these hooks:
  * 1. WordPress initially detects theme in themes/sage/resources
  * 2. Upon activation, we tell WordPress that the theme is actually in themes/sage/resources/views
@@ -90,7 +90,7 @@ Container::getInstance()
     ]);
 }, true);
 
-/**
+/*
  * Allow SVG's through WP media uploader
  */
 function cc_mime_types($mimes) {
@@ -99,7 +99,7 @@ function cc_mime_types($mimes) {
 }
 add_filter('upload_mimes', 'cc_mime_types');
 
-/**
+/*
  * ACF Save json files
  */
 function my_acf_json_save_point($path) {
@@ -109,38 +109,51 @@ function my_acf_json_save_point($path) {
 add_filter('acf/settings/save_json', 'my_acf_json_save_point');
 
 /*
- * Add columns to events post list
+ * Event start date column - Add custom column to events post type
  */
 function add_acf_columns($columns) {
   return array_merge($columns, array (
-    'event_start_date' => 'Event Start Date'
+      'event_start_date' => 'Event Start Date'
   ));
 }
 add_filter('manage_events_posts_columns', 'add_acf_columns');
 
 /*
- * Add columns to events post list
+ * Event start date column - Display data in custom column
  */
-function events_custom_column($column, $post_id) {
-  switch ($column) {
-    case 'event_start_date':
-    $date = get_post_meta($post_id, 'event_start_date', true);
-    echo date("F j, Y g:ia", strtotime($date));
-    break;
+function display_acf_column($column, $post_id) {
+  if ($column === 'event_start_date') {
+      $event_start_date = get_field('event_start_date', $post_id);
+      if ($event_start_date) {
+          echo date("F j, Y g:i a", strtotime($event_start_date));
+      } else {
+          echo '—';
+      }
   }
 }
-add_action('manage_events_posts_custom_column', 'events_custom_column', 10, 2);
+add_action('manage_events_posts_custom_column', 'display_acf_column', 10, 2);
 
 /*
- * Sort event start date column
+ * Event start date column - Make it sortable
  */
-function my_sortable_events_column($column) {
-  $column['event_start_date'] = 'event_start_date';
-  return $column;
+function make_acf_column_sortable($columns) {
+  $columns['event_start_date'] = 'event_start_date';
+  return $columns;
 }
-add_filter( 'manage_edit-events_sortable_columns', 'my_sortable_events_column' );
+add_filter('manage_edit-events_sortable_columns', 'make_acf_column_sortable');
 
-/**
+// Handle custom column sorting
+function handle_acf_column_sorting($query) {
+  if ($query->is_main_query() && ( $orderby = $query->get('orderby') )) {
+      if ($orderby === 'event_start_date') {
+          $query->set('meta_key', 'event_start_date');
+          $query->set('orderby', 'meta_value');
+      }
+  }
+}
+add_action('pre_get_posts', 'handle_acf_column_sorting');
+
+/*
  * Change post status to `Draft` for events that are old
  */
 
@@ -202,7 +215,7 @@ add_filter( 'manage_edit-events_sortable_columns', 'my_sortable_events_column' )
 //   }
 // }
 
-/**
+/*
  * Load ajax script on news template
  */
 function enqueue_ajax_load_more() {
@@ -210,12 +223,12 @@ function enqueue_ajax_load_more() {
 }
 add_action('wp_enqueue_scripts', 'enqueue_ajax_load_more');
 
-/**
+/*
  * Excerpt for pages
  */
 add_post_type_support( 'page', 'excerpt' );
 
-/**
+/*
  * ALPS Gutenberg Blocks
  */
 
@@ -247,19 +260,19 @@ add_filter('allowed_block_types', function () {
   ];
 });
 
-/**
+/*
  * ACF Options Page
  */
 if( function_exists('acf_add_options_page') ) {
   acf_add_options_page();
 }
 
-/**
+/*
  * Custom fields
  */
 function cptui_register_my_cpts() {
 
-  /**
+  /*
    * Post Type: Events.
    */
   $event_labels = array(
@@ -300,7 +313,7 @@ function cptui_register_my_cpts() {
 
   register_post_type( "events", $event_args );
 
-  /**
+  /*
    * Post Type: Exhibitions.
    */
   $exhibit_labels = array(
@@ -341,7 +354,7 @@ function cptui_register_my_cpts() {
 
   register_post_type( "exhibit", $exhibit_args );
 
-  /**
+  /*
    * Post Type: Research Library.
    */
   $research_labels = array(
@@ -382,7 +395,7 @@ function cptui_register_my_cpts() {
 
   register_post_type( "library", $research_args );
 
-  /**
+  /*
    * Post Type: Products.
    */
   $product_labels = array(
@@ -425,12 +438,12 @@ function cptui_register_my_cpts() {
 }
 add_action( 'init', 'cptui_register_my_cpts' );
 
-/**
+/*
  * Custom taxonomy
  */
 function cptui_register_my_taxes() {
 
-  /**
+  /*
    * Taxonomy: Event Category.
    */
 
@@ -471,7 +484,7 @@ function cptui_register_my_taxes() {
   );
   register_taxonomy( "event_category", array( "events" ), $event_cat_args );
 
-  /**
+  /*
    * Taxonomy: Exhibition Category.
    */
 
@@ -512,7 +525,7 @@ function cptui_register_my_taxes() {
   );
   register_taxonomy( "exhibit_category", array( "exhibit" ), $exhibit_cat_args );
 
-  /**
+  /*
    * Taxonomy: Research Library Category.
    */
 
@@ -553,7 +566,7 @@ function cptui_register_my_taxes() {
   );
   register_taxonomy( "library_category", array( "library" ), $research_cat_args );
 
-  /**
+  /*
    * Taxonomy: Product Category.
    */
 
@@ -596,13 +609,13 @@ function cptui_register_my_taxes() {
 }
 add_action( 'init', 'cptui_register_my_taxes' );
 
-/**
+/*
  * Custom block types.
  *
  * @package WordPress
  */
 
-/**
+/*
  * Register custom block types.
  */
 function register_custom_block_types() {
