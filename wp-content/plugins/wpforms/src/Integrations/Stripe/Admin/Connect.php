@@ -2,8 +2,10 @@
 
 namespace WPForms\Integrations\Stripe\Admin;
 
+use WPForms\Integrations\Stripe\Api\DomainManager;
+use WPForms\Integrations\Stripe\Api\WebhooksManager;
 use WPForms\Integrations\Stripe\Helpers;
-use Stripe\Account;
+use WPForms\Vendor\Stripe\Account;
 
 /**
  * Stripe Connect functionality.
@@ -29,6 +31,24 @@ class Connect {
 	protected $accounts = [];
 
 	/**
+	 * Webhooks manager.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @var WebhooksManager
+	 */
+	private $webhooks_manager;
+
+	/**
+	 * Domain manager.
+	 *
+	 * @since 1.8.6
+	 *
+	 * @var DomainManager
+	 */
+	private $domain_manager;
+
+	/**
 	 * Initialize.
 	 *
 	 * @since 1.8.2
@@ -36,6 +56,9 @@ class Connect {
 	 * @return Connect
 	 */
 	public function init() {
+
+		$this->webhooks_manager = new WebhooksManager();
+		$this->domain_manager   = new DomainManager();
 
 		$this->hooks();
 
@@ -79,12 +102,18 @@ class Connect {
 		$mode = empty( $credentials['live_mode'] ) ? 'test' : 'live';
 
 		$this->set_connected_user_id( $credentials['stripe_user_id'], $mode );
+		$this->set_current_mode( $mode );
+
+		// In case of switching accounts existing account data needs to be cleared.
+		unset( $this->accounts[ $mode ] );
 
 		Helpers::set_stripe_key( $credentials['stripe_publishable_key'], 'publishable', $mode );
 		Helpers::set_stripe_key( $credentials['access_token'], 'secret', $mode );
 
 		$this->update_account_meta( $credentials['stripe_user_id'], $mode );
 		$this->set_connected_account_country( $mode );
+		$this->webhooks_manager->connect();
+		$this->domain_manager->validate();
 
 		$settings_url = $this->get_payments_settings_url();
 
@@ -333,6 +362,22 @@ class Connect {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Set Stripe mode.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param string $mode Stripe mode (e.g. 'live' or 'test').
+	 */
+	private function set_current_mode( $mode ) {
+
+		$key              = 'stripe-test-mode';
+		$settings         = (array) get_option( 'wpforms_settings', [] );
+		$settings[ $key ] = $mode === 'test';
+
+		update_option( 'wpforms_settings', $settings );
 	}
 
 	/**

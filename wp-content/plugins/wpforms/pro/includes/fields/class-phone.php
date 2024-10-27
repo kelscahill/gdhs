@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Phone number field.
  *
@@ -12,7 +16,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 	 *
 	 * @since 1.6.3
 	 */
-	const INTL_VERSION = '18.1.6';
+	const INTL_VERSION = '21.2.8';
 
 	/**
 	 * Primary class constructor.
@@ -39,7 +43,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 		add_action( 'wpforms_frontend_js', [ $this, 'enqueue_frontend_js' ] );
 
 		// Add frontend strings.
-		add_action( 'wpforms_frontend_strings', [ $this, 'add_frontend_strings' ] );
+		add_filter( 'wpforms_frontend_strings', [ $this, 'add_frontend_strings' ] );
 	}
 
 	/**
@@ -54,6 +58,8 @@ class WPForms_Field_Phone extends WPForms_Field {
 	 * @return array
 	 */
 	public function field_properties( $properties, $field, $form_data ) {
+
+		$properties['inputs']['primary']['attr']['aria-label'] = $field['label'] ?? esc_html__( 'Phone number', 'wpforms' );
 
 		// Smart: add validation rule and class.
 		if ( $field['format'] === 'smart' ) {
@@ -86,7 +92,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 	 */
 	public function enqueue_frontend_css( $forms ) {
 
-		if ( ! wpforms()->frontend->assets_global() && ! $this->has_smart_format( $forms ) ) {
+		if ( ! wpforms()->obj( 'frontend' )->assets_global() && ! $this->has_smart_format( $forms ) ) {
 			return;
 		}
 
@@ -110,17 +116,17 @@ class WPForms_Field_Phone extends WPForms_Field {
 	 */
 	public function enqueue_frontend_js( $forms ) {
 
-		if ( ! wpforms()->frontend->assets_global() && ! $this->has_smart_format( $forms ) ) {
+		if ( ! wpforms()->obj( 'frontend' )->assets_global() && ! $this->has_smart_format( $forms ) ) {
 			return;
 		}
 
 		// Load International Telephone Input library - https://github.com/jackocnr/intl-tel-input.
 		wp_enqueue_script(
 			'wpforms-smart-phone-field',
-			WPFORMS_PLUGIN_URL . 'assets/pro/lib/intl-tel-input/jquery.intl-tel-input.min.js',
-			[ 'jquery' ],
+			WPFORMS_PLUGIN_URL . 'assets/pro/lib/intl-tel-input/module.intl-tel-input.min.js',
+			[],
 			self::INTL_VERSION,
-			true
+			$this->load_script_in_footer()
 		);
 	}
 
@@ -306,7 +312,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 		// Define data.
 		$primary = $field['properties']['inputs']['primary'];
 
-		// Allow input type to be changed for this particular field.
+		// Allow an input type to be changed for this particular field.
 		$type = apply_filters( 'wpforms_phone_field_input_type', 'tel' );
 
 		// Primary field.
@@ -314,7 +320,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 			'<input type="%s" %s %s>',
 			esc_attr( $type ),
 			wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ),
-			$primary['required']
+			esc_attr( $primary['required'] )
 		);
 	}
 
@@ -324,7 +330,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 	 * @since 1.5.8
 	 *
 	 * @param int   $field_id     Field ID.
-	 * @param mixed $field_submit Submitted value.
+	 * @param mixed $field_submit Submitted field value (raw data).
 	 * @param array $form_data    Form data and settings.
 	 */
 	public function validate( $field_id, $field_submit, $form_data ) {
@@ -337,7 +343,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 			! empty( $form_data['fields'][ $field_id ]['required'] ) &&
 			empty( $value )
 		) {
-			wpforms()->process->errors[ $form_id ][ $field_id ] = wpforms_get_required_label();
+			wpforms()->obj( 'process' )->errors[ $form_id ][ $field_id ] = wpforms_get_required_label();
 		}
 
 		if (
@@ -357,7 +363,7 @@ class WPForms_Field_Phone extends WPForms_Field {
 		}
 
 		if ( $error ) {
-			wpforms()->process->errors[ $form_id ][ $field_id ] = wpforms_setting( 'validation-phone', esc_html__( 'Please enter a valid phone number.', 'wpforms' ) );
+			wpforms()->obj( 'process' )->errors[ $form_id ][ $field_id ] = wpforms_setting( 'validation-phone', esc_html__( 'Please enter a valid phone number.', 'wpforms' ) );
 		}
 	}
 
@@ -375,10 +381,10 @@ class WPForms_Field_Phone extends WPForms_Field {
 		$name = ! empty( $form_data['fields'][ $field_id ]['label'] ) ? $form_data['fields'][ $field_id ]['label'] : '';
 
 		// Set final field details.
-		wpforms()->process->fields[ $field_id ] = [
+		wpforms()->obj( 'process' )->fields[ $field_id ] = [
 			'name'  => sanitize_text_field( $name ),
 			'value' => $this->sanitize_value( $field_submit ),
-			'id'    => absint( $field_id ),
+			'id'    => wpforms_validate_field_id( $field_id ),
 			'type'  => $this->type,
 		];
 	}

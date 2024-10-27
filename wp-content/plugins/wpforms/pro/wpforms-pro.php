@@ -1,7 +1,27 @@
 <?php
+/**
+ * WPForms_Pro class file.
+ */
 
-use WPForms\Pro\Integrations\LiteConnect\Integration;
+// phpcs:disable Generic.Commenting.DocComment.MissingShort
+/** @noinspection PhpIllegalPsrClassPathInspection */
+/** @noinspection AutoloadingIssuesInspection */
+// phpcs:enable Generic.Commenting.DocComment.MissingShort
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use WPForms\Admin\Builder\TemplateSingleCache;
+use WPForms\Admin\Builder\TemplatesCache;
+use WPForms\Db\Payments\Meta as PaymentsMeta;
+use WPForms\Db\Payments\Payment;
+use WPForms\Helpers\DB;
+use WPForms\Integrations\UsageTracking\UsageTracking;
+use WPForms\Logger\Repository;
+use WPForms\Pro\Integrations\LiteConnect\Integration;
+use WPForms\Tasks\Meta as TasksMeta;
+use WPForms\Admin\Notice;
 
 /**
  * WPForms Pro. Load Pro specific features/functionality.
@@ -9,6 +29,21 @@ use WPForms\Admin\Builder\TemplateSingleCache;
  * @since 1.2.1
  */
 class WPForms_Pro {
+
+	/**
+	 * Custom tables and their handlers.
+	 *
+	 * @since 1.9.0
+	 */
+	const CUSTOM_TABLES = [
+		'wpforms_entries'      => WPForms_Entry_Handler::class,
+		'wpforms_entry_fields' => WPForms_Entry_Fields_Handler::class,
+		'wpforms_entry_meta'   => WPForms_Entry_Meta_Handler::class,
+		'wpforms_payments'     => Payment::class,
+		'wpforms_payment_meta' => PaymentsMeta::class,
+		'wpforms_tasks_meta'   => TasksMeta::class,
+		'wpforms_logs'         => Repository::class,
+	];
 
 	/**
 	 * Primary class constructor.
@@ -53,7 +88,6 @@ class WPForms_Pro {
 		if ( is_admin() || wp_doing_cron() || wpforms_doing_wp_cli() ) {
 			require_once WPFORMS_PLUGIN_DIR . 'pro/includes/admin/ajax-actions.php';
 			require_once WPFORMS_PLUGIN_DIR . 'pro/includes/admin/entries/class-entries-single.php';
-			require_once WPFORMS_PLUGIN_DIR . 'pro/includes/admin/entries/class-entries-list.php';
 			require_once WPFORMS_PLUGIN_DIR . 'pro/includes/admin/class-updater.php';
 			require_once WPFORMS_PLUGIN_DIR . 'pro/includes/admin/class-license.php';
 		}
@@ -78,18 +112,22 @@ class WPForms_Pro {
 	private function hooks() {
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WPFORMS_PLUGIN_DIR . 'wpforms.php' ), [ $this, 'plugin_action_links' ], 11, 4 );
+		add_filter( 'plugin_action_links_wpforms-lite/wpforms.php', [ $this, 'replace_action_links' ] );
+		add_filter( 'install_plugin_complete_actions', [ $this, 'update_install_plugin_complete_actions' ], 10, 3 );
+		add_filter( 'plugin_install_action_links', [ $this, 'disable_install_action_links' ], 10, 2 );
+		add_filter( 'plugin_install_description', [ $this, 'update_plugin_install_description' ], 10, 2 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'install_plugin_enqueues' ], 11 );
 		add_action( 'wpforms_loaded', [ $this, 'objects' ], 1 );
 		add_action( 'wpforms_loaded', [ $this, 'updater' ], 30 );
-		add_action( 'wpforms_install', [ $this, 'install' ], 10 );
+		add_action( 'wpforms_install', [ $this, 'install' ] );
 		add_filter( 'wpforms_settings_license_output', [ $this, 'settings_license_callback' ] );
-		add_filter( 'wpforms_settings_defaults', [ $this, 'register_settings_fields' ], 5, 1 );
-		add_action( 'wpforms_settings_init', [ $this, 'reinstall_custom_tables' ] );
+		add_filter( 'wpforms_settings_defaults', [ $this, 'register_settings_fields' ], 5 );
 		add_filter( 'wpforms_update_settings', [ $this, 'maybe_unset_gdpr_sub_settings' ] );
 		add_action( 'wpforms_process_entry_save', [ $this, 'entry_save' ], 10, 4 );
-		add_action( 'wpforms_form_settings_general', [ $this, 'form_settings_general' ], 10 );
-		add_filter( 'wpforms_overview_table_columns', [ $this, 'form_table_columns' ], 10, 1 );
+		add_action( 'wpforms_form_settings_general', [ $this, 'form_settings_general' ] );
+		add_filter( 'wpforms_overview_table_columns', [ $this, 'form_table_columns' ] );
 		add_filter( 'wpforms_overview_table_column_value', [ $this, 'form_table_columns_value' ], 10, 3 );
-		add_action( 'wpforms_form_settings_notifications', [ $this, 'form_settings_notifications' ], 8, 1 );
+		add_action( 'wpforms_form_settings_notifications', [ $this, 'form_settings_notifications' ], 8 );
 		add_action( 'wpforms_form_settings_confirmations', [ $this, 'form_settings_confirmations' ] );
 		add_filter( 'wpforms_frontend_strings', [ $this, 'frontend_strings' ] );
 		add_action( 'admin_notices', [ $this, 'conditional_logic_addon_notice' ] );
@@ -97,6 +135,7 @@ class WPForms_Pro {
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueues' ] );
 		add_filter( 'wpforms_helpers_templates_get_theme_template_paths', [ $this, 'add_templates' ] );
 		add_filter( 'wpforms_integrations_usagetracking_is_enabled', '__return_true' );
+		add_filter( 'wpforms_updater_perform_remote_request_before_response', [ $this, 'get_updater_response_from_cache' ], 10, 3 );
 	}
 
 	/**
@@ -111,8 +150,14 @@ class WPForms_Pro {
 		wpforms()->entry_fields = new WPForms_Entry_Fields_Handler();
 		wpforms()->entry_meta   = new WPForms_Entry_Meta_Handler();
 
-		if ( is_admin() && ! wpforms()->license instanceof WPForms_License ) {
+		wpforms()->register_instance( 'entry', wpforms()->entry );
+		wpforms()->register_instance( 'entry_fields', wpforms()->entry_fields );
+		wpforms()->register_instance( 'entry_meta', wpforms()->entry_meta );
+
+		if ( is_admin() && ! wpforms()->obj( 'license' ) instanceof WPForms_License ) {
 			wpforms()->license = new WPForms_License();
+
+			wpforms()->register_instance( 'license', wpforms()->license );
 		}
 	}
 
@@ -123,18 +168,14 @@ class WPForms_Pro {
 	 */
 	public function updater() {
 
-		if ( ! is_admin() && ! wpforms_doing_wp_cli() ) {
+		if ( ! is_admin() && ! wp_doing_cron() && ! wpforms_doing_wp_cli() ) {
 			return;
 		}
 
 		$key = wpforms_get_license_key();
 
-		if ( ! $key ) {
-			return;
-		}
-
 		// Go ahead and initialize the updater.
-		new \WPForms_Updater(
+		$updater_obj = new WPForms_Updater(
 			[
 				'plugin_name' => 'WPForms',
 				'plugin_slug' => 'wpforms',
@@ -146,8 +187,104 @@ class WPForms_Pro {
 			]
 		);
 
-		// Fire a hook for Addons to register their updater since we know the key is present.
-		do_action( 'wpforms_updater', $key );
+		// Register the updater instance.
+		wpforms()->register_instance( 'updater', $updater_obj );
+
+		$addons_cache_obj = wpforms()->obj( 'addons_cache' );
+
+		if ( ! $addons_cache_obj ) {
+			return;
+		}
+
+		$addons = $addons_cache_obj->get();
+
+		foreach ( $addons as $addon ) {
+			// Initialize the addon updater class.
+			new WPForms_Updater(
+				[
+					'plugin_name' => $addon['title'],
+					'plugin_slug' => $addon['slug'],
+					'plugin_url'  => trailingslashit( $addon['url'] ),
+					'remote_url'  => WPFORMS_UPDATER_API,
+					'key'         => $key,
+				]
+			);
+		}
+
+		/**
+		 * Remove all addon updater actions.
+		 * This is necessary for backward compatibility with outdated addons.
+		 */
+		$this->remove_action_regex( '/^WPForms/', 'wpforms_updater' );
+
+		/**
+		 * Fire an action for Addons to register their updater since we know the key is present.
+		 *
+		 * @since 1.5.5
+		 *
+		 * @param string $key License key.
+		 */
+		do_action( 'wpforms_updater', $key ); // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
+	}
+
+	/**
+	 * Remove action or filter.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param string $callback_pattern Callback pattern to match. A regex matching to SomeNameSpace\SomeClass::some_method.
+	 * @param string $hook_name        Action name.
+	 *
+	 * @noinspection PhpSameParameterValueInspection
+	 */
+	private function remove_action_regex( string $callback_pattern, string $hook_name = '' ) {
+
+		global $wp_filter;
+
+		$hook_name = $hook_name ? $hook_name : current_action();
+		$hooks     = $wp_filter[ $hook_name ] ?? null;
+		$callbacks = $hooks->callbacks ?? [];
+
+		foreach ( $callbacks as $priority => $actions ) {
+			foreach ( $actions as $action ) {
+				$this->maybe_remove_action_regex( $callback_pattern, $hook_name, $action, $priority );
+			}
+		}
+	}
+
+	/**
+	 * Maybe remove action.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param string $callback_pattern Callback pattern to match. A regex matching to SomeNameSpace\SomeClass::some_method.
+	 * @param string $hook_name        Hook name.
+	 * @param array  $action           Action data.
+	 * @param int    $priority         Priority.
+	 *
+	 * @return void
+	 */
+	private function maybe_remove_action_regex( string $callback_pattern, string $hook_name, array $action, int $priority ) { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
+
+		$callback = $action['function'] ?? '';
+
+		if ( $callback instanceof Closure ) {
+			return;
+		}
+
+		if ( is_array( $callback ) ) {
+			$callback_class  = is_object( $callback[0] ) ? get_class( $callback[0] ) : (string) $callback[0];
+			$callback_method = (string) $callback[1];
+			$callback_name   = $callback_class . '::' . $callback_method;
+		} else {
+			$callback_name = (string) $callback;
+		}
+
+		if ( ! preg_match( $callback_pattern, $callback_name ) ) {
+			return;
+		}
+
+		remove_action( $hook_name, $callback, $priority );
 	}
 
 	/**
@@ -157,25 +294,17 @@ class WPForms_Pro {
 	 */
 	public function install() {
 
-		$wpforms_install               = new stdClass();
-		$wpforms_install->entry        = new WPForms_Entry_Handler();
-		$wpforms_install->entry_fields = new WPForms_Entry_Fields_Handler();
-		$wpforms_install->entry_meta   = new WPForms_Entry_Meta_Handler();
-
-		$this->create_custom_tables( $wpforms_install );
+		DB::create_custom_tables( true );
 
 		$license = get_option( 'wpforms_connect', false );
 
 		if ( $license ) {
 			update_option(
 				'wpforms_license',
-				[
-					'key' => $license,
-				]
+				[ 'key' => $license ]
 			);
-			$wpforms_install->license = new WPForms_License();
 
-			$wpforms_install->license->validate_key( $license );
+			( new WPForms_License() )->validate_key( $license );
 			delete_option( 'wpforms_connect' );
 		}
 
@@ -186,8 +315,13 @@ class WPForms_Pro {
 			Integration::maybe_restart_import_flag();
 		}
 
+		// Wipe templates content cache.
+		if ( class_exists( TemplatesCache::class ) ) {
+			( new TemplatesCache() )->wipe_content_cache();
+		}
+
 		// Wipe cache of an empty templates.
-		// We should do it, otherwise it's possible, that some templates will appear empty after upgrading to Pro.
+		// We should do it; otherwise it's possible that some templates will appear empty after upgrading to Pro.
 		if ( class_exists( TemplateSingleCache::class ) ) {
 			( new TemplateSingleCache() )->wipe_empty_templates_cache();
 		}
@@ -208,7 +342,7 @@ class WPForms_Pro {
 
 		$locales = array_unique( [ get_locale(), get_user_locale() ] );
 
-		if ( 1 === count( $locales ) && 'en_US' === $locales[0] ) {
+		if ( count( $locales ) === 1 && $locales[0] === 'en_US' ) {
 			return;
 		}
 
@@ -226,6 +360,7 @@ class WPForms_Pro {
 		}
 
 		$upgrader = new Language_Pack_Upgrader( new Automatic_Upgrader_Skin() );
+
 		$upgrader->bulk_upgrade( $to_update );
 	}
 
@@ -248,30 +383,61 @@ class WPForms_Pro {
 	}
 
 	/**
-	 * Add custom links to the WPForms plugin row on Plugins page.
+	 * Get cached updater response.
+	 *
+	 * @since 1.8.7
+	 *
+	 * @param object $response WPForms Updater response object before request has been sent. Empty object by default.
+	 * @param string $action   Action name.
+	 * @param array  $body     Request body.
+	 *
+	 * @return object
+	 */
+	public function get_updater_response_from_cache( $response, string $action, array $body ) {
+
+		if ( ! isset( $body['tgm-updater-plugin'] ) || $body['tgm-updater-plugin'] !== 'wpforms' ) {
+			return $response;
+		}
+
+		if ( $action === 'get-plugin-update' ) {
+			return (object) wpforms()->obj( 'license_api_plugin_update_cache' )->get();
+		}
+
+		if ( $action === 'get-plugin-info' ) {
+			return (object) wpforms()->obj( 'license_api_plugin_info_cache' )->get();
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Add custom links to the WPForms plugin row on the Plugins page.
 	 *
 	 * @since 1.5.9
 	 *
 	 * @param array  $links       Plugin row links.
-	 * @param string $plugin_file Path to the plugin file relative to the plugins directory.
+	 * @param string $plugin_file Path to the plugin file relative to the plugins' directory.
 	 * @param array  $plugin_data An array of plugin data. See `get_plugin_data()`.
 	 * @param string $context     The plugin context.
 	 *
 	 * @return array
+	 * @noinspection PhpMissingParamTypeInspection
+	 * @noinspection PhpUnusedParameterInspection
+	 * @noinspection HtmlUnknownTarget
 	 */
-	public function plugin_action_links( $links, $plugin_file, $plugin_data, $context ) {
+	public function plugin_action_links( $links, $plugin_file, $plugin_data, $context ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
 		$custom = [];
 
-		unset( $links['pro'], $links['docs'] );
+		unset( $links['wpforms-pro'], $links['wpforms-docs'] );
 
-		if ( isset( $links['settings'] ) ) {
-			$custom['settings'] = $links['settings'];
+		if ( isset( $links['wpforms-settings'] ) ) {
+			$custom['wpforms-settings'] = $links['wpforms-settings'];
 
-			unset( $links['settings'] );
+			unset( $links['wpforms-settings'] );
 		}
 
-		$custom['support'] = sprintf(
+		$custom['wpforms-support'] = sprintf(
 			'<a href="%1$s" aria-label="%2$s" target="_blank" rel="noopener noreferrer">%3$s</a>',
 			esc_url(
 				add_query_arg(
@@ -288,7 +454,7 @@ class WPForms_Pro {
 			esc_html__( 'Support', 'wpforms' )
 		);
 
-		$custom['docs'] = sprintf(
+		$custom['wpforms-docs'] = sprintf(
 			'<a href="%1$s" aria-label="%2$s" target="_blank" rel="noopener noreferrer">%3$s</a>',
 			esc_url(
 				add_query_arg(
@@ -309,6 +475,122 @@ class WPForms_Pro {
 	}
 
 	/**
+	 * Replace the activation link for the Lite version of WPForms.
+	 * Activating the Lite version of WPForms is not allowed when the Pro version is active.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param array $links Plugin row links.
+	 *
+	 * @return array
+	 */
+	public function replace_action_links( array $links ): array {
+
+		$links['activate'] = __( 'Inactive &mdash; You\'ve got a paid version of WPForms', 'wpforms' );
+
+		return $links;
+	}
+
+	/**
+	 * Remove the "Activate" action link for the Lite version of WPForms.
+	 * Activating the Lite version of WPForms is not allowed when the Pro version is active.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param array  $install_actions An array of action links.
+	 * @param object $api             Plugin API data.
+	 * @param string $plugin_file     Path to the plugin file relative to the plugins' directory.
+	 *
+	 * @return array
+	 * @noinspection PhpUnusedParameterInspection
+	 */
+	public function update_install_plugin_complete_actions( array $install_actions, $api, string $plugin_file ): array {
+
+		if ( $plugin_file !== 'wpforms-lite/wpforms.php' ) {
+			return $install_actions;
+		}
+
+		unset( $install_actions['activate_plugin'] );
+
+		return $install_actions;
+	}
+
+	/**
+	 * Disable the "Install" action link for the Lite version of WPForms.
+	 * Installing the Lite version of WPForms is not allowed when the Pro version is active.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param array $action_links An array of action links.
+	 * @param array $plugin       Plugin data.
+	 *
+	 * @return array
+	 */
+	public function disable_install_action_links( array $action_links, array $plugin ): array {
+
+		if ( ! $this->is_lite_installed( $plugin ) ) {
+			return $action_links;
+		}
+
+		$status = install_plugin_install_status( $plugin );
+
+		// The plugin is available for update, so do not disable the action links.
+		if ( $status['status'] === 'update_available' ) {
+			return $action_links;
+		}
+
+		$action_links[0] = '<button type="button" class="button button-disabled" disabled="disabled">' . __( 'Activate', 'wpforms' ) . '</button>';
+
+		return $action_links;
+	}
+
+	/**
+	 * Update the plugin install description for the Lite version of WPForms.
+	 * Installing the Lite version of WPForms is not allowed when the Pro version is active.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param string $description Plugin install description.
+	 * @param array  $plugin      Plugin data.
+	 *
+	 * @return string
+	 */
+	public function update_plugin_install_description( string $description, array $plugin ): string {
+
+		if ( ! $this->is_lite_installed( $plugin ) ) {
+			return $description;
+		}
+
+		$notice = sprintf( '<strong>%s</strong><br><br>', __( 'You cannot activate WPForms Lite because you have a paid version of WPForms activated.', 'wpforms' ) );
+
+		return $notice . $description;
+	}
+
+	/**
+	 * Check if the Lite version of WPForms is installed.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param array $plugin Plugin data.
+	 *
+	 * @return bool
+	 */
+	private function is_lite_installed( array $plugin ): bool {
+
+		if ( $plugin['slug'] !== 'wpforms-lite' ) {
+			return false;
+		}
+
+		$all_plugins = get_plugins();
+
+		if ( isset( $all_plugins['wpforms-lite/wpforms.php'] ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Override the Settings license field callback.
 	 *
 	 * @since 1.7.9
@@ -316,10 +598,12 @@ class WPForms_Pro {
 	 * @param string $html HTML markup for the "Lite" plugin’s license settings section.
 	 *
 	 * @return string
+	 * @noinspection PhpMissingParamTypeInspection
+	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function settings_license_callback( $html ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity
+	public function settings_license_callback( $html ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity, Generic.CodeAnalysis.UnusedFunctionParameter.Found
 
-		$license      = wpforms()->get( 'license' );
+		$license      = wpforms()->obj( 'license' );
 		$key          = $license->get();
 		$type         = $license->type();
 		$is_constant  = $license->get_key_location() === 'constant';
@@ -328,7 +612,7 @@ class WPForms_Pro {
 		$is_valid_key = $has_key && ! empty( $type ) && ! $has_errors;
 		$no_refresh   = ! $has_key || $license->is_invalid() || $license->is_disabled();
 
-		// Block ui when license key used as a constant.
+		// Block ui when the license key used as a constant.
 		$class  = $is_constant ? 'wpforms-setting-license-block-ui' : '';
 		$output = '<span class="wpforms-setting-license-wrapper ' . $class . '">'; // Reset the original output from the Lite version.
 
@@ -341,7 +625,7 @@ class WPForms_Pro {
 		// Offer interactions when license is not defined as a constant.
 		if ( ! $is_constant ) {
 			$class   = $has_key ? 'wpforms-hide' : '';
-			$output .= '<button id="wpforms-setting-license-key-verify" class="wpforms-btn wpforms-btn-md wpforms-btn-orange ' . $class . '">' . esc_html__( 'Verify Key', 'wpforms' ) . '</button>';
+			$output .= '<button id="wpforms-setting-license-key-verify" class="wpforms-btn wpforms-btn-md wpforms-btn-blue ' . $class . '">' . esc_html__( 'Verify Key', 'wpforms' ) . '</button>';
 		}
 
 		// Skip, in case license did not expire.
@@ -377,6 +661,50 @@ class WPForms_Pro {
 					. '</p>';
 
 		return $output;
+	}
+
+	/**
+	 * Install plugin enqueues.
+	 *
+	 * @since 1.9.0
+	 */
+	public function install_plugin_enqueues() {
+
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+
+		if ( $screen !== null && ! in_array( $screen->id, [ 'plugins', 'plugin-install' ], true ) ) {
+			return;
+		}
+
+		$min = wpforms_get_min_suffix();
+
+		wp_enqueue_style(
+			'wpforms-pro-install',
+			WPFORMS_PLUGIN_URL . "assets/pro/css/install{$min}.css",
+			[],
+			WPFORMS_VERSION
+		);
+
+		wp_enqueue_script(
+			'wpforms-pro-install',
+			WPFORMS_PLUGIN_URL . "assets/pro/js/admin/install{$min}.js",
+			[ 'jquery' ],
+			WPFORMS_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'wpforms-pro-install',
+			'wpforms_install_data',
+			[
+				'activate'            => __( 'Activate', 'wpforms' ),
+				'lite_version_notice' => __( 'You cannot activate WPForms Lite because you have a paid version of WPForms activated.', 'wpforms' ),
+			]
+		);
 	}
 
 	/**
@@ -464,18 +792,6 @@ class WPForms_Pro {
 			'type'    => 'text',
 			'default' => esc_html__( 'Please enter time between {minTime} and {maxTime}.', 'wpforms' ),
 		];
-		$settings['validation']['validation-requiredpayment']  = [
-			'id'      => 'validation-requiredpayment',
-			'name'    => esc_html__( 'Payment Required', 'wpforms' ),
-			'type'    => 'text',
-			'default' => esc_html__( 'Payment is required.', 'wpforms' ),
-		];
-		$settings['validation']['validation-creditcard']       = [
-			'id'      => 'validation-creditcard',
-			'name'    => esc_html__( 'Credit Card', 'wpforms' ),
-			'type'    => 'text',
-			'default' => esc_html__( 'Please enter a valid credit card number.', 'wpforms' ),
-		];
 		$settings['validation']['validation-post_max_size']    = [
 			'id'      => 'validation-post_max_size',
 			'name'    => esc_html__( 'File Upload Total Size', 'wpforms' ),
@@ -498,22 +814,24 @@ class WPForms_Pro {
 			$settings['general'],
 			[
 				'gdpr-disable-uuid'    => [
-					'id'   => 'gdpr-disable-uuid',
-					'name' => esc_html__( 'Disable User Cookies', 'wpforms' ),
-					'desc' => esc_html__( 'Check this option to disable user tracking cookies. This will disable the Related Entries feature and the Form Abandonment addon.', 'wpforms' ),
-					'type' => 'checkbox',
+					'id'     => 'gdpr-disable-uuid',
+					'name'   => esc_html__( 'Disable User Cookies', 'wpforms' ),
+					'desc'   => esc_html__( 'Disable user tracking cookies. This will disable the Related Entries feature and the Form Abandonment addon.', 'wpforms' ),
+					'type'   => 'toggle',
+					'status' => true,
 				],
 				'gdpr-disable-details' => [
-					'id'   => 'gdpr-disable-details',
-					'name' => esc_html__( 'Disable User Details', 'wpforms' ),
-					'desc' => esc_html__( 'Check this option to prevent the storage of IP addresses and User Agent on all forms. If unchecked, then this can be managed on a form-by-form basis inside the form builder under Settings → General', 'wpforms' ),
-					'type' => 'checkbox',
+					'id'     => 'gdpr-disable-details',
+					'name'   => esc_html__( 'Disable User Details', 'wpforms' ),
+					'desc'   => esc_html__( 'Disable storage IP addresses and User Agent on all forms. If unchecked, then this can be managed on a form-by-form basis inside the form builder under Settings → General', 'wpforms' ),
+					'type'   => 'toggle',
+					'status' => true,
 				],
 			],
 			'gdpr'
 		);
 
-		unset( $settings['misc'][ \WPForms\Integrations\UsageTracking\UsageTracking::SETTINGS_SLUG ] );
+		unset( $settings['misc'][ UsageTracking::SETTINGS_SLUG ] );
 
 		return $settings;
 	}
@@ -533,7 +851,7 @@ class WPForms_Pro {
 	 */
 	public function maybe_unset_gdpr_sub_settings( $settings ) {
 
-		$settings['gdpr'] = isset( $settings['gdpr'] ) ? $settings['gdpr'] : false;
+		$settings['gdpr'] = $settings['gdpr'] ?? false;
 
 		if ( ! $settings['gdpr'] ) {
 			$settings['gdpr-disable-uuid']    = false;
@@ -555,13 +873,13 @@ class WPForms_Pro {
 	 */
 	public function entry_save( $fields, $entry, $form_id, $form_data = [] ) {
 
-		// Check if form has entries disabled.
+		// Check if a form has entries disabled.
 		if ( isset( $form_data['settings']['disable_entries'] ) ) {
 			return;
 		}
 
 		// Register the Submission class.
-		$submission = wpforms()->get( 'submission' );
+		$submission = wpforms()->obj( 'submission' );
 
 		$submission->register( $fields, $entry, $form_id, $form_data );
 
@@ -569,7 +887,7 @@ class WPForms_Pro {
 		$entry_args = $submission->prepare_entry_data();
 
 		// Create entry.
-		$entry_id = wpforms()->get( 'entry' )->add( $entry_args );
+		$entry_id = wpforms()->obj( 'entry' )->add( $entry_args );
 
 		// Create fields.
 		$submission->create_fields( $entry_id );
@@ -600,7 +918,7 @@ class WPForms_Pro {
 
 		// Only provide this option if GDPR enhancements are enabled and user
 		// details are not disabled globally.
-		if ( wpforms_setting( 'gdpr', false ) && ! wpforms_setting( 'gdpr-disable-details', false ) ) {
+		if ( wpforms_setting( 'gdpr' ) && ! wpforms_setting( 'gdpr-disable-details' ) ) {
 			wpforms_panel_field(
 				'toggle',
 				'settings',
@@ -630,7 +948,9 @@ class WPForms_Pro {
 
 		// The label for the "Entries" column is already defined in the "Lite" version.
 		// The primary reason for leaving this here is to continue loading the translation equivalent associated with the PRO version text-domain.
-		$columns['entries'] = esc_html__( 'Entries', 'wpforms' );
+		if ( isset( $columns['entries'] ) ) {
+			$columns['entries'] = esc_html__( 'Entries', 'wpforms' );
+		}
 
 		return $columns;
 	}
@@ -640,15 +960,16 @@ class WPForms_Pro {
 	 *
 	 * @since 1.2.1
 	 *
-	 * @param string $value
-	 * @param object $form
-	 * @param string $column_name
+	 * @param string $value       Value.
+	 * @param object $form        Form.
+	 * @param string $column_name Column name.
 	 *
 	 * @return string
+	 * @noinspection HtmlUnknownTarget
 	 */
 	public function form_table_columns_value( $value, $form, $column_name ) {
 
-		if ( 'entries' !== $column_name ) {
+		if ( $column_name !== 'entries' ) {
 			return $value;
 		}
 
@@ -657,7 +978,7 @@ class WPForms_Pro {
 		}
 
 		$form_data = wpforms_decode( $form->post_content );
-		$count     = wpforms()->get( 'entry' )->get_entries(
+		$count     = wpforms()->obj( 'entry' )->get_entries(
 			[
 				'form_id' => $form->ID,
 			],
@@ -668,7 +989,7 @@ class WPForms_Pro {
 			return '&mdash;';
 		}
 
-		$value = sprintf(
+		return sprintf(
 			'<a href="%s">%d</a>',
 			add_query_arg(
 				[
@@ -679,8 +1000,6 @@ class WPForms_Pro {
 			),
 			$count
 		);
-
-		return $value;
 	}
 
 	/**
@@ -688,11 +1007,13 @@ class WPForms_Pro {
 	 *
 	 * @since 1.2.3
 	 *
-	 * @param object $settings
+	 * @param object $settings Settings.
+	 *
+	 * @noinspection HtmlUnknownTarget
 	 */
-	public function form_settings_notifications( $settings ) {
+	public function form_settings_notifications( $settings ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
-		$cc            = wpforms_setting( 'email-carbon-copy', false );
+		$cc            = wpforms_setting( 'email-carbon-copy' );
 		$form_settings = ! empty( $settings->form_data['settings'] ) ? $settings->form_data['settings'] : [];
 		$notifications = is_array( $form_settings ) && isset( $form_settings['notifications'] ) ? $form_settings['notifications'] : [];
 		$from_email    = '{admin_email}';
@@ -848,8 +1169,7 @@ class WPForms_Pro {
 
 				</div>
 
-				<div class="wpforms-builder-settings-block-content" <?php echo $closed_state; ?>>
-
+				<div class="wpforms-builder-settings-block-content" <?php echo $closed_state; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 					<?php
 					wpforms_panel_field(
 						'text',
@@ -861,8 +1181,9 @@ class WPForms_Pro {
 							'default'    => '{admin_email}',
 							'tooltip'    => esc_html__( 'Enter the email address to receive form entry notifications. For multiple notifications, separate email addresses with a comma.', 'wpforms' ),
 							'smarttags'  => [
-								'type'   => 'fields',
-								'fields' => 'email',
+								'type'                  => 'fields',
+								'fields'                => 'email',
+								'allow-repeated-fields' => true,
 							],
 							'parent'     => 'settings',
 							'subsection' => $id,
@@ -878,9 +1199,11 @@ class WPForms_Pro {
 							$settings->form_data,
 							esc_html__( 'CC', 'wpforms' ),
 							[
+								'tooltip'    => esc_html__( 'Enter the email address to add it to the carbon copy of the form entry notifications. For multiple notifications, separate email addresses with a comma.', 'wpforms' ),
 								'smarttags'  => [
 									'type'   => 'fields',
 									'fields' => 'email',
+									'allow-repeated-fields' => true,
 								],
 								'parent'     => 'settings',
 								'subsection' => $id,
@@ -934,14 +1257,11 @@ class WPForms_Pro {
 								'parent'     => 'settings',
 								'subsection' => $id,
 								'input_id'   => 'wpforms-panel-field-notifications-sender_name-' . $id,
-								'readonly'   => ! empty( $from_name_after ),
-								'after'      => ! empty( $from_name_after ) ? '<div class="wpforms-alert wpforms-alert-warning">' . $from_name_after . '</div>' : '',
-								'class'      => ! empty( $from_name_after ) ? 'from-name wpforms-panel-field-warning' : 'from-name',
 							],
 							$settings->form_data,
 							$id
 						)
-						// phpcs:enable WPForms.PHP.ValidateHooks.InvalidHookName
+					// phpcs:enable WPForms.PHP.ValidateHooks.InvalidHookName
 					);
 					wpforms_panel_field(
 						'text',
@@ -1053,11 +1373,8 @@ class WPForms_Pro {
 
 					// phpcs:enable WPForms.PHP.ValidateHooks.InvalidHookName
 					?>
-
 				</div><!-- /.wpforms-builder-settings-block-content -->
-
 			</div><!-- /.wpforms-builder-settings-block -->
-
 			<?php
 		}
 	}
@@ -1069,7 +1386,7 @@ class WPForms_Pro {
 	 *
 	 * @param WPForms_Builder_Panel_Settings $settings Builder panel settings.
 	 */
-	public function form_settings_confirmations( $settings ) {
+	public function form_settings_confirmations( $settings ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 		wp_enqueue_editor();
 
@@ -1125,7 +1442,7 @@ class WPForms_Pro {
 			do_action( 'wpforms_form_settings_confirmations_single_before', $settings, $field_id );
 			?>
 
-			<div class="<?php echo esc_attr( $block_classes ); ?>" data-block-type="confirmation" data-block-id="<?php echo absint( $field_id ); ?>">
+			<div class="<?php echo esc_attr( $block_classes ); ?>" data-block-type="confirmation" data-block-id="<?php echo wpforms_validate_field_id( $field_id ); ?>">
 
 				<div class="wpforms-builder-settings-block-header">
 					<div class="wpforms-builder-settings-block-actions">
@@ -1141,14 +1458,14 @@ class WPForms_Pro {
 						<span class="wpforms-builder-settings-block-name"><?php echo esc_html( $name ); ?></span>
 
 						<div class="wpforms-builder-settings-block-name-edit">
-							<input type="text" name="settings[confirmations][<?php echo absint( $field_id ); ?>][name]" value="<?php echo esc_attr( $name ); ?>">
+							<input type="text" name="settings[confirmations][<?php echo wpforms_validate_field_id( $field_id ); ?>][name]" value="<?php echo esc_attr( $name ); ?>">
 						</div>
 						<button class="wpforms-builder-settings-block-edit" title="<?php esc_attr_e( 'Edit', 'wpforms' ); ?>"><i class="fa fa-pencil"></i></button>
 					</div>
 
 				</div>
 
-				<div class="wpforms-builder-settings-block-content" <?php echo $closed_state; ?>>
+				<div class="wpforms-builder-settings-block-content" <?php echo $closed_state; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
 					<?php
 					wpforms_panel_field(
@@ -1215,7 +1532,7 @@ class WPForms_Pro {
 						$settings->form_data,
 						esc_html__( 'Confirmation Page', 'wpforms' ),
 						[
-							'class'       => 'wpforms-panel-field-confirmations-page-choicesjs-unflippable',
+							'class'       => 'wpforms-panel-field-confirmations-page-choicesjs',
 							'options'     => wpforms_builder_form_settings_confirmation_get_pages( $settings->form_data, $field_id ),
 							'input_id'    => 'wpforms-panel-field-confirmations-page-' . $field_id,
 							'input_class' => 'wpforms-panel-field-confirmations-page',
@@ -1304,7 +1621,7 @@ class WPForms_Pro {
 	}
 
 	/**
-	 * Modify javascript `wpforms_settings` properties on site front end.
+	 * Modify javascript `wpforms_settings` properties on the site front end.
 	 *
 	 * @since 1.4.6
 	 *
@@ -1316,11 +1633,9 @@ class WPForms_Pro {
 
 		// If the user has GDPR enhancements enabled and has disabled UUID,
 		// disable the setting, otherwise enable it.
-		$strings['uuid_cookie'] = ! wpforms_setting( 'gdpr-disable-uuid', false );
+		$strings['uuid_cookie'] = ! wpforms_setting( 'gdpr-disable-uuid' );
 
-		$strings['val_requiredpayment'] = wpforms_setting( 'validation-requiredpayment', esc_html__( 'Payment is required.', 'wpforms' ) );
-		$strings['val_creditcard']      = wpforms_setting( 'validation-creditcard', esc_html__( 'Please enter a valid credit card number.', 'wpforms' ) );
-		$strings['val_post_max_size']   = wpforms_setting(
+		$strings['val_post_max_size'] = wpforms_setting(
 			'validation-post_max_size',
 			sprintf( /* translators: %1$s - total size of the selected files in megabytes, %2$s - allowed file upload limit in megabytes. */
 				esc_html__( 'The total size of the selected files %1$s MB exceeds the allowed limit %2$s MB.', 'wpforms' ),
@@ -1350,10 +1665,15 @@ class WPForms_Pro {
 	 * the user that it can be removed.
 	 *
 	 * @since 1.3.8
+	 *
+	 * @noinspection HtmlUnknownTarget
 	 */
 	public function conditional_logic_addon_notice() {
 
-		if ( file_exists( WP_PLUGIN_DIR . '/wpforms-conditional-logic/wpforms-conditional-logic.php' ) && ! defined( 'WPFORMS_DEBUG' ) ) {
+		if (
+			! defined( 'WPFORMS_DEBUG' ) &&
+			file_exists( WP_PLUGIN_DIR . '/wpforms-conditional-logic/wpforms-conditional-logic.php' )
+		) {
 			$notice = sprintf(
 				wp_kses( /* translators: %s - WPForms.com announcement page URL. */
 					__( 'Conditional logic functionality is now included in the core WPForms plugin! The WPForms Conditional Logic addon can be removed without affecting your forms. For more details <a href="%s" target="_blank" rel="noopener noreferrer">read our announcement</a>.', 'wpforms' ),
@@ -1368,7 +1688,7 @@ class WPForms_Pro {
 				'https://wpforms.com/announcing-wpforms-1-3-8/'
 			);
 
-			\WPForms\Admin\Notice::info( $notice );
+			Notice::info( $notice );
 		}
 	}
 
@@ -1393,6 +1713,7 @@ class WPForms_Pro {
 	 * @param string $text Footer text.
 	 *
 	 * @return string
+	 * @noinspection HtmlUnknownTarget
 	 */
 	public function form_notification_footer( $text ) {
 
@@ -1427,11 +1748,13 @@ class WPForms_Pro {
 	/**
 	 * Get the list of all custom tables starting with `wpforms_*`.
 	 *
-	 * @since 1.5.9
+	 * @since      1.5.9
+	 * @deprecated 1.6.3
 	 *
 	 * @return array List of table names.
 	 */
 	public function get_existing_custom_tables() {
+
 		_deprecated_function( __METHOD__, '1.6.3 of the WPForms plugin', 'wpforms()->get_existing_custom_tables()' );
 
 		return wpforms()->get_existing_custom_tables();
@@ -1441,77 +1764,44 @@ class WPForms_Pro {
 	 * Check if all custom tables exist.
 	 *
 	 * @since 1.5.9
+	 * @deprecated 1.9.0
 	 *
 	 * @return bool True if all custom tables exist. False if any is missing.
 	 */
-	public function custom_tables_exist() {
+	public function custom_tables_exist(): bool {
 
-		global $wpdb;
+		_deprecated_function( __METHOD__, '1.9.0 of the WPForms plugin', '\WPForms\Helpers\DB::custom_tables_exist()' );
 
-		$custom_tables = [
-			'wpforms_entries',
-			'wpforms_entry_fields',
-			'wpforms_entry_meta',
-		];
-
-		$tables = wpforms()->get_existing_custom_tables();
-
-		foreach ( $custom_tables as $table ) {
-			if ( ! in_array( $wpdb->prefix . $table, $tables, true ) ) {
-				return false;
-			}
-		}
-
-		return true;
+		return DB::custom_tables_exist();
 	}
 
 	/**
 	 * Create all Pro plugin custom DB tables.
 	 *
 	 * @since 1.5.9
-	 *
-	 * @param stdClass|bool $wpforms_install WPForms install object.
+	 * @since 1.9.0 Removed method argument.
+	 * @deprecated 1.9.0
 	 */
-	public function create_custom_tables( $wpforms_install = false ) {
+	public function create_custom_tables() {
 
-		if ( empty( $wpforms_install ) ) {
-			$wpforms_install               = new stdClass();
-			$wpforms_install->entry        = new WPForms_Entry_Handler();
-			$wpforms_install->entry_fields = new WPForms_Entry_Fields_Handler();
-			$wpforms_install->entry_meta   = new WPForms_Entry_Meta_Handler();
-		}
+		_deprecated_function( __METHOD__, '1.9.0 of the WPForms plugin', 'wpforms()->create_custom_tables()' );
 
-		// Entry tables.
-		$wpforms_install->entry->create_table();
-		$wpforms_install->entry_fields->create_table();
-		$wpforms_install->entry_meta->create_table();
+		DB::create_custom_tables();
 	}
 
 	/**
 	 * Re-create plugin custom tables if don't exist.
 	 *
 	 * @since 1.5.9
+	 * @deprecated 1.9.0
 	 *
-	 * @param \WPForms_Settings $wpforms_settings WPForms settings object.
+	 * @param WPForms_Settings $wpforms_settings WPForms settings object.
 	 */
-	public function reinstall_custom_tables( $wpforms_settings ) {
+	public function reinstall_custom_tables( WPForms_Settings $wpforms_settings ) {
 
-		if ( empty( $wpforms_settings->view ) ) {
-			return;
-		}
+		_deprecated_function( __METHOD__, '1.9.0 of the WPForms plugin', 'wpforms()->reinstall_custom_tables()' );
 
-		// Proceed on Settings plugin admin area page only.
-		if ( $wpforms_settings->view !== 'general' ) {
-			return;
-		}
-
-		// Proceed when no custom Pro tables exist.
-		if ( $this->custom_tables_exist() ) {
-			return;
-		}
-
-		// Install on a current site only.
-		$this->create_custom_tables();
+		wpforms()->reinstall_custom_tables( $wpforms_settings );
 	}
 
 	/**
@@ -1520,11 +1810,11 @@ class WPForms_Pro {
 	 * 1) auto-updates for Lite should work as-is, no changes to the default logic
 	 *    for a plugin that is hosted on WP.org
 	 * 2) auto-updates for Pro should be controlled using the default WP "Enable auto-updates" link.
-	 *    But when it's clicked - we enable it not only for Pro plugin (and updates are retrieved from our API
+	 *    But when it's clicked, we enable it not only for Pro plugin (and updates are retrieved from our API
 	 *    as it currently works), but for all of our addons too.
-	 * 3) auto-updates for addons can not be changed per addon. Instead of a link, we should display a plain text
+	 * 3) auto-updates for addons cannot be changed per addon. Instead of a link, we should display a plain text
 	 *    "Addon auto-updates controlled by WPForms".
-	 *    This way toggling auto-update for Pro will toggle that for ALL addons at once too.
+	 *    This way, toggling auto-update for Pro will toggle that for ALL addons at once too.
 	 *
 	 * @since 1.6.4
 	 */
@@ -1547,7 +1837,7 @@ class WPForms_Pro {
 	 *
 	 * @param string $html        The HTML of the plugin's auto-update column content, including
 	 *                            toggle auto-update action links and time to next update.
-	 * @param string $plugin_file Path to the plugin file relative to the plugins directory.
+	 * @param string $plugin_file Path to the plugin file relative to the plugins' directory.
 	 * @param array  $plugin_data An array of plugin data.
 	 *
 	 * @return string
@@ -1580,7 +1870,7 @@ class WPForms_Pro {
 
 	/**
 	 * Filter value, which is prepared for `auto_update_plugins` option before it's saved into DB.
-	 * We need to include OR exclude all WPForms addons, depends on what status has main WPForms plugin.
+	 * We need to include OR exclude all WPForms addons, depends on what status has the main WPForms plugin.
 	 *
 	 * @since 1.6.2.2
 	 * @since 1.6.4 Added dependency from the main WPForms plugin.
@@ -1591,15 +1881,17 @@ class WPForms_Pro {
 	 * @param int    $network_id  ID of the network.
 	 *
 	 * @return array
+	 * @noinspection PhpUnusedParameterInspection
+	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	public function update_auto_update_plugins_option( $plugins, $old_plugins, $option, $network_id ) {
+	public function update_auto_update_plugins_option( $plugins, $old_plugins, $option, $network_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
 		// No need to filter out our plugins if none were saved.
 		if ( empty( $plugins ) ) {
 			return $plugins;
 		}
 
-		// Protection from a malformed data.
+		// Protection from malformed data.
 		if ( ! is_array( $plugins ) ) {
 			return $plugins;
 		}
@@ -1612,8 +1904,9 @@ class WPForms_Pro {
 			return $plugins;
 		}
 
-		// Check whether auto-updates for main WPForms plugin is enabled.
-		// If so, enabled it for all WPForms plugins. Otherwise - disable for all WPForms plugins.
+		// Check whether auto-updates for the main WPForms plugin are enabled.
+		// If so, enable it for all WPForms plugins.
+		// Otherwise - disable for all WPForms plugins.
 		if ( in_array( 'wpforms/wpforms.php', $plugins, true ) ) {
 			$new_plugins = array_unique( array_merge( $plugins, $this->get_wpforms_plugins() ) );
 		} else {
@@ -1639,7 +1932,7 @@ class WPForms_Pro {
 	}
 
 	/**
-	 * Retrieve collection with WPForms plugins file paths.
+	 * Retrieve a collection with WPForms plugins file paths.
 	 *
 	 * @since 1.6.2.2
 	 *
@@ -1648,7 +1941,7 @@ class WPForms_Pro {
 	protected function get_wpforms_plugins() {
 
 		$plugins = [];
-		$license = wpforms()->license;
+		$license = wpforms()->obj( 'license' );
 
 		if ( empty( $license ) ) {
 			return $plugins;
@@ -1661,7 +1954,7 @@ class WPForms_Pro {
 		}
 
 		$plugins = array_map(
-			static function( $slug ) {
+			static function ( $slug ) {
 
 				return "{$slug}/{$slug}.php";
 			},

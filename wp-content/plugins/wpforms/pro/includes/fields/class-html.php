@@ -1,5 +1,14 @@
 <?php
 
+// phpcs:disable Generic.Commenting.DocComment.MissingShort
+/** @noinspection AutoloadingIssuesInspection */
+/** @noinspection PhpIllegalPsrClassPathInspection */
+// phpcs:enable Generic.Commenting.DocComment.MissingShort
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * HTML block text field.
  *
@@ -19,7 +28,7 @@ class WPForms_Field_HTML extends WPForms_Field {
 		$this->keywords = esc_html__( 'code', 'wpforms' );
 		$this->type     = 'html';
 		$this->icon     = 'fa-code';
-		$this->order    = 180;
+		$this->order    = 185;
 		$this->group    = 'fancy';
 
 		$this->hooks();
@@ -43,12 +52,13 @@ class WPForms_Field_HTML extends WPForms_Field {
 	 *
 	 * @since 1.5.7
 	 *
-	 * @param array $field Field settings.
+	 * @param array|mixed $field Field settings.
 	 *
 	 * @return array Field settings.
 	 */
-	public function field_new_default( $field ) {
+	public function field_new_default( $field ): array {
 
+		$field         = (array) $field;
 		$field['name'] = '';
 
 		return $field;
@@ -57,15 +67,19 @@ class WPForms_Field_HTML extends WPForms_Field {
 	/**
 	 * Define additional field properties.
 	 *
-	 * @since 1.3.7
+	 * @since        1.3.7
 	 *
-	 * @param array $properties Field properties.
-	 * @param array $field      Field settings.
-	 * @param array $form_data  Form data and settings.
+	 * @param array|mixed $properties Field properties.
+	 * @param array       $field      Field settings.
+	 * @param array       $form_data  Form data and settings.
 	 *
 	 * @return array
+	 * @noinspection PhpMissingParamTypeInspection
+	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function field_properties( $properties, $field, $form_data ) {
+	public function field_properties( $properties, $field, $form_data ): array {
+
+		$properties = (array) $properties;
 
 		// Remove input attributes references.
 		$properties['inputs']['primary']['attr'] = [];
@@ -77,23 +91,37 @@ class WPForms_Field_HTML extends WPForms_Field {
 	}
 
 	/**
-	 * @inheritdoc
-	 */
-	public function is_dynamic_population_allowed( $properties, $field ) {
+	 * Whether the current field can be populated dynamically.
+	 *
+	 * @since 1.5.1
+	 *
+	 * @param array $properties Field properties.
+	 * @param array $field      Field settings.
+	 *
+	 * @return bool
+ 	 */
+	public function is_dynamic_population_allowed( $properties, $field ): bool {
 
 		return false;
 	}
 
 	/**
-	 * @inheritdoc
-	 */
-	public function is_fallback_population_allowed( $properties, $field ) {
+	 * Whether the current field can be populated using a fallback.
+	 *
+	 * @since 1.5.1
+	 *
+	 * @param array $properties Field properties.
+	 * @param array $field      Field settings.
+	 *
+	 * @return bool
+ 	 */
+	public function is_fallback_population_allowed( $properties, $field ): bool {
 
 		return false;
 	}
 
 	/**
-	 * Extend from `parent::field_option()` in order to add `name` option.
+	 * Extend from `parent::field_option()` to add `name` option.
 	 *
 	 * @since 1.5.7
 	 *
@@ -102,9 +130,9 @@ class WPForms_Field_HTML extends WPForms_Field {
 	 * @param array  $args   Field preview arguments.
 	 * @param bool   $echo   Print or return the value. Print by default.
 	 *
-	 * @return mixed echo or return string
+	 * @return string|null
 	 */
-	public function field_option( $option, $field, $args = [], $echo = true ) {
+	public function field_option( $option, $field, $args = [], $echo = true ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.echoFound
 
 		if ( $option !== 'name' ) {
 			return parent::field_option( $option, $field, $args, $echo );
@@ -141,9 +169,11 @@ class WPForms_Field_HTML extends WPForms_Field {
 
 		if ( $echo ) {
 			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		} else {
-			return $output;
+
+			return null;
 		}
+
+		return $output;
 	}
 
 	/**
@@ -238,6 +268,8 @@ class WPForms_Field_HTML extends WPForms_Field {
 	 * @param array $field      Field data and settings.
 	 * @param array $deprecated Deprecated field attributes. Use field properties.
 	 * @param array $form_data  Form data and settings.
+	 *
+	 * @noinspection HtmlUnknownAttribute
 	 */
 	public function field_display( $field, $deprecated, $form_data ) {
 
@@ -248,7 +280,7 @@ class WPForms_Field_HTML extends WPForms_Field {
 		printf(
 			'<div %s>%s</div>',
 			wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ),
-			do_shortcode( $primary['code'] )
+			do_shortcode( force_balance_tags( $primary['code'] ) )
 		);
 	}
 

@@ -18,6 +18,8 @@ class Payment extends WPForms_DB {
 	 */
 	public function __construct() {
 
+		parent::__construct();
+
 		$this->table_name  = self::get_table_name();
 		$this->primary_key = 'id';
 		$this->type        = 'payment';
@@ -110,7 +112,7 @@ class Payment extends WPForms_DB {
 	 * @param array  $data Column data.
 	 * @param string $type Optional. Data type context.
 	 *
-	 * @return int ID for the newly inserted payment. 0 otherwise.
+	 * @return int ID for the newly inserted payment. Zero otherwise.
 	 */
 	public function add( $data, $type = '' ) {
 
@@ -138,11 +140,54 @@ class Payment extends WPForms_DB {
 	 */
 	public function get( $payment_id, $args = [] ) {
 
-		if ( ! $this->current_user_can( $payment_id, $args ) && wpforms()->get( 'access' )->init_allowed() ) {
+		if ( ! $this->current_user_can( $payment_id, $args ) && wpforms()->obj( 'access' )->init_allowed() ) {
 			return null;
 		}
 
-		return parent::get( $payment_id );
+		$payment = parent::get( $payment_id );
+
+		return $payment ? $this->cast_amounts_to_float( $payment ) : null;
+	}
+
+	/**
+	 * Retrieve a row based on column value.
+	 *
+	 * @since 1.8.7
+	 *
+	 * @param string     $column Column name.
+	 * @param int|string $value  Column value.
+	 *
+	 * @return object|null Database query result, object or null on failure.
+	 */
+	public function get_by( $column, $value ) {
+
+		$payment = parent::get_by( $column, $value );
+
+		return $payment ? $this->cast_amounts_to_float( $payment ) : null;
+	}
+
+	/**
+	 * Cast amounts to float in the given payment data object.
+	 *
+	 * @since 1.8.7
+	 *
+	 * @param object $payment Payment ID.
+	 *
+	 * @return object
+	 */
+	private function cast_amounts_to_float( $payment ) {
+
+		if ( empty( $payment ) || ! is_object( $payment ) ) {
+			return $payment;
+		}
+
+		// Amounts is stored in DB as decimal(26,8), but appear here as strings.
+		// Therefore, they should be cast to float to avoid further multi-time currency conversion.
+		$payment->subtotal_amount = $payment->subtotal_amount ? (float) $payment->subtotal_amount : 0;
+		$payment->discount_amount = $payment->discount_amount ? (float) $payment->discount_amount : 0;
+		$payment->total_amount    = $payment->total_amount ? (float) $payment->total_amount : 0;
+
+		return $payment;
 	}
 
 	/**
@@ -185,14 +230,14 @@ class Payment extends WPForms_DB {
 	 *
 	 * @return bool False if the payment and meta could not be deleted, true otherwise.
 	 */
-	public function delete( $payment_id = 0, $args = [] ) {
+	public function delete( $payment_id = 0, $args = [] ): bool {
 
 		if ( ! $this->current_user_can( $payment_id, $args ) ) {
 			return false;
 		}
 
 		$is_payment_deleted = parent::delete( $payment_id );
-		$is_meta_deleted    = wpforms()->get( 'payment_meta' )->delete_by( 'payment_id', $payment_id );
+		$is_meta_deleted    = wpforms()->obj( 'payment_meta' )->delete_by( 'payment_id', $payment_id );
 
 		return $is_payment_deleted && $is_meta_deleted;
 	}
@@ -217,7 +262,7 @@ class Payment extends WPForms_DB {
 		}
 
 		// Prepare query.
-		$query[] = "SELECT * FROM {$this->table_name} as p";
+		$query[] = "SELECT p.* FROM {$this->table_name} as p";
 
 		/**
 		 * Filter the query for get_payments method before the WHERE clause.
@@ -230,40 +275,32 @@ class Payment extends WPForms_DB {
 		 * @return string
 		 */
 		$query[] = apply_filters( 'wpforms_db_payments_payment_get_payments_query_before_where', '', $args );
-
 		$query[] = 'WHERE 1=1';
-
-		array_walk(
-			$args,
-			// Create `AND` conditions for some DB columns.
-			static function( $value, $key ) use ( &$query, $wpdb ) {
-				$allowed_cols = [
-					'form_id',
-					'entry_id',
-					'status',
-					'subscription_status',
-					'type',
-					'gateway',
-				];
-
-				if ( empty( $value ) || ! in_array( $key, $allowed_cols, true ) ) {
-					return;
-				}
-
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$query[] = is_numeric( $value ) ? $wpdb->prepare( "AND {$key} = %d", $value ) : $wpdb->prepare( "AND {$key} = %s", $value );
-			}
-		);
-
+		$query[] = $this->add_columns_where_conditions( $args );
 		$query[] = $this->add_secondary_where_conditions( $args );
 
+		/**
+		 * Extend the query for the get_payments method after the WHERE clause.
+		 *
+		 * This hook provides the flexibility to modify the SQL query by appending custom conditions
+		 * right after the WHERE clause.
+		 *
+		 * @since 1.8.4
+		 *
+		 * @param string $where After the WHERE clause in the database query.
+		 * @param array  $args  Query arguments.
+		 *
+		 * @return string
+		 */
+		$query[] = apply_filters( 'wpforms_db_payments_payment_get_payments_query_after_where', '', $args );
+
 		// Order.
-		$query[] = sprintf( 'ORDER BY p.%s', sanitize_sql_orderby( "{$args['orderby']} {$args['order']}" ) );
+		$query[] = sprintf( 'ORDER BY %s', sanitize_sql_orderby( "{$args['orderby']} {$args['order']}" ) );
 
 		// Limit.
 		$query[] = $wpdb->prepare( 'LIMIT %d, %d', $args['offset'], $args['number'] );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$result = $wpdb->get_results( implode( ' ', $query ), ARRAY_A );
 
 		// Get results.
@@ -282,7 +319,7 @@ class Payment extends WPForms_DB {
 		$charset_collate = $wpdb->get_charset_collate();
 
 		/**
-		 * To avoid any possible issues during migration from entries to payments table,
+		 * To avoid any possible issues during migration from entries to payments' table,
 		 * all data types are preserved.
 		 *
 		 * Note: there must be two spaces between the words PRIMARY KEY and the definition of primary key.
@@ -326,7 +363,7 @@ class Payment extends WPForms_DB {
 	}
 
 	/**
-	 * Check if current user has capabilities to manage payments.
+	 * Check if the current user has capabilities to manage payments.
 	 *
 	 * @since 1.8.2
 	 *
@@ -334,6 +371,7 @@ class Payment extends WPForms_DB {
 	 * @param array $args       Additional arguments.
 	 *
 	 * @return bool
+	 * @noinspection IfReturnReturnSimplificationInspection
 	 */
 	private function current_user_can( $payment_id, $args = [] ) {
 
@@ -348,6 +386,71 @@ class Payment extends WPForms_DB {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Construct where clauses for selected columns.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param array $args Query arguments.
+	 *
+	 * @return string
+	 */
+	public function add_columns_where_conditions( $args = [] ) {
+
+		// Allowed columns for filtering.
+		$allowed_cols = [
+			'form_id',
+			'entry_id',
+			'status',
+			'subscription_status',
+			'type',
+			'gateway',
+		];
+
+		$where = '';
+
+		// Determine if this is a table query.
+		$is_table_query   = ! empty( $args['table_query'] );
+		$keys_to_validate = [ 'status', 'subscription_status', 'type', 'gateway' ];
+
+		foreach ( $args as $key => $value ) {
+			if ( empty( $value ) || ! in_array( $key, $allowed_cols, true ) ) {
+				continue;
+			}
+
+			// Explode values if needed.
+			$values = explode( '|', $value );
+
+			// Run some keys through the "ValueValidator" class to make sure they are valid.
+			if ( in_array( $key, $keys_to_validate, true ) ) {
+				$values = array_filter(
+					$values,
+					static function ( $v ) use ( $key ) {
+
+						return ValueValidator::is_valid( $v, $key );
+					}
+				);
+			}
+
+			// Skip if no valid values found.
+			if ( empty( $values ) ) {
+				continue;
+			}
+
+			// Merge "Partially Refunded" status with "Refunded" status.
+			if ( $is_table_query && $key === 'status' && in_array( 'refunded', $values, true ) ) {
+				$values[] = 'partrefund';
+			}
+
+			$placeholders = wpforms_wpdb_prepare_in( $values );
+
+			// Prepare and add to WHERE clause.
+			$where .= " AND {$key} IN ({$placeholders})";
+		}
+
+		return $where;
 	}
 
 	/**

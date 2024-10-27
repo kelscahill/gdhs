@@ -24,7 +24,7 @@ class WidgetModern extends Widget {
 	 *
 	 * @var array
 	 */
-	private $size_options;
+	protected $size_options;
 
 	/**
 	 * Instance of CSSVars class.
@@ -33,7 +33,7 @@ class WidgetModern extends Widget {
 	 *
 	 * @var CSSVars
 	 */
-	private $css_vars_obj;
+	protected $css_vars_obj;
 
 	/**
 	 * Widget constructor.
@@ -65,7 +65,7 @@ class WidgetModern extends Widget {
 			'medium' => esc_html__( 'Medium', 'wpforms-lite' ),
 			'large'  => esc_html__( 'Large', 'wpforms-lite' ),
 		];
-		$this->css_vars_obj = wpforms()->get( 'css_vars' );
+		$this->css_vars_obj = wpforms()->obj( 'css_vars' );
 	}
 
 	/**
@@ -105,7 +105,7 @@ class WidgetModern extends Widget {
 	 *
 	 * @noinspection PhpUndefinedMethodInspection
 	 */
-	private function add_field_style_controls() {
+	protected function add_field_style_controls() {
 
 		$this->start_controls_section(
 			'field_styles',
@@ -390,7 +390,8 @@ class WidgetModern extends Widget {
 		static $is_root_vars_displayed = false;
 		$widget_id                     = $this->get_id();
 
-		if ( ! $is_root_vars_displayed ) {
+		// Do not output root CSS variables more than once or if it is a library template preview.
+		if ( ! $is_root_vars_displayed && ! isset( $_GET['elementor_library'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$this->css_vars_obj->output_root( true );
 			$is_root_vars_displayed = true;
 		}

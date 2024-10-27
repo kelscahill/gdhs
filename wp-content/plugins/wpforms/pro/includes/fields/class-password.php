@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Password field.
  *
@@ -45,7 +49,7 @@ class WPForms_Field_Password extends WPForms_Field {
 		add_action( 'wpforms_frontend_js', [ $this, 'enqueue_frontend_js' ] );
 
 		// Add frontend strings.
-		add_action( 'wpforms_frontend_strings', [ $this, 'add_frontend_strings' ] );
+		add_filter( 'wpforms_frontend_strings', [ $this, 'add_frontend_strings' ] );
 
 		add_action( 'wpforms_pro_fields_entry_preview_get_field_value_password_field', [ $this, 'modify_entry_preview_value' ], 10, 3 );
 
@@ -79,7 +83,7 @@ class WPForms_Field_Password extends WPForms_Field {
 		}
 
 		$form_id  = absint( $form_data['id'] );
-		$field_id = absint( $field['id'] );
+		$field_id = wpforms_validate_field_id( $field['id'] );
 
 		// Password confirmation setting enabled.
 		$props      = [
@@ -421,26 +425,22 @@ class WPForms_Field_Password extends WPForms_Field {
 
 		// Standard password field.
 		if ( ! $confirmation ) {
-
 			// Primary field.
 			printf(
 				'<input type="password" %s %s>',
 				wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ),
-				$primary['required']
+				esc_attr( $primary['required'] )
 			);
-
 		} else { // Confirmation password field configuration.
-
 			// Row wrapper.
 			echo '<div class="wpforms-field-row wpforms-field-' . sanitize_html_class( $field['size'] ) . '">';
-
 				// Primary field.
 				echo '<div ' . wpforms_html_attributes( false, $primary['block'] ) . '>';
 					$this->field_display_sublabel( 'primary', 'before', $field );
 					printf(
 						'<input type="password" %s %s>',
 						wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ),
-						$primary['required']
+						esc_attr( $primary['required'] )
 					);
 					$this->field_display_sublabel( 'primary', 'after', $field );
 					$this->field_display_error( 'primary', $field );
@@ -452,15 +452,13 @@ class WPForms_Field_Password extends WPForms_Field {
 					printf(
 						'<input type="password" %s %s>',
 						wpforms_html_attributes( $secondary['id'], $secondary['class'], $secondary['data'], $secondary['attr'] ),
-						$secondary['required']
+						esc_attr( $secondary['required'] )
 					);
 					$this->field_display_sublabel( 'secondary', 'after', $field );
 					$this->field_display_error( 'secondary', $field );
 				echo '</div>';
-
 			echo '</div>';
-
-		} // End if().
+		}
 	}
 
 	/**
@@ -468,9 +466,9 @@ class WPForms_Field_Password extends WPForms_Field {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param int   $field_id     Field ID.
-	 * @param array $field_submit Submitted field value.
-	 * @param array $form_data    Form data and settings.
+	 * @param int          $field_id     Field ID.
+	 * @param array|string $field_submit Submitted field value (raw data).
+	 * @param array        $form_data    Form data and settings.
 	 */
 	public function validate( $field_id, $field_submit, $form_data ) {
 
@@ -482,24 +480,23 @@ class WPForms_Field_Password extends WPForms_Field {
 		if ( empty( $fields[ $field_id ]['confirmation'] ) ) {
 
 			// Required check.
-			if ( empty( $field_submit ) && ! empty( $fields[ $field_id ]['required'] ) ) {
-				wpforms()->process->errors[ $form_id ][ $field_id ] = $required;
+			if ( ! empty( $fields[ $field_id ]['required'] ) && wpforms_is_empty_string( $field_submit ) ) {
+				wpforms()->obj( 'process' )->errors[ $form_id ][ $field_id ] = $required;
 			}
 		} else {
 
-			// Required check.
-			if ( empty( $field_submit['primary'] ) && ! empty( $fields[ $field_id ]['required'] ) ) {
-				wpforms()->process->errors[ $form_id ][ $field_id ]['primary'] = $required;
+			if ( ! empty( $fields[ $field_id ]['required'] ) && isset( $field_submit['primary'] ) && wpforms_is_empty_string( $field_submit['primary'] ) ) {
+				wpforms()->obj( 'process' )->errors[ $form_id ][ $field_id ]['primary'] = $required;
 			}
 
 			// Required check, secondary confirmation field.
-			if ( empty( $field_submit['secondary'] ) && ! empty( $fields[ $field_id ]['required'] ) ) {
-				wpforms()->process->errors[ $form_id ][ $field_id ]['secondary'] = $required;
+			if ( ! empty( $fields[ $field_id ]['required'] ) && isset( $field_submit['secondary'] ) && wpforms_is_empty_string( $field_submit['secondary'] ) ) {
+				wpforms()->obj( 'process' )->errors[ $form_id ][ $field_id ]['secondary'] = $required;
 			}
 
 			// Fields need to match.
 			if ( $field_submit['primary'] !== $field_submit['secondary'] ) {
-				wpforms()->process->errors[ $form_id ][ $field_id ]['secondary'] = esc_html__( 'Field values do not match.', 'wpforms' );
+				wpforms()->obj( 'process' )->errors[ $form_id ][ $field_id ]['secondary'] = esc_html__( 'Field values do not match.', 'wpforms' );
 			}
 		}
 
@@ -510,13 +507,13 @@ class WPForms_Field_Password extends WPForms_Field {
 			! $this->is_empty_not_required_field( $field_id, $field_submit, $fields ) // Don't check the password strength for empty fields which is set as not required.
 		) {
 
-			require_once WPFORMS_PLUGIN_DIR . 'libs/bjeavons/zxcvbn-php/autoload.php';
+			require_once WPFORMS_PLUGIN_DIR . 'pro/libs/bjeavons/zxcvbn-php/autoload.php';
 
 			$password_value = empty( $fields[ $field_id ]['confirmation'] ) ? $field_submit : $field_submit['primary'];
 			$strength       = ( new \ZxcvbnPhp\Zxcvbn() )->passwordStrength( $password_value );
 
 			if ( isset( $strength['score'] ) && $strength['score'] < (int) $fields[ $field_id ]['password-strength-level'] ) {
-				wpforms()->process->errors[ $form_id ][ $field_id ] = $this->strength_error_message();
+				wpforms()->obj( 'process' )->errors[ $form_id ][ $field_id ] = $this->strength_error_message();
 			}
 		}
 	}
@@ -526,27 +523,28 @@ class WPForms_Field_Password extends WPForms_Field {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param int   $field_id     Field ID.
-	 * @param array $field_submit Submitted field value.
-	 * @param array $form_data    Form data and settings.
+	 * @param int          $field_id     Field ID.
+	 * @param array|string $field_submit Submitted field value.
+	 * @param array        $form_data    Form data and settings.
 	 */
 	public function format( $field_id, $field_submit, $form_data ) {
 
 		// Define data.
 		if ( is_array( $field_submit ) ) {
-			$value = ! empty( $field_submit['primary'] ) ? $field_submit['primary'] : '';
+			$value = isset( $field_submit['primary'] ) && ! wpforms_is_empty_string( $field_submit['primary'] ) ? $field_submit['primary'] : '';
 		} else {
-			$value = ! empty( $field_submit ) ? $field_submit : '';
+			$value = ! wpforms_is_empty_string( $field_submit ) ? $field_submit : '';
 		}
 
-		$name = ! empty( $form_data['fields'][ $field_id ] ['label'] ) ? $form_data['fields'][ $field_id ]['label'] : '';
+		$name = ! wpforms_is_empty_string( $form_data['fields'][ $field_id ] ['label'] ) ? $form_data['fields'][ $field_id ]['label'] : '';
 
 		// Set final field details.
-		wpforms()->process->fields[ $field_id ] = [
-			'name'  => sanitize_text_field( $name ),
-			'value' => sanitize_text_field( $value ),
-			'id'    => absint( $field_id ),
-			'type'  => $this->type,
+		wpforms()->obj( 'process' )->fields[ $field_id ] = [
+			'name'      => sanitize_text_field( $name ),
+			'value'     => sanitize_text_field( $value ),
+			'value_raw' => $value, // This is necessary for the login form to work correctly, it will be deleted before saving the entry.
+			'id'        => wpforms_validate_field_id( $field_id ),
+			'type'      => $this->type,
 		];
 	}
 
@@ -559,7 +557,7 @@ class WPForms_Field_Password extends WPForms_Field {
 	 */
 	public function enqueue_frontend_css( $forms ) {
 
-		if ( ! $this->strength_enabled( $forms ) && ! wpforms()->frontend->assets_global() ) {
+		if ( ! $this->strength_enabled( $forms ) && ! wpforms()->obj( 'frontend' )->assets_global() ) {
 			return;
 		}
 
@@ -582,20 +580,19 @@ class WPForms_Field_Password extends WPForms_Field {
 	 */
 	public function enqueue_frontend_js( $forms ) {
 
-		if ( ! $this->strength_enabled( $forms ) && ! wpforms()->frontend->assets_global() ) {
+		if ( ! $this->strength_enabled( $forms ) && ! wpforms()->obj( 'frontend' )->assets_global() ) {
 			return;
 		}
 
-		$min = \wpforms_get_min_suffix();
+		$min = wpforms_get_min_suffix();
 
 		wp_enqueue_script(
 			'wpforms-password-field',
-			WPFORMS_PLUGIN_URL . "assets/pro/js/fields/password{$min}.js",
+			WPFORMS_PLUGIN_URL . "assets/pro/js/frontend/fields/password{$min}.js",
 			[ 'jquery', 'password-strength-meter' ],
 			WPFORMS_VERSION,
-			true
+			$this->load_script_in_footer()
 		);
-
 	}
 
 	/**

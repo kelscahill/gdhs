@@ -114,6 +114,7 @@ abstract class Captcha {
 		$provider_name = $this->settings['provider'];
 		$handle        = "wpforms-settings-{$provider_name}";
 
+		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_script( $handle, $api_url, [ 'jquery' ], null, true );
 		wp_add_inline_script( $handle, $this->get_inline_script() );
 	}
@@ -189,6 +190,8 @@ abstract class Captcha {
 	 */
 	public function get_field_desc() {
 
-		return wpforms_render( 'admin/settings/' . static::$slug . '-description' );
+		$content = wpforms_render( 'admin/settings/' . static::$slug . '-description' );
+
+		return wpforms_render( 'admin/settings/specific-note', [ 'content' => $content ], true );
 	}
 }

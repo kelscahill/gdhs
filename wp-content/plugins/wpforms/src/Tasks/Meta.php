@@ -39,6 +39,8 @@ class Meta extends WPForms_DB {
 	 */
 	public function __construct() {
 
+		parent::__construct();
+
 		$this->table_name = self::get_table_name();
 	}
 
@@ -92,6 +94,8 @@ class Meta extends WPForms_DB {
 	 * Used in migration and on plugin activation.
 	 *
 	 * @since 1.5.9
+	 *
+	 * @noinspection UnusedFunctionResultInspection
 	 */
 	public function create_table() {
 
@@ -99,16 +103,9 @@ class Meta extends WPForms_DB {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-		$charset_collate = '';
+		$charset_collate = $wpdb->get_charset_collate();
 
-		if ( ! empty( $wpdb->charset ) ) {
-			$charset_collate .= "DEFAULT CHARACTER SET $wpdb->charset";
-		}
-		if ( ! empty( $wpdb->collate ) ) {
-			$charset_collate .= " COLLATE $wpdb->collate";
-		}
-
-		$sql = "CREATE TABLE IF NOT EXISTS $this->table_name (
+		$sql = "CREATE TABLE $this->table_name (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			action varchar(255) NOT NULL,
 			data longtext NOT NULL,
@@ -142,7 +139,7 @@ class Meta extends WPForms_DB {
 		$action = sanitize_key( $action );
 		$date   = gmdate( 'Y-m-d H:i:s', time() - (int) $interval );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (int) $wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM $table WHERE action = %s AND date < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -160,7 +157,7 @@ class Meta extends WPForms_DB {
 	 * @param array  $data Column data.
 	 * @param string $type Optional. Data type context.
 	 *
-	 * @return int ID for the newly inserted record. 0 otherwise.
+	 * @return int ID for the newly inserted record. Zero otherwise.
 	 */
 	public function add( $data, $type = '' ) {
 
@@ -199,11 +196,10 @@ class Meta extends WPForms_DB {
 		}
 
 		/*
-		 * We are encoding the string representation of all the data
-		 * to make sure that nothing can harm the database.
+		 * We are encoding the string representation of all the data to make sure that nothing can harm the database.
 		 * This is not an encryption, and we need this data later "as is",
-		 * so we are using one of the fastest way to do that.
-		 * This data is removed from DB on a daily basis.
+		 * so we are using one of the fastest ways to do that.
+		 * This data is removed from DB daily.
 		 */
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		return base64_encode( $string );
@@ -258,7 +254,8 @@ class Meta extends WPForms_DB {
 		$data   = $this->prepare_data( array_values( $params ) );
 
 		return absint(
-			$wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id FROM $table WHERE action = %s AND data = %s LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$action,

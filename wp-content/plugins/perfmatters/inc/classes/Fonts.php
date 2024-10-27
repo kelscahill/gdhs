@@ -10,22 +10,16 @@ class Fonts
     //initialize fonts
     public static function init() {
         if(empty(Config::$options['fonts']['disable_google_fonts'])) {
-            add_action('wp', array('Perfmatters\Fonts', 'queue'));
-        }
-    }
 
-    //queue functions
-    public static function queue()
-    {
+            //add display swap to the buffer
+            if(!empty(Config::$options['fonts']['display_swap'])) {
+                add_action('perfmatters_output_buffer_template_redirect', array('Perfmatters\Fonts', 'display_swap'));
+            }
 
-        //add display swap to the buffer
-        if(!empty(Config::$options['fonts']['display_swap'])) {
-            add_action('perfmatters_output_buffer_template_redirect', array('Perfmatters\Fonts', 'display_swap'));
-        }
-
-        //add local google fonts to the buffer
-        if(!empty(Config::$options['fonts']['local_google_fonts'])) {
-            add_action('perfmatters_output_buffer_template_redirect', array('Perfmatters\Fonts', 'local_google_fonts'));
+            //add local google fonts to the buffer
+            if(!empty(Config::$options['fonts']['local_google_fonts'])) {
+                add_action('perfmatters_output_buffer_template_redirect', array('Perfmatters\Fonts', 'local_google_fonts'));
+            }
         }
     }
 
@@ -95,12 +89,6 @@ class Fonts
 
                 //create font tag with new url
                 $new_google_font = str_replace($google_font[2], $file_url, $google_font[0]);
-
-                //async
-                if(!empty(Config::$options['fonts']['async'])) {
-                    $new_google_font = preg_replace(array('#media=([\'"]).+?\1#', '#onload=([\'"]).+?\1#'), '', $new_google_font);
-                    $new_google_font = str_replace('<link', '<link media="print" onload="this.media=\'all\';this.onload=null;"', $new_google_font);
-                }
 
                 //replace original font tag
                 $html = str_replace($google_font[0], $new_google_font, $html);

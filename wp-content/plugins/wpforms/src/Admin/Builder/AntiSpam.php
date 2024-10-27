@@ -60,11 +60,12 @@ class AntiSpam {
 		$antispam = wpforms_panel_field(
 			'toggle',
 			'settings',
-			'antispam',
+			'antispam_v3',
 			$this->form_data,
-			__( 'Enable anti-spam protection', 'wpforms-lite' ),
+			__( 'Enable modern anti-spam protection', 'wpforms-lite' ),
 			[
-				'tooltip' => __( 'Turn on invisible spam protection.', 'wpforms-lite' ),
+				'value'   => (int) ! empty( $this->form_data['settings']['antispam_v3'] ),
+				'tooltip' => __( 'Turn on invisible modern spam protection.', 'wpforms-lite' ),
 			],
 			false
 		);
@@ -77,7 +78,20 @@ class AntiSpam {
 			]
 		);
 
-		if ( ! empty( $this->form_data['settings']['honeypot'] ) ) {
+		if ( ! empty( $this->form_data['settings']['antispam'] ) && empty( $this->form_data['settings']['antispam_v3'] ) ) {
+			wpforms_panel_field(
+				'toggle',
+				'settings',
+				'antispam',
+				$this->form_data,
+				__( 'Enable anti-spam protection', 'wpforms-lite' ),
+				[
+					'tooltip' => __( 'Turn on invisible spam protection.', 'wpforms-lite' ),
+				]
+			);
+		}
+
+		if ( ! empty( $this->form_data['settings']['honeypot'] ) && empty( $this->form_data['settings']['antispam_v3'] ) ) {
 			wpforms_panel_field(
 				'toggle',
 				'settings',
@@ -116,21 +130,6 @@ class AntiSpam {
 	}
 
 	/**
-	 * Check if it is a new setup.
-	 *
-	 * @since 1.8.3
-	 *
-	 * @return bool
-	 */
-	private function is_new_setup() {
-
-		$form_counts = wp_count_posts( 'wpforms' );
-		$form_counts = array_filter( (array) $form_counts );
-
-		return empty( $form_counts );
-	}
-
-	/**
 	 * Output the *CAPTCHA settings.
 	 *
 	 * @since 1.7.8
@@ -139,12 +138,19 @@ class AntiSpam {
 
 		$captcha_settings = wpforms_get_captcha_settings();
 
+		if ( empty( $captcha_settings['provider'] ) || $captcha_settings['provider'] === 'none' ) {
+			return;
+		}
+
 		if (
-			empty( $captcha_settings['provider'] ) ||
-			$captcha_settings['provider'] === 'none' ||
-			empty( $captcha_settings['site_key'] ) ||
-			empty( $captcha_settings['secret_key'] )
+			$captcha_settings['provider'] !== 'hcaptcha' && (
+				empty( $captcha_settings['site_key'] ) || empty( $captcha_settings['secret_key'] )
+			)
 		) {
+			return;
+		}
+
+		if ( $captcha_settings['provider'] === 'hcaptcha' && empty( $captcha_settings['site_key'] ) ) {
 			return;
 		}
 
@@ -195,10 +201,11 @@ class AntiSpam {
 	 */
 	public function store_spam_entries_settings() {
 
-		// Enable storing entries by default for new setup.
-		$store_spam_entries = ! empty( $this->form_data['settings']['store_spam_entries'] )
-			? $this->form_data['settings']['store_spam_entries']
-			: $this->is_new_setup();
+		if ( ! wpforms()->is_pro() ) {
+			return;
+		}
+
+		$disable_entries = $this->form_data['settings']['disable_entries'] ?? 0;
 
 		wpforms_panel_field(
 			'toggle',
@@ -207,7 +214,8 @@ class AntiSpam {
 			$this->form_data,
 			__( 'Store spam entries in the database', 'wpforms-lite' ),
 			[
-				'value' => $store_spam_entries,
+				'value' => $this->form_data['settings']['store_spam_entries'] ?? 0,
+				'class' => $disable_entries ? 'wpforms-hidden' : '',
 			]
 		);
 	}
@@ -244,7 +252,7 @@ class AntiSpam {
 				'subsection' => 'time_limit',
 				'type'       => 'number',
 				'min'        => 1,
-				'default'    => 3,
+				'default'    => 2,
 				'after'      => sprintf( '<span class="wpforms-panel-field-after">%s</span>', __( 'seconds', 'wpforms-lite' ) ),
 			]
 		);

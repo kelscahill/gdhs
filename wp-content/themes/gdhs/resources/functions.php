@@ -109,11 +109,12 @@ function my_acf_json_save_point($path) {
 add_filter('acf/settings/save_json', 'my_acf_json_save_point');
 
 /*
- * Event start date column - Add custom column to events post type
+ * Event date columns - Add custom column to events post type
  */
 function add_acf_columns($columns) {
   return array_merge($columns, array (
-      'event_start_date' => 'Event Start Date'
+    'event_start_date' => 'Event Start Date',
+    'event_end_date' => 'Event End Date'
   ));
 }
 add_filter('manage_events_posts_columns', 'add_acf_columns');
@@ -123,32 +124,47 @@ add_filter('manage_events_posts_columns', 'add_acf_columns');
  */
 function display_acf_column($column, $post_id) {
   if ($column === 'event_start_date') {
-      $event_start_date = get_field('event_start_date', $post_id);
-      if ($event_start_date) {
-          echo date("F j, Y g:i a", strtotime($event_start_date));
-      } else {
-          echo '—';
-      }
+    $event_start_date = get_field('event_start_date', $post_id);
+    if ($event_start_date) {
+      echo date("F j, Y g:i a", strtotime($event_start_date));
+    } else {
+      echo '—';
+    }
+  }
+  if ($column === 'event_end_date') {
+    $event_end_date = get_field('event_end_date', $post_id);
+    if ($event_end_date) {
+      echo date("F j, Y g:i a", strtotime($event_end_date));
+    } else {
+      echo '—';
+    }
   }
 }
 add_action('manage_events_posts_custom_column', 'display_acf_column', 10, 2);
 
 /*
- * Event start date column - Make it sortable
+ * Event start date column - Make the custom column sortable
  */
 function make_acf_column_sortable($columns) {
   $columns['event_start_date'] = 'event_start_date';
+  $columns['event_end_date'] = 'event_end_date';
   return $columns;
 }
 add_filter('manage_edit-events_sortable_columns', 'make_acf_column_sortable');
 
-// Handle custom column sorting
+/*
+ * Event start date column - Handle custom column sorting
+ */
 function handle_acf_column_sorting($query) {
   if ($query->is_main_query() && ( $orderby = $query->get('orderby') )) {
-      if ($orderby === 'event_start_date') {
-          $query->set('meta_key', 'event_start_date');
-          $query->set('orderby', 'meta_value');
-      }
+    if ($orderby === 'event_start_date') {
+      $query->set('meta_key', 'event_start_date');
+      $query->set('orderby', 'meta_value');
+    }
+    if ($orderby === 'event_end_date') {
+      $query->set('meta_key', 'event_end_date');
+      $query->set('orderby', 'meta_value');
+    }
   }
 }
 add_action('pre_get_posts', 'handle_acf_column_sorting');

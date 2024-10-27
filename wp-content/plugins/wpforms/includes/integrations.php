@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Register and setup WPForms as a Visual Composer element.
  *
@@ -11,7 +15,7 @@ function wpforms_visual_composer_shortcode() {
 		return;
 	}
 
-	$wpf = wpforms()->form->get(
+	$wpf = wpforms()->obj( 'form' )->get(
 		'',
 		[
 			'orderby' => 'title',

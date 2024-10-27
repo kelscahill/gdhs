@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Section Divider field.
  *
@@ -128,6 +132,9 @@ class WPForms_Field_Divider extends WPForms_Field {
 		// Define data.
 		$primary = $field['properties']['inputs']['primary'];
 		$label   = $field['properties']['label'];
+
+		// H3 element should not have name attribute.
+		unset( $primary['attr']['name'] );
 
 		// Primary field.
 		if ( ! empty( $label['value'] ) ) {

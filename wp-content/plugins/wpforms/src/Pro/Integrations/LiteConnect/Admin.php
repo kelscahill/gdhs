@@ -178,10 +178,10 @@ final class Admin {
 			// Do not display an admin notice if.
 			if (
 				// license key is not active.
-				! wpforms()->get( 'license' )->is_active() ||
+				! wpforms()->obj( 'license' )->is_active() ||
 
 				// AS engine is not ready to use.
-				! wpforms()->get( 'tasks' )->is_usable() ||
+				! wpforms()->obj( 'tasks' )->is_usable() ||
 
 				// there are no new entries are available to import.
 				(int) $this->new_entries_count <= 0
@@ -487,12 +487,12 @@ final class Admin {
 		}
 
 		// Do not display the import notice if the license key is not active.
-		if ( ! wpforms()->get( 'license' )->is_active() ) {
+		if ( ! wpforms()->obj( 'license' )->is_active() ) {
 			return $content;
 		}
 
 		// Do not display the import notice if AS engine is not ready to use.
-		if ( ! wpforms()->get( 'tasks' )->is_usable() ) {
+		if ( ! wpforms()->obj( 'tasks' )->is_usable() ) {
 			return $content;
 		}
 
@@ -540,7 +540,7 @@ final class Admin {
 			$string .= ' ' . sprintf(
 				/* translators: %s - time when Lite Connect was enabled. */
 				esc_html__( 'since you enabled Lite Connect on %s', 'wpforms' ),
-				esc_html( date_i18n( 'M j, Y', $enabled_since + get_option( 'gmt_offset' ) * 3600 ) )
+				esc_html( wpforms_date_format( $enabled_since, '', true ) )
 			);
 		}
 

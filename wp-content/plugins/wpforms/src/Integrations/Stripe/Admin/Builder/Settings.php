@@ -185,7 +185,7 @@ class Settings {
 			return [];
 		}
 
-		$form_data = wpforms()->get( 'form' )->get(
+		$form_data = wpforms()->obj( 'form' )->get(
 			$form_id,
 			[
 				'content_only' => true,
@@ -211,10 +211,13 @@ class Settings {
 	 * Get recurring payments conditional logic for the Stripe settings panel.
 	 *
 	 * @since 1.8.2
+	 * @since 1.8.4 Added Plan ID parameter.
+	 *
+	 * @param string $plan_id Plan ID.
 	 *
 	 * @return string
 	 */
-	private function recurring_payments_conditional_logic_section() {
+	private function recurring_payments_conditional_logic_section( $plan_id ) {
 
 		return $this->get_conditional_logic_toggle( true );
 	}
@@ -259,7 +262,7 @@ class Settings {
 	 */
 	private function get_conditional_logic_section_data() {
 
-		$addon = wpforms()->get( 'addons' )->get_addon( 'stripe' );
+		$addon = wpforms()->obj( 'addons' )->get_addon( 'stripe' );
 
 		if (
 			empty( $addon ) ||

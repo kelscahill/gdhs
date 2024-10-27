@@ -52,24 +52,13 @@ abstract class PageIntegrations implements PageIntegrationsInterface {
 	 */
 	public function display( $active, $settings ) {
 
-		$connected = ! empty( $active[ $this->core->slug ] );
-		$accounts  = ! empty( $settings[ $this->core->slug ] ) ? $settings[ $this->core->slug ] : [];
-		$class     = $connected && $accounts ? 'connected' : '';
-		$arrow     = 'right';
-
-		// This lets us highlight a specific service by a special link.
-		if ( ! empty( $_GET['wpforms-integration'] ) ) { //phpcs:ignore
-			if ( $this->core->slug === $_GET['wpforms-integration'] ) { //phpcs:ignore
-				$class .= ' focus-in';
-				$arrow  = 'down';
-			} else {
-				$class .= ' focus-out';
-			}
-		}
+		$accounts = ! empty( $settings[ $this->core->slug ] ) ? $settings[ $this->core->slug ] : [];
+		$classes  = $this->get_provider_classes( $active, $settings );
+		$arrow    = in_array( 'focus-in', $classes, true ) ? 'down' : 'right';
 		?>
 
 		<div id="wpforms-integration-<?php echo esc_attr( $this->core->slug ); ?>"
-			class="wpforms-settings-provider wpforms-clear <?php echo esc_attr( $this->core->slug ); ?> <?php echo esc_attr( $class ); ?>">
+			class="wpforms-settings-provider wpforms-clear <?php echo esc_attr( $this->core->slug ); ?> <?php echo wpforms_sanitize_classes( $classes, true ); ?>">
 
 			<div class="wpforms-settings-provider-header wpforms-clear" data-provider="<?php echo esc_attr( $this->core->slug ); ?>">
 
@@ -88,7 +77,10 @@ abstract class PageIntegrations implements PageIntegrationsInterface {
 						);
 						?>
 					</p>
-					<span class="connected-indicator green"><i class="fa fa-check-circle-o"></i>&nbsp;<?php esc_html_e( 'Connected', 'wpforms-lite' ); ?></span>
+					<span class="connected-indicator green">
+						<i class="fa fa-check-circle-o"></i>
+						<span><?php esc_html_e( 'Connected', 'wpforms-lite' ); ?></span>
+					</span>
 				</div>
 
 			</div>
@@ -121,6 +113,35 @@ abstract class PageIntegrations implements PageIntegrationsInterface {
 	}
 
 	/**
+	 * Get provider classes.
+	 *
+	 * @since 1.8.6
+	 *
+	 * @param array $active   Array of activated providers addons.
+	 * @param array $settings Providers options.
+	 */
+	protected function get_provider_classes( $active, $settings ) {
+
+		$connected = ! empty( $active[ $this->core->slug ] );
+		$accounts  = ! empty( $settings[ $this->core->slug ] ) ? $settings[ $this->core->slug ] : [];
+		$classes   = [];
+
+		if ( $connected && $accounts ) {
+			$classes[] = 'connected';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $_GET['wpforms-integration'] ) ) {
+			return $classes;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$classes[] = $this->core->slug === $_GET['wpforms-integration'] ? 'focus-in' : 'focus-out';
+
+		return $classes;
+	}
+
+	/**
 	 * Display connected account.
 	 *
 	 * @since 1.7.5
@@ -131,10 +152,10 @@ abstract class PageIntegrations implements PageIntegrationsInterface {
 	protected function display_connected_account( $account_id, $account ) {
 
 		$account_connected = ! empty( $account['date'] )
-			? wpforms_date_format( $account['date'] )
+			? wpforms_date_format( $account['date'], '', true )
 			: esc_html__( 'N/A', 'wpforms-lite' );
 
-		echo '<li class="wpforms-clear">';
+		echo '<li>';
 
 		/**
 		 * Allow adding markup before connected account item.
@@ -149,9 +170,14 @@ abstract class PageIntegrations implements PageIntegrationsInterface {
 		echo '<span class="label">';
 		echo ! empty( $account['label'] ) ? esc_html( $account['label'] ) : '<em>' . esc_html__( 'No Label', 'wpforms-lite' ) . '</em>';
 		echo '</span>';
-
-		/* translators: %s - connection date. */
-		echo '<span class="date">' . sprintf( esc_html__( 'Connected on: %s', 'wpforms-lite' ), esc_html( $account_connected ) ) . '</span>';
+		echo '<span class="date">';
+		echo esc_html(
+			sprintf( /* translators: %1$s - Connection date. */
+				__( 'Connected on: %1$s', 'wpforms-lite' ),
+				$account_connected
+			)
+		);
+		echo '</span>';
 		echo '<span class="remove"><a href="#" data-provider="' . esc_attr( $this->core->slug ) . '" data-key="' . esc_attr( $account_id ) . '">' . esc_html__( 'Disconnect', 'wpforms-lite' ) . '</a></span>';
 
 		/**

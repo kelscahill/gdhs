@@ -2285,7 +2285,7 @@ return ImagesLoaded;
 
 /***/ }),
 
-/***/ 789:
+/***/ 792:
 /***/ (function() {
 
 // extracted by mini-css-extract-plugin
@@ -4112,373 +4112,6 @@ module.exports = styleTagTransform;
 
 /***/ }),
 
-/***/ 503:
-/***/ (function() {
-
-// Object.entries
-if (!Object.entries) {
-	Object.entries = function (obj) {
-		var ownProps = Object.keys(obj),
-			i = ownProps.length,
-			resArray = new Array(i); // preallocate the Array
-		while (i--) resArray[i] = [ownProps[i], obj[ownProps[i]]];
-
-		return resArray;
-	};
-}
-
-// isArray
-if (typeof Array.isArray === 'undefined') {
-	Array.isArray = function (obj) {
-		return Object.prototype.toString.call(obj) === '[object Array]';
-	};
-}
-
-// Array.from
-if (!Array.from) {
-	Array.from = (function () {
-		var toStr = Object.prototype.toString;
-		var isCallable = function (fn) {
-			return typeof fn === 'function' || toStr.call(fn) === '[object Function]';
-		};
-		var toInteger = function (value) {
-			var number = Number(value);
-			if (isNaN(number)) {
-				return 0;
-			}
-			if (number === 0 || !isFinite(number)) {
-				return number;
-			}
-			return (number > 0 ? 1 : -1) * Math.floor(Math.abs(number));
-		};
-		var maxSafeInteger = Math.pow(2, 53) - 1;
-		var toLength = function (value) {
-			var len = toInteger(value);
-			return Math.min(Math.max(len, 0), maxSafeInteger);
-		};
-
-		// The length property of the from method is 1.
-		return function from(arrayLike /*, mapFn, thisArg */) {
-			// 1. Let C be the this value.
-			var C = this;
-
-			// 2. Let items be ToObject(arrayLike).
-			var items = Object(arrayLike);
-
-			// 3. ReturnIfAbrupt(items).
-			if (arrayLike == null) {
-				throw new TypeError('Array.from requires an array-like object - not null or undefined');
-			}
-
-			// 4. If mapfn is undefined, then let mapping be false.
-			var mapFn = arguments.length > 1 ? arguments[1] : void undefined;
-			var T;
-			if (typeof mapFn !== 'undefined') {
-				// 5. else
-				// 5. a If IsCallable(mapfn) is false, throw a TypeError exception.
-				if (!isCallable(mapFn)) {
-					throw new TypeError('Array.from: when provided, the second argument must be a function');
-				}
-
-				// 5. b. If thisArg was supplied, let T be thisArg; else let T be undefined.
-				if (arguments.length > 2) {
-					T = arguments[2];
-				}
-			}
-
-			// 10. Let lenValue be Get(items, "length").
-			// 11. Let len be ToLength(lenValue).
-			var len = toLength(items.length);
-
-			// 13. If IsConstructor(C) is true, then
-			// 13. a. Let A be the result of calling the [[Construct]] internal method
-			// of C with an argument list containing the single item len.
-			// 14. a. Else, Let A be ArrayCreate(len).
-			var A = isCallable(C) ? Object(new C(len)) : new Array(len);
-
-			// 16. Let k be 0.
-			var k = 0;
-			// 17. Repeat, while k < len… (also steps a - h)
-			var kValue;
-			while (k < len) {
-				kValue = items[k];
-				if (mapFn) {
-					A[k] = typeof T === 'undefined' ? mapFn(kValue, k) : mapFn.call(T, kValue, k);
-				} else {
-					A[k] = kValue;
-				}
-				k += 1;
-			}
-			// 18. Let putStatus be Put(A, "length", len, true).
-			A.length = len;
-			// 20. Return A.
-			return A;
-		};
-	})();
-}
-
-// Nodelist
-if (window.NodeList && !NodeList.prototype.forEach) {
-	NodeList.prototype.forEach = function (callback, thisArg) {
-		thisArg = thisArg || window;
-		for (var i = 0; i < this.length; i++) {
-			callback.call(thisArg, this[i], i, this);
-		}
-	};
-}
-
-// removeChild
-// https://github.com/jserz/js_piece/blob/master/DOM/ChildNode/remove()/remove().md
-(function (arr) {
-	arr.forEach(function (item) {
-		if (item.hasOwnProperty('remove')) {
-			return;
-		}
-		Object.defineProperty(item, 'remove', {
-			configurable: true,
-			enumerable: true,
-			writable: true,
-			value: function remove() {
-				if (this.parentNode !== null) this.parentNode.removeChild(this);
-			},
-		});
-	});
-})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
-
-
-/***/ }),
-
-/***/ 793:
-/***/ (function() {
-
-/**
- * Add dataset support to elements
- * No globals, no overriding prototype with non-standard methods,
- *   handles CamelCase properly, attempts to use standard
- *   Object.defineProperty() (and Function bind()) methods,
- *   falls back to native implementation when existing
- * Inspired by http://code.eligrey.com/html5/dataset/
- *   (via https://github.com/adalgiso/html5-dataset/blob/master/html5-dataset.js )
- * Depends on Function.bind and Object.defineProperty/Object.getOwnPropertyDescriptor (polyfills below)
- * All code below is Licensed under the X11/MIT License
- */
-if (!Function.prototype.bind) {
-	Function.prototype.bind = function (oThis) {
-		'use strict';
-		if (typeof this !== 'function') {
-			// closest thing possible to the ECMAScript 5 internal IsCallable function
-			throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-		}
-
-		var aArgs = Array.prototype.slice.call(arguments, 1),
-			fToBind = this,
-			FNOP = function () {},
-			fBound = function () {
-				return fToBind.apply(this instanceof FNOP && oThis ? this : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
-			};
-
-		FNOP.prototype = this.prototype;
-		fBound.prototype = new FNOP();
-
-		return fBound;
-	};
-}
-
-/*
- * Xccessors Standard: Cross-browser ECMAScript 5 accessors
- * http://purl.eligrey.com/github/Xccessors
- *
- * 2010-06-21
- *
- * By Eli Grey, http://eligrey.com
- *
- * A shim that partially implements Object.defineProperty,
- * Object.getOwnPropertyDescriptor, and Object.defineProperties in browsers that have
- * legacy __(define|lookup)[GS]etter__ support.
- *
- * Licensed under the X11/MIT License
- *   See LICENSE.md
- */
-
-(function () {
-	'use strict';
-	var ObjectProto = Object.prototype,
-		defineGetter = ObjectProto.__defineGetter__,
-		defineSetter = ObjectProto.__defineSetter__,
-		lookupGetter = ObjectProto.__lookupGetter__,
-		lookupSetter = ObjectProto.__lookupSetter__,
-		hasOwnProp = ObjectProto.hasOwnProperty;
-
-	if (defineGetter && defineSetter && lookupGetter && lookupSetter) {
-		if (!Object.defineProperty) {
-			Object.defineProperty = function (obj, prop, descriptor) {
-				if (arguments.length < 3) {
-					// all arguments required
-					throw new TypeError('Arguments not optional');
-				}
-
-				prop += ''; // convert prop to string
-
-				if (hasOwnProp.call(descriptor, 'value')) {
-					if (!lookupGetter.call(obj, prop) && !lookupSetter.call(obj, prop)) {
-						// data property defined and no pre-existing accessors
-						obj[prop] = descriptor.value;
-					}
-
-					if (hasOwnProp.call(descriptor, 'get') || hasOwnProp.call(descriptor, 'set')) {
-						// descriptor has a value prop but accessor already exists
-						throw new TypeError('Cannot specify an accessor and a value');
-					}
-				}
-
-				// can't switch off these features in ECMAScript 3
-				// so throw a TypeError if any are false
-				if (!(descriptor.writable && descriptor.enumerable && descriptor.configurable)) {
-					throw new TypeError('This implementation of Object.defineProperty does not support' + ' false for configurable, enumerable, or writable.');
-				}
-
-				if (descriptor.get) {
-					defineGetter.call(obj, prop, descriptor.get);
-				}
-				if (descriptor.set) {
-					defineSetter.call(obj, prop, descriptor.set);
-				}
-
-				return obj;
-			};
-		}
-
-		if (!Object.getOwnPropertyDescriptor) {
-			Object.getOwnPropertyDescriptor = function (obj, prop) {
-				if (arguments.length < 2) {
-					// all arguments required
-					throw new TypeError('Arguments not optional.');
-				}
-
-				prop += ''; // convert prop to string
-
-				var descriptor = {
-						configurable: true,
-						enumerable: true,
-						writable: true,
-					},
-					getter = lookupGetter.call(obj, prop),
-					setter = lookupSetter.call(obj, prop);
-
-				if (!hasOwnProp.call(obj, prop)) {
-					// property doesn't exist or is inherited
-					return descriptor;
-				}
-				if (!getter && !setter) {
-					// not an accessor so return prop
-					descriptor.value = obj[prop];
-					return descriptor;
-				}
-
-				// there is an accessor, remove descriptor.writable;
-				// populate descriptor.get and descriptor.set (IE's behavior)
-				delete descriptor.writable;
-				descriptor.get = descriptor.set = undefined;
-
-				if (getter) {
-					descriptor.get = getter;
-				}
-				if (setter) {
-					descriptor.set = setter;
-				}
-
-				return descriptor;
-			};
-		}
-
-		if (!Object.defineProperties) {
-			Object.defineProperties = function (obj, props) {
-				var prop;
-				for (prop in props) {
-					if (hasOwnProp.call(props, prop)) {
-						Object.defineProperty(obj, prop, props[prop]);
-					}
-				}
-			};
-		}
-	}
-})();
-
-// Begin dataset code
-
-if (
-	!document.documentElement.dataset &&
-	// FF is empty while IE gives empty object
-	(!Object.getOwnPropertyDescriptor(Element.prototype, 'dataset') || !Object.getOwnPropertyDescriptor(Element.prototype, 'dataset').get)
-) {
-	var propDescriptor = {
-		enumerable: true,
-		get: function () {
-			'use strict';
-			var i,
-				that = this,
-				HTML5_DOMStringMap,
-				attrVal,
-				attrName,
-				propName,
-				attribute,
-				attributes = this.attributes,
-				attsLength = attributes.length,
-				toUpperCase = function (n0) {
-					return n0.charAt(1).toUpperCase();
-				},
-				getter = function () {
-					return this;
-				},
-				setter = function (attrName, value) {
-					return typeof value !== 'undefined' ? this.setAttribute(attrName, value) : this.removeAttribute(attrName);
-				};
-			try {
-				// Simulate DOMStringMap w/accessor support
-				// Test setting accessor on normal object
-				({}).__defineGetter__('test', function () {});
-				HTML5_DOMStringMap = {};
-			} catch (e1) {
-				// Use a DOM object for IE8
-				HTML5_DOMStringMap = document.createElement('div');
-			}
-			for (i = 0; i < attsLength; i++) {
-				attribute = attributes[i];
-				// Fix: This test really should allow any XML Name without
-				//         colons (and non-uppercase for XHTML)
-				if (attribute && attribute.name && /^data-\w[\w\-]*$/.test(attribute.name)) {
-					attrVal = attribute.value;
-					attrName = attribute.name;
-					// Change to CamelCase
-					propName = attrName.substr(5).replace(/-./g, toUpperCase);
-					try {
-						Object.defineProperty(HTML5_DOMStringMap, propName, {
-							enumerable: this.enumerable,
-							get: getter.bind(attrVal || ''),
-							set: setter.bind(that, attrName),
-						});
-					} catch (e2) {
-						// if accessors are not working
-						HTML5_DOMStringMap[propName] = attrVal;
-					}
-				}
-			}
-			return HTML5_DOMStringMap;
-		},
-	};
-	try {
-		// FF enumerates over element's dataset, but not
-		//   Element.prototype.dataset; IE9 iterates over both
-		Object.defineProperty(Element.prototype, 'dataset', propDescriptor);
-	} catch (e) {
-		propDescriptor.enumerable = false; // IE8 does not allow setting to true
-		Object.defineProperty(Element.prototype, 'dataset', propDescriptor);
-	}
-}
-
-
-/***/ }),
-
 /***/ 480:
 /***/ (function() {
 
@@ -4588,15 +4221,16 @@ __webpack_require__.r(__webpack_exports__);
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
   almScroll: function() { return /* binding */ almScroll; },
+  analytics: function() { return /* binding */ analytics; },
   click: function() { return /* binding */ click; },
   filter: function() { return /* binding */ filter; },
   getOffset: function() { return /* binding */ getOffset; },
-  getPostCount: function() { return /* binding */ getPostCount; },
+  getPostCount: function() { return /* binding */ ajax_load_more_getPostCount; },
   getTotalPosts: function() { return /* binding */ getTotalPosts; },
   getTotalRemaining: function() { return /* binding */ getTotalRemaining; },
   reset: function() { return /* binding */ ajax_load_more_reset; },
   start: function() { return /* binding */ start; },
-  tracking: function() { return /* binding */ tracking; }
+  wpblock: function() { return /* binding */ wpblock; }
 });
 
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/bind.js
@@ -5151,8 +4785,9 @@ const reduceDescriptors = (obj, reducer) => {
   const reducedDescriptors = {};
 
   forEach(descriptors, (descriptor, name) => {
-    if (reducer(descriptor, name, obj) !== false) {
-      reducedDescriptors[name] = descriptor;
+    let ret;
+    if ((ret = reducer(descriptor, name, obj)) !== false) {
+      reducedDescriptors[name] = ret || descriptor;
     }
   });
 
@@ -6073,10 +5708,6 @@ function formDataToJSON(formData) {
 
 
 
-const DEFAULT_CONTENT_TYPE = {
-  'Content-Type': undefined
-};
-
 /**
  * It takes a string, tries to parse it, and if it fails, it returns the stringified version
  * of the input
@@ -6106,7 +5737,7 @@ const defaults = {
 
   transitional: defaults_transitional,
 
-  adapter: ['xhr', 'http'],
+  adapter: browser.isNode ? 'http' : 'xhr',
 
   transformRequest: [function transformRequest(data, headers) {
     const contentType = headers.getContentType() || '';
@@ -6215,17 +5846,14 @@ const defaults = {
 
   headers: {
     common: {
-      'Accept': 'application/json, text/plain, */*'
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': undefined
     }
   }
 };
 
-utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch'], (method) => {
   defaults.headers[method] = {};
-});
-
-utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
 });
 
 /* harmony default export */ var lib_defaults = (defaults);
@@ -6572,7 +6200,17 @@ class AxiosHeaders {
 
 AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
 
-utils.freezeMethods(AxiosHeaders.prototype);
+// reserved names hotfix
+utils.reduceDescriptors(AxiosHeaders.prototype, ({value}, key) => {
+  let mapped = key[0].toUpperCase() + key.slice(1); // map `set` => `Set`
+  return {
+    get: () => value,
+    set(headerValue) {
+      this[mapped] = headerValue;
+    }
+  }
+});
+
 utils.freezeMethods(AxiosHeaders);
 
 /* harmony default export */ var core_AxiosHeaders = (AxiosHeaders);
@@ -7422,7 +7060,7 @@ function mergeConfig(config1, config2) {
 }
 
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/env/data.js
-const VERSION = "1.4.0";
+const VERSION = "1.5.0";
 ;// CONCATENATED MODULE: ./node_modules/axios/lib/helpers/validator.js
 
 
@@ -7592,15 +7230,13 @@ class Axios {
     // Set config.method
     config.method = (config.method || this.defaults.method || 'get').toLowerCase();
 
-    let contextHeaders;
-
     // Flatten headers
-    contextHeaders = headers && utils.merge(
+    let contextHeaders = headers && utils.merge(
       headers.common,
       headers[config.method]
     );
 
-    contextHeaders && utils.forEach(
+    headers && utils.forEach(
       ['delete', 'get', 'head', 'post', 'put', 'patch', 'common'],
       (method) => {
         delete headers[method];
@@ -7983,6 +7619,7 @@ Object.entries(HttpStatusCode).forEach(([key, value]) => {
 
 
 
+
 /**
  * Create an instance of Axios
  *
@@ -8044,6 +7681,8 @@ axios.AxiosHeaders = core_AxiosHeaders;
 
 axios.formToJSON = thing => helpers_formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 
+axios.getAdapter = adapters.getAdapter;
+
 axios.HttpStatusCode = helpers_HttpStatusCode;
 
 axios.default = axios;
@@ -8054,25 +7693,49 @@ axios.default = axios;
 // EXTERNAL MODULE: ./node_modules/crypto-js/md5.js
 var md5 = __webpack_require__(214);
 var md5_default = /*#__PURE__*/__webpack_require__.n(md5);
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/api.js
+;// CONCATENATED MODULE: ./src/frontend/js/functions/api.js
 
-const { rest_api, rest_nonce } = alm_localize;
+var _alm_localize = alm_localize,
+  rest_api = _alm_localize.rest_api,
+  rest_nonce = _alm_localize.rest_nonce;
 
 /*
- * Create a Api object with Axios and configure it for the WordPRess Rest Api.
+ * Create a Api object with Axios and configure it for the WordPRess Rest API.
  *
+ * @see https://axios-http.com/docs/instance
  */
-const api = lib_axios.create({
-	baseURL: rest_api,
-	headers: {
-		'content-type': 'application/json',
-		'X-WP-Nonce': rest_nonce,
-	},
+var api = lib_axios.create({
+  baseURL: rest_api,
+  headers: {
+    'content-type': 'application/json',
+    'X-WP-Nonce': rest_nonce
+  }
 });
-
 ;// CONCATENATED MODULE: ./src/frontend/js/addons/cache.js
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
+
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function cacheCreateParams(alm) {
+  var _listing$dataset;
+  var listing = alm.listing;
+  alm.addons.cache = (listing === null || listing === void 0 || (_listing$dataset = listing.dataset) === null || _listing$dataset === void 0 ? void 0 : _listing$dataset.cache) === 'true';
+  if (alm.addons.cache) {
+    alm.addons.cache_id = listing.dataset.cacheId;
+    alm.addons.cache_path = listing.dataset.cachePath;
+    alm.addons.cache_logged_in = listing.dataset.cacheLoggedIn ? listing.dataset.cacheLoggedIn : false;
+  }
+  return alm;
+}
 
 /**
  * Create unique cache slug from query params.
@@ -8082,15 +7745,20 @@ const api = lib_axios.create({
  * @return {string}     The cache file slug.
  */
 function getCacheSlug(alm, data) {
-	const { addons, pagePrev, page, rel = 'next' } = alm;
-	if (addons.nextpage) {
-		return `page-${page + addons.nextpage_startpage}`; // Nextpage.
-	} else if (addons.single_post) {
-		return addons.single_post_id; // Single Post.
-	} else if (addons.woocommerce || addons.elementor) {
-		return rel === 'prev' ? `page-${pagePrev}` : `page-${page + 1}`; // WooCommerce || Elementor.
-	}
-	return md5_default()(JSON.stringify(data)).toString(); // Standard.
+  var addons = alm.addons,
+    pagePrev = alm.pagePrev,
+    page = alm.page,
+    _alm$rel = alm.rel,
+    rel = _alm$rel === void 0 ? 'next' : _alm$rel;
+  if (addons.nextpage) {
+    return "page-".concat(page + addons.nextpage_startpage); // Nextpage.
+  } else if (addons.single_post) {
+    return addons.single_post_id; // Single Post.
+  } else if (addons.woocommerce || addons.elementor) {
+    return rel === 'prev' ? "page-".concat(pagePrev) : "page-".concat(page + 1); // WooCommerce || Elementor.
+  }
+
+  return md5_default()(JSON.stringify(data)).toString(); // Standard.
 }
 
 /**
@@ -8101,28 +7769,8 @@ function getCacheSlug(alm, data) {
  * @param {string} name The cache slug
  * @since 5.3.1
  */
-async function createCache(alm, data, name) {
-	const { html = '', meta = {} } = data;
-
-	if (!html || !alm.addons.cache) {
-		return;
-	}
-
-	const params = {
-		cache_id: alm.addons.cache_id,
-		cache_logged_in: alm.addons.cache_logged_in,
-		canonical_url: alm.canonical_url,
-		name,
-		html: html.trim(),
-		postcount: meta.postcount,
-		totalposts: meta.totalposts,
-	};
-
-	// Create the cache file via REST API.
-	const res = await api.post('ajax-load-more/cache/create', params);
-	if (res.status === 200 && res.data && res.data.success) {
-		console.log(res.data.msg); // eslint-disable-line no-console
-	}
+function createCache(_x, _x2, _x3) {
+  return _createCache.apply(this, arguments);
 }
 
 /**
@@ -8132,26 +7780,124 @@ async function createCache(alm, data, name) {
  * @param {Object} params Query params.
  * @return {Promise}      Cache data or false.
  */
-async function getCache(alm, params) {
-	if (!alm.addons.cache || (alm.addons.cache && alm.addons.cache_logged_in)) {
-		// Exit if not cache or cache is enabled but user is logged in with the no-cache setting checked.
-		return false;
-	}
-
-	const restParams = {
-		id: alm.addons.cache_id,
-		name: params.cache_slug,
-	};
-
-	const res = await api.get('ajax-load-more/cache/get', { params: restParams });
-	if (res.status === 200 && res.data) {
-		return res.data;
-	}
-
-	return false;
+function _createCache() {
+  _createCache = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(alm, data, name) {
+    var _data$html, html, _data$meta, meta, params, res;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _data$html = data.html, html = _data$html === void 0 ? '' : _data$html, _data$meta = data.meta, meta = _data$meta === void 0 ? {} : _data$meta;
+          if (!(!html || !alm.addons.cache)) {
+            _context.next = 3;
+            break;
+          }
+          return _context.abrupt("return");
+        case 3:
+          params = {
+            cache_id: alm.addons.cache_id,
+            cache_logged_in: alm.addons.cache_logged_in,
+            canonical_url: alm.canonical_url,
+            name: name,
+            html: html.trim(),
+            postcount: meta.postcount,
+            totalposts: meta.totalposts
+          }; // Create the cache file via REST API.
+          _context.next = 6;
+          return api.post('ajax-load-more/cache/create', params);
+        case 6:
+          res = _context.sent;
+          if (res.status === 200 && res.data && res.data.success) {
+            console.log(res.data.msg); // eslint-disable-line no-console
+          }
+        case 8:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _createCache.apply(this, arguments);
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/getButtonURL.js
+function getCache(_x4, _x5) {
+  return _getCache.apply(this, arguments);
+}
+function _getCache() {
+  _getCache = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(alm, params) {
+    var restParams, res;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          if (!(!alm.addons.cache || alm.addons.cache && alm.addons.cache_logged_in)) {
+            _context2.next = 2;
+            break;
+          }
+          return _context2.abrupt("return", false);
+        case 2:
+          restParams = {
+            id: alm.addons.cache_id,
+            name: params.cache_slug
+          };
+          _context2.next = 5;
+          return api.get('ajax-load-more/cache/get', {
+            params: restParams
+          });
+        case 5:
+          res = _context2.sent;
+          if (!(res.status === 200 && res.data)) {
+            _context2.next = 8;
+            break;
+          }
+          return _context2.abrupt("return", res.data);
+        case 8:
+          return _context2.abrupt("return", false);
+        case 9:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2);
+  }));
+  return _getCache.apply(this, arguments);
+}
+;// CONCATENATED MODULE: ./src/frontend/js/addons/call-to-actions.js
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function ctaCreateParams(alm) {
+  var _listing$dataset;
+  var listing = alm.listing;
+  alm.addons.cta = (listing === null || listing === void 0 || (_listing$dataset = listing.dataset) === null || _listing$dataset === void 0 ? void 0 : _listing$dataset.cta) === 'true';
+  if (alm.addons.cta) {
+    alm.addons.cta_position = listing.dataset.ctaPosition;
+    alm.addons.cta_repeater = listing.dataset.ctaRepeater;
+    alm.addons.cta_theme_repeater = listing.dataset.ctaThemeRepeater;
+  }
+  return alm;
+}
+;// CONCATENATED MODULE: ./src/frontend/js/addons/comments.js
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function commentsCreateParams(alm) {
+  var _listing$dataset;
+  var listing = alm.listing;
+  alm.addons.comments = (listing === null || listing === void 0 || (_listing$dataset = listing.dataset) === null || _listing$dataset === void 0 ? void 0 : _listing$dataset.comments) === 'true';
+  if (alm.addons.comments) {
+    alm.addons.comments_post_id = listing.dataset.comments_post_id;
+    alm.addons.comments_per_page = listing.dataset.comments_per_page;
+    alm.addons.comments_per_page = alm.addons.comments_per_page === undefined ? '5' : alm.addons.comments_per_page;
+    alm.addons.comments_type = listing.dataset.comments_type;
+    alm.addons.comments_style = listing.dataset.comments_style;
+    alm.addons.comments_template = listing.dataset.comments_template;
+    alm.addons.comments_callback = listing.dataset.comments_callback;
+  }
+  return alm;
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/getButtonURL.js
 /**
  * Get the URL for Load More button.
  *
@@ -8159,17 +7905,17 @@ async function getCache(alm, params) {
  * @param {string} rel The type of load more, `next` or `previous`.
  * @since 5.4.0
  */
-function getButtonURL(alm, rel = 'next') {
-	if (!alm || !alm.trigger) {
-		return false;
-	}
-	let button = alm.trigger.querySelector('.alm-load-more-btn');
-	if (rel === 'prev') {
-		button = document.querySelector('.alm-load-more-btn--prev');
-	}
-
-	const url = button ? button.dataset.url : '';
-	return url ? url : '';
+function getButtonURL(alm) {
+  var _button;
+  var rel = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'next';
+  if (!alm || !alm.trigger) {
+    return false;
+  }
+  var button = alm.trigger.querySelector('.alm-load-more-btn');
+  if (rel === 'prev') {
+    button = document.querySelector('.alm-load-more-btn--prev');
+  }
+  return ((_button = button) === null || _button === void 0 || (_button = _button.dataset) === null || _button === void 0 ? void 0 : _button.url) || '';
 }
 
 /**
@@ -8180,19 +7926,24 @@ function getButtonURL(alm, rel = 'next') {
  * @param {string}  url    The URL for updating.
  */
 function setButtonAtts(button, page, url) {
-	if (!button) {
-		return;
-	}
+  if (!button) {
+    return;
+  }
+  if (button.rel && button.rel === 'prev') {
+    button.href = url;
+  }
 
-	if (button.rel && button.rel === 'prev') {
-		button.href = url;
-	}
-
-	button.dataset.page = page; // Set Page.
-	button.dataset.url = url ? url : ''; // Set URL.
+  // Set page & URL attributes.
+  button.dataset.page = page;
+  button.dataset.url = url ? url : '';
 }
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/lazyImages.js
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 /**
  * Lazy load images helper.
  * When a plugin or 3rd party script has hooked into WP Post Thumbnails to provide a lazy load solution, images will not load via Ajax.
@@ -8201,10 +7952,13 @@ function setButtonAtts(button, page, url) {
  * @param {Object} alm The Ajax Load More object.
  */
 function lazyImages(alm) {
-	if (!alm || !alm.lazy_images) {
-		return;
-	}
-	lazyImagesReplace(alm.el);
+  var lazy_images = alm.lazy_images,
+    last_loaded = alm.last_loaded;
+  if (lazy_images && last_loaded !== null && last_loaded !== void 0 && last_loaded.length) {
+    last_loaded.forEach(function (item) {
+      lazyImagesReplace(item);
+    });
+  }
 }
 
 /**
@@ -8213,15 +7967,15 @@ function lazyImages(alm) {
  * @param {HTMLElement} container The element HTML.
  */
 function lazyImagesReplace(container) {
-	const images = container.getElementsByTagName('img');
-	if (images) {
-		// Loop all images.
-		Array.prototype.forEach.call(images, (img) => {
-			if (img) {
-				replaceSrc(img);
-			}
-		});
-	}
+  var images = container.querySelectorAll('img');
+  if (images) {
+    // Loop all images.
+    _toConsumableArray(images).forEach(function (image) {
+      if (image) {
+        replaceSrc(image);
+      }
+    });
+  }
 }
 
 /**
@@ -8230,58 +7984,59 @@ function lazyImagesReplace(container) {
  * @param {HTMLElement} img The HTML image element.
  */
 function replaceSrc(img) {
-	if (img) {
-		if (img.dataset.src) {
-			img.src = img.dataset.src;
-		}
-		if (img.dataset.srcset) {
-			img.srcset = img.dataset.srcset;
-		}
-		// Blocksy Pro.
-		// @see https://creativethemes.com/blocksy
-		if (img.dataset.ctLazy) {
-			img.src = img.dataset.ctLazy;
-		}
-		if (img.dataset.ctLazySet) {
-			img.srcset = img.dataset.ctLazySet;
-		}
-	}
+  var _img$dataset, _img$dataset2, _img$dataset3, _img$dataset4;
+  if (!img) {
+    return;
+  }
+  if (img !== null && img !== void 0 && (_img$dataset = img.dataset) !== null && _img$dataset !== void 0 && _img$dataset.src) {
+    img.src = img.dataset.src;
+  }
+  if (img !== null && img !== void 0 && (_img$dataset2 = img.dataset) !== null && _img$dataset2 !== void 0 && _img$dataset2.srcset) {
+    img.srcset = img.dataset.srcset;
+  }
+  // Blocksy Pro.
+  // @see https://creativethemes.com/blocksy
+  if (img !== null && img !== void 0 && (_img$dataset3 = img.dataset) !== null && _img$dataset3 !== void 0 && _img$dataset3.ctLazy) {
+    img.src = img.dataset.ctLazy;
+  }
+  if (img !== null && img !== void 0 && (_img$dataset4 = img.dataset) !== null && _img$dataset4 !== void 0 && _img$dataset4.ctLazySet) {
+    img.srcset = img.dataset.ctLazySet;
+  }
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/srcsetPolyfill.js
+;// CONCATENATED MODULE: ./src/frontend/js/functions/srcsetPolyfill.js
 /**
  * A srcset polyfill to get Masonry and ImagesLoaded working with Safari and Firefox.
  *
- * @param {Element} container Contaienr HTML element.
- * @param {string}  ua        The user-agent string.
+ * @param {HTMLElement} container Container HTML element.
+ * @param {string}      ua        The user-agent string.
  * @since 5.0.2
  */
-function srcsetPolyfill(container = null, ua = '') {
-	// Exit if no container
-	if (!container) {
-		return false;
-	}
+function srcsetPolyfill() {
+  var container = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+  var ua = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  if (!container) {
+    return false; // Exit if no container.
+  }
 
-	// Exit if useragent is Chrome, Safari or Windows
-	if ((ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') !== -1) || ua.indexOf('Firefox') > -1 || ua.indexOf('Windows') > -1) {
-		return false;
-	}
+  // Exit if useragent is Chrome, Safari or Windows.
+  if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') !== -1 || ua.indexOf('Firefox') > -1 || ua.indexOf('Windows') > -1) {
+    return false;
+  }
 
-	// Get the images
-	const imgs = container.querySelectorAll('img[srcset]:not(.alm-loaded)');
+  // Get all images.
+  var imgs = container.querySelectorAll('img[srcset]:not(.alm-loaded)');
 
-	// Loop images
-	for (let i = 0; i < imgs.length; i++) {
-		const img = imgs[i];
-		img.classList.add('alm-loaded');
-		img.outerHTML = img.outerHTML;
-	}
+  // Loop images.
+  for (var i = 0; i < imgs.length; i++) {
+    var img = imgs[i];
+    img.classList.add('alm-loaded');
+    img.outerHTML = img.outerHTML;
+  }
 }
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/loadImage.js
 
 
-const imagesLoaded = __webpack_require__(564);
+var imagesLoaded = __webpack_require__(564);
 
 /**
  * Load the image with imagesLoaded
@@ -8292,130 +8047,112 @@ const imagesLoaded = __webpack_require__(564);
  * @param {string}  rel           The loading direction, next or prev.
  * @param {boolean} waitForImages Wait for images to load before loading next item.
  */
-function loadImage(container, item, ua, rel = 'next', waitForImages = true) {
-	/**
-	 * Append item to container.
-	 */
-	function appendImage() {
-		if (rel === 'prev') {
-			container.insertBefore(item, container.childNodes[0]);
-		} else {
-			container.appendChild(item);
-		}
+function loadImage(container, item, ua) {
+  var rel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'next';
+  var waitForImages = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+  /**
+   * Append item to container.
+   */
+  function appendImage() {
+    if (rel === 'prev') {
+      container.insertBefore(item, container.childNodes[0]);
+    } else {
+      container.appendChild(item);
+    }
+    lazyImagesReplace(item); // Lazy load image fix.
+    srcsetPolyfill(item, ua); // Safari/Firefox polyfills.
+  }
 
-		lazyImagesReplace(item); // Lazy load image fix.
-		srcsetPolyfill(item, ua); // Safari/Firefox polyfills.
-	}
+  return new Promise(function (resolve) {
+    item.style.transition = 'all 0.25s ease'; // Add CSS transition to each item.
 
-	return new Promise((resolve) => {
-		item.style.transition = 'all 0.25s ease'; // Add CSS transition to each item.
-
-		if (waitForImages) {
-			imagesLoaded(item, function () {
-				appendImage();
-				resolve(true); // Send Promise callback
-			});
-		} else {
-			appendImage();
-			resolve(true); // Send Promise callback
-		}
-	});
+    if (waitForImages) {
+      imagesLoaded(item, function () {
+        appendImage();
+        resolve(true); // Send Promise callback
+      });
+    } else {
+      appendImage();
+      resolve(true); // Send Promise callback
+    }
+  });
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/modules/setFocus.js
+;// CONCATENATED MODULE: ./src/frontend/js/functions/setFocus.js
 /**
  * Set user focus to improve accessibility after load events.
  *
- * @param {Object}  alm          ALM object.
- * @param {Element} element      The element to focus on.
- * @param {number}  total        The total number of posts returned.
- * @param {boolean} is_filtering Is this a filtering event.
+ * @param {Object}  alm       ALM object.
+ * @param {Element} element   The element to focus on.
+ * @param {number}  total     The total number of posts returned.
+ * @param {boolean} filtering Is this a filtering event.
  * @since 5.1
  */
-const setFocus = (alm, element = null, total = 0, is_filtering = false) => {
-	if (!alm_localize.a11y_focus) {
-		return false;
-	}
+function setFocus(alm) {
+  var _alm_localize;
+  var element = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  var total = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  var filtering = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  if (!((_alm_localize = alm_localize) !== null && _alm_localize !== void 0 && _alm_localize.a11y_focus) || !element) {
+    return;
+  }
 
-	// WooCommerce Add-on
-	if (alm.addons.woocommerce || alm.addons.elementor) {
-		moveFocus(false, false, element, false);
-		return;
-	}
+  // WooCommerce||ELementor Add-ons.
+  if (alm.addons.woocommerce || alm.addons.elementor) {
+    moveFocus(false, false, element, false);
+    return;
+  }
+  if (total < 1) {
+    return; // Exit if no posts returned.
+  }
 
-	// Has Total
-	if (alm.transition_container && total > 0) {
-		if (alm.addons.paging) {
-			// Paging
-			moveFocus(alm.init, alm.addons.preloaded, alm.listing, is_filtering);
-		} else if (alm.addons.single_post || alm.addons.nextpage) {
-			// Single Posts OR Next Page, set `init` to false to trigger focus
-			moveFocus(false, alm.addons.preloaded, element, is_filtering);
-		} else {
-			// Standard ALM
-			moveFocus(alm.init, alm.addons.preloaded, element, is_filtering);
-		}
-	} else if (!alm.transition_container) {
-		// Table Layout, no transition container
-		moveFocus(alm.init, alm.addons.preloaded, element[0], is_filtering);
-	}
-};
-/* harmony default export */ var modules_setFocus = (setFocus);
+  if (alm.addons.paging) {
+    // Paging.
+    moveFocus(alm.init, alm.addons.preloaded, alm.listing, filtering);
+  } else if (alm.addons.single_post || alm.addons.nextpage) {
+    // Single Posts || Next Page - Set `init` to false to trigger focus.
+    moveFocus(false, alm.addons.preloaded, element, filtering);
+  } else {
+    // Standard.
+    moveFocus(alm.init, alm.addons.preloaded, element, filtering);
+  }
+}
 
 /**
- * moveFocus
- * Move user focus to alm-reveal div
+ * Move user focus to latest elements that have been loaded.
  *
- * @param {boolean}     init         Initial run true or false.
- * @param {string}      preloaded    Preloaded true or false.
- * @param {HTMLElement} element      The container HTML element.
- * @param {boolean}     is_filtering Filtering true or false.
+ * @param {boolean} init      Initial run true or false.
+ * @param {string}  preloaded Preloaded true or false.
+ * @param {Element} element   The container HTML element.
+ * @param {boolean} filtering Filtering true or false.
  * @since 5.1
  */
 
-const moveFocus = (init = true, preloaded = 'false', element, is_filtering = false) => {
-	if (!is_filtering) {
-		if ((init || !element) && preloaded !== 'true') {
-			return false; // Exit if first run
-		}
-	}
+function moveFocus() {
+  var init = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+  var preloaded = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'false';
+  var element = arguments.length > 2 ? arguments[2] : undefined;
+  var filtering = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  if (!filtering) {
+    if ((init || !element) && preloaded !== 'true') {
+      return; // Exit if first run
+    }
+  }
 
-	// Check if element is an array.
-	// If `transition_container="false"`, `element` will be an array.
-	/*
-   let is_array = Array.isArray(element);
-   element = (is_array) ? element[0] : element;
-   */
+  element.setAttribute('tabIndex', '-1'); // Set tabIndex.
+  element.style.outline = 'none'; // Set element outline.
 
-	// Set tabIndex and style on element
-	element.setAttribute('tabIndex', '-1');
-	element.style.outline = 'none';
-
-	// Get Parent container if `.alm-listing` set parent to element
-	const parent = !element.classList.contains('alm-listing') ? element.parentNode : element;
-
-	// Scroll Container
-	const scrollContainer = parent.dataset.scrollContainer;
-
-	// If scroll container, move it, not the window.
-	if (scrollContainer) {
-		const container = document.querySelector(scrollContainer);
-		if (container) {
-			setTimeout(function () {
-				element.focus({ preventScroll: true });
-			}, 50);
-		}
-	}
-
-	// Move window
-	else {
-		setTimeout(function () {
-			element.focus({ preventScroll: true });
-		}, 50);
-	}
-};
-
+  // Add slight delay for elements to settle into DOM.
+  setTimeout(function () {
+    element.focus({
+      preventScroll: true
+    });
+  }, 25);
+}
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/loadItems.js
+function loadItems_typeof(o) { "@babel/helpers - typeof"; return loadItems_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, loadItems_typeof(o); }
+function loadItems_regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ loadItems_regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == loadItems_typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(loadItems_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function loadItems_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function loadItems_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { loadItems_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { loadItems_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
 
@@ -8429,53 +8166,114 @@ const moveFocus = (init = true, preloaded = 'false', element, is_filtering = fal
  * @param {Object}      alm           The ALM object.
  * @param {boolean}     waitForImages Wait for images to load before loading next item.
  */
-function loadItems(container, items, alm, waitForImages = true) {
-	return new Promise((resolve) => {
-		const { rel = 'next' } = alm;
-		const total = items.length;
-		let index = 0;
-		let count = 1;
+function loadItems(container, items, alm) {
+  var waitForImages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+  return new Promise(function (resolve) {
+    var _alm$rel = alm.rel,
+      rel = _alm$rel === void 0 ? 'next' : _alm$rel;
+    var total = items.length;
+    var index = 0;
+    var count = 1;
 
-		// Reverse items array if rel is 'prev'.
-		items = rel === 'prev' ? items.reverse() : items;
-
-		function loadItem() {
-			if (count <= total) {
-				(async function () {
-					items[index].style.opacity = 0;
-					await loadImage(container, items[index], alm.ua, rel, waitForImages);
-					count++;
-					index++;
-					loadItem();
-				})().catch(() => {
-					console.warn('There was an error loading the items.');
-				});
-			} else {
-				// Delay for effect only
-				setTimeout(function () {
-					items.map(function (item) {
-						item.style.opacity = 1;
-						return item;
-					});
-					if (items[0]) {
-						const focusItem = rel === 'prev' ? items[items.length - 1] : items[0]; // Get the item to focus.
-						modules_setFocus(alm, focusItem, null, false); // Set the focus.
-					}
-				}, 25);
-
-				resolve(true);
-			}
-		}
-
-		loadItem();
-	});
+    // Reverse items array if rel is 'prev'.
+    items = rel === 'prev' ? items.reverse() : items;
+    function loadItem() {
+      if (count <= total) {
+        loadItems_asyncToGenerator( /*#__PURE__*/loadItems_regeneratorRuntime().mark(function _callee() {
+          return loadItems_regeneratorRuntime().wrap(function _callee$(_context) {
+            while (1) switch (_context.prev = _context.next) {
+              case 0:
+                items[index].style.opacity = 0;
+                _context.next = 3;
+                return loadImage(container, items[index], alm.ua, rel, waitForImages);
+              case 3:
+                count++;
+                index++;
+                loadItem();
+              case 6:
+              case "end":
+                return _context.stop();
+            }
+          }, _callee);
+        }))()["catch"](function () {
+          console.warn('There was an error loading the items.');
+        });
+      } else {
+        // Delay for effect only
+        setTimeout(function () {
+          items.map(function (item) {
+            item.style.opacity = 1;
+            return item;
+          });
+          if (items[0]) {
+            var focusItem = rel === 'prev' ? items[items.length - 1] : items[0]; // Get the item to focus.
+            setFocus(alm, focusItem, null, false); // Set the focus.
+          }
+        }, 25);
+        resolve(true);
+      }
+    }
+    loadItem();
+  });
 }
-
 ;// CONCATENATED MODULE: ./src/frontend/js/addons/elementor.js
+function elementor_typeof(o) { "@babel/helpers - typeof"; return elementor_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, elementor_typeof(o); }
+function elementor_regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ elementor_regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == elementor_typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(elementor_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function elementor_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function elementor_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { elementor_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { elementor_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
 
 
+
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function elementorCreateParams(alm) {
+  var _alm = alm,
+    listing = _alm.listing;
+  alm.addons.elementor = listing.dataset.elementor === 'posts' && listing.dataset.elementorSettings;
+  if (alm.addons.elementor) {
+    // Get Settings
+    alm.addons.elementor_type = 'posts';
+    alm.addons.elementor_settings = JSON.parse(alm.listing.dataset.elementorSettings);
+
+    // Parse Container Settings
+    alm.addons.elementor_target = alm.addons.elementor_settings.target;
+    alm.addons.elementor_element = alm.addons.elementor_settings.target ? document.querySelector(".elementor-element ".concat(alm.addons.elementor_settings.target)) : '';
+    alm.addons.elementor_widget = elementorGetWidgetType(alm.addons.elementor_element);
+
+    // Masonry
+    alm = setElementorClasses(alm, alm.addons.elementor_widget);
+
+    // Pagination Element
+    alm.addons.elementor_controls = alm.addons.elementor_settings.controls;
+    alm.addons.elementor_controls = alm.addons.elementor_controls === 'true' ? true : false;
+    alm.addons.elementor_scrolltop = parseInt(alm.addons.elementor_settings.scrolltop);
+
+    // Get next page URL.
+    alm.addons.elementor_next_page = elementorGetNextUrl(alm, alm.addons.elementor_element);
+
+    // Get the max pages.
+    alm.addons.elementor_max_pages = alm.addons.elementor_element.querySelector('.e-load-more-anchor');
+    alm.addons.elementor_max_pages = alm.addons.elementor_max_pages ? parseInt(alm.addons.elementor_max_pages.dataset.maxPage) : 999;
+    alm.addons.elementor_paged = alm.addons.elementor_settings.paged ? parseInt(alm.addons.elementor_settings.paged) : 1;
+    alm.page = parseInt(alm.page) + alm.addons.elementor_paged;
+
+    // Masonry
+    alm = parseMasonryConfig(alm);
+    if (!alm.addons.elementor_element) {
+      console.warn("Ajax Load More: Unable to locate Elementor Widget. Are you sure you've set up your target parameter correctly?");
+    }
+    if (!alm.addons.elementor_next_page) {
+      console.warn('Ajax Load More: Unable to locate Elementor pagination. There are either no results or Ajax Load More is unable to locate the pagination widget?');
+    }
+  }
+  return alm;
+}
 
 /**
  * Set up the instance on Elementor
@@ -8484,47 +8282,46 @@ function loadItems(container, items, alm, waitForImages = true) {
  * @since 5.3.0
  */
 function elementorInit(alm) {
-	if (!alm.addons.elementor || !alm.addons.elementor_type || !alm.addons.elementor_type === 'posts') {
-		return false;
-	}
-	const target = alm.addons.elementor_element;
+  if (!alm.addons.elementor || !alm.addons.elementor_type || !alm.addons.elementor_type === 'posts') {
+    return false;
+  }
+  var target = alm.addons.elementor_element;
+  if (target) {
+    // Set button data attributes
+    alm.button.dataset.page = alm.addons.elementor_paged;
 
-	if (target) {
-		// Set button data attributes
-		alm.button.dataset.page = alm.addons.elementor_paged;
+    // Set button URL
+    var nextPage = alm.addons.elementor_next_page;
+    alm.button.dataset.url = nextPage ? nextPage : '';
 
-		// Set button URL
-		const nextPage = alm.addons.elementor_next_page;
-		alm.button.dataset.url = nextPage ? nextPage : '';
+    // Set a11y attributes
+    target.setAttribute('aria-live', 'polite');
+    target.setAttribute('aria-atomic', 'true');
+    alm.listing.removeAttribute('aria-live');
+    alm.listing.removeAttribute('aria-atomic');
 
-		// Set a11y attributes
-		target.setAttribute('aria-live', 'polite');
-		target.setAttribute('aria-atomic', 'true');
-		alm.listing.removeAttribute('aria-live');
-		alm.listing.removeAttribute('aria-atomic');
+    // Set data atts on 1st grid item
+    var item = target.querySelector(".".concat(alm.addons.elementor_item_class)); // Get first `.product` item
+    if (item) {
+      item.classList.add('alm-elementor');
+      item.dataset.url = window.location;
+      item.dataset.page = alm.addons.elementor_paged;
+      item.dataset.pageTitle = document.title;
+    }
 
-		// Set data atts on 1st grid item
-		const item = target.querySelector(`.${alm.addons.elementor_item_class}`); // Get first `.product` item
-		if (item) {
-			item.classList.add('alm-elementor');
-			item.dataset.url = window.location;
-			item.dataset.page = alm.addons.elementor_paged;
-			item.dataset.pageTitle = document.title;
-		}
-
-		// Masonry Window Resize. Delay for masonry to be added via Elementor.
-		if (alm.addons.elementor_masonry) {
-			let resizeTimeout;
-			setTimeout(function () {
-				window.addEventListener('resize', function () {
-					clearTimeout(resizeTimeout);
-					resizeTimeout = setTimeout(function () {
-						positionMasonryItems(alm, `.${alm.addons.elementor_container_class}`, `.${alm.addons.elementor_item_class}`);
-					}, 100);
-				});
-			}, 250);
-		}
-	}
+    // Masonry Window Resize. Delay for masonry to be added via Elementor.
+    if (alm.addons.elementor_masonry) {
+      var resizeTimeout;
+      setTimeout(function () {
+        window.addEventListener('resize', function () {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(function () {
+            positionMasonryItems(alm, ".".concat(alm.addons.elementor_container_class), ".".concat(alm.addons.elementor_item_class));
+          }, 100);
+        });
+      }, 250);
+    }
+  }
 }
 
 /**
@@ -8538,56 +8335,67 @@ function elementorInit(alm) {
  * @since 5.4.0
  */
 function elementorGetContent(alm, url, response, cache_slug) {
-	// Default data object.
-	const data = {
-		html: '',
-		meta: {
-			postcount: 0,
-			totalposts: 0,
-		},
-	};
+  // Default data object.
+  var data = {
+    html: '',
+    meta: {
+      postcount: 0,
+      totalposts: 0
+    }
+  };
 
-	// Successful response.
-	if (response.status === 200 && response.data) {
-		const { addons } = alm;
+  // Successful response.
+  if (response.status === 200 && response.data) {
+    var addons = alm.addons,
+      page = alm.page,
+      button = alm.button;
 
-		// Create temp div to hold response data.
-		const div = document.createElement('div');
-		div.innerHTML = response.data;
+    // Create temp div to hold response data.
+    var content = document.createElement('div');
+    content.innerHTML = response.data;
 
-		// Get Page Title
-		const title = div.querySelector('title').innerHTML;
-		data.pageTitle = title;
+    // Set button URL.
+    var nextURL = elementorGetNextUrl(alm, content);
+    if (nextURL) {
+      setButtonAtts(button, page + 1, nextURL);
+    } else {
+      // Disable button if no next page.
+      alm.AjaxLoadMore.triggerDone();
+    }
 
-		// Get Elementor Items container.
-		const container = div.querySelector(`${addons.elementor_target} .${addons.elementor_container_class}`);
-		if (!container) {
-			console.warn(`Ajax Load More Elementor: Unable to find Elementor container element.`);
-			return data;
-		}
+    // Get Page Title
+    var title = content.querySelector('title').innerHTML;
+    data.pageTitle = title;
 
-		// Get the first item and append data attributes.
-		const item = container ? container.querySelector(`.${addons.elementor_item_class}`) : null;
-		if (item) {
-			item.classList.add('alm-elementor');
-			item.dataset.url = url;
-			item.dataset.page = addons.elementor_paged;
-			item.dataset.pageTitle = title;
-		}
+    // Get Elementor Items container.
+    var container = content.querySelector("".concat(addons.elementor_target, " .").concat(addons.elementor_container_class));
+    if (!container) {
+      console.warn("Ajax Load More Elementor: Unable to find Elementor container element.");
+      return data;
+    }
 
-		// Count the number of returned items.
-		const items = container.querySelectorAll(`.${addons.elementor_item_class}`);
-		if (items) {
-			// Set the html to the elementor container data.
-			data.html = container ? container.innerHTML : '';
-			data.meta.postcount = items.length;
-			data.meta.totalposts = items.length;
+    // Get the first item and append data attributes.
+    var item = container ? container.querySelector(".".concat(addons.elementor_item_class)) : null;
+    if (item) {
+      item.classList.add('alm-elementor');
+      item.dataset.url = url;
+      item.dataset.page = addons.elementor_paged;
+      item.dataset.pageTitle = title;
+    }
 
-			// Create cache file.
-			createCache(alm, data, cache_slug);
-		}
-	}
-	return data;
+    // Count the number of returned items.
+    var items = container.querySelectorAll(".".concat(addons.elementor_item_class));
+    if (items) {
+      // Set the html to the elementor container data.
+      data.html = container ? container.innerHTML : '';
+      data.meta.postcount = items.length;
+      data.meta.totalposts = items.length;
+
+      // Create cache file.
+      createCache(alm, data, cache_slug);
+    }
+  }
+  return data;
 }
 
 /**
@@ -8598,41 +8406,47 @@ function elementorGetContent(alm, url, response, cache_slug) {
  * @since 5.3.0
  */
 function elementor(content, alm) {
-	if (!content || !alm) {
-		alm.AjaxLoadMore.triggerDone();
-		return false;
-	}
+  if (!content || !alm) {
+    alm.AjaxLoadMore.triggerDone();
+    return false;
+  }
+  return new Promise(function (resolve) {
+    var addons = alm.addons;
+    var container = alm.addons.elementor_element.querySelector(".".concat(addons.elementor_container_class)); // Get post container
+    var items = content.querySelectorAll(".".concat(addons.elementor_item_class)); // Get all items in container
 
-	return new Promise((resolve) => {
-		const { addons } = alm;
-		const container = alm.addons.elementor_element.querySelector(`.${addons.elementor_container_class}`); // Get post container
-		const items = content.querySelectorAll(`.${addons.elementor_item_class}`); // Get all items in container
+    if (container && items) {
+      var ElementorItems = Array.prototype.slice.call(items); // Convert NodeList to Array
 
-		if (container && items) {
-			const ElementorItems = Array.prototype.slice.call(items); // Convert NodeList to Array
-
-			// Trigger almElementorLoaded callback.
-			if (typeof almElementorLoaded === 'function') {
-				window.almElementorLoaded(ElementorItems);
-			}
-
-			(async function () {
-				// Load the items.
-				await loadItems(container, ElementorItems, alm);
-				if (addons.elementor_masonry) {
-					setTimeout(function () {
-						positionMasonryItems(alm, `.${addons.elementor_container_class}`, `.${addons.elementor_item_class}`);
-					}, 125);
-				}
-
-				resolve(true);
-			})().catch((e) => {
-				console.log(e, 'There was an error with Elementor'); // eslint-disable-line no-console
-			});
-		} else {
-			resolve(false);
-		}
-	});
+      // Trigger almElementorLoaded callback.
+      if (typeof almElementorLoaded === 'function') {
+        window.almElementorLoaded(ElementorItems);
+      }
+      elementor_asyncToGenerator( /*#__PURE__*/elementor_regeneratorRuntime().mark(function _callee() {
+        return elementor_regeneratorRuntime().wrap(function _callee$(_context) {
+          while (1) switch (_context.prev = _context.next) {
+            case 0:
+              _context.next = 2;
+              return loadItems(container, ElementorItems, alm);
+            case 2:
+              if (addons.elementor_masonry) {
+                setTimeout(function () {
+                  positionMasonryItems(alm, ".".concat(addons.elementor_container_class), ".".concat(addons.elementor_item_class));
+                }, 125);
+              }
+              resolve(true);
+            case 4:
+            case "end":
+              return _context.stop();
+          }
+        }, _callee);
+      }))()["catch"](function (e) {
+        console.warn(e, 'There was an error with Elementor'); // eslint-disable-line no-console
+      });
+    } else {
+      resolve(false);
+    }
+  });
 }
 
 /**
@@ -8642,89 +8456,27 @@ function elementor(content, alm) {
  * @since 5.5.0
  */
 function elementorLoaded(alm) {
-	const { trailing_slash, is_front_page } = alm_localize;
-	const { page, button, canonical_url, AjaxLoadMore, addons } = alm;
-	const nextPage = page + 1;
+  var page = alm.page,
+    AjaxLoadMore = alm.AjaxLoadMore,
+    addons = alm.addons;
+  var nextPage = page + 1;
+  var max_pages = addons.elementor_max_pages;
 
-	const sep = is_front_page === 'true' ? 'page/' : trailing_slash === 'true' ? '' : '/'; // eslint-disable-line no-nested-ternary
-	const slash = trailing_slash === 'true' ? '/' : '';
-	const url = `${canonical_url + sep}${nextPage + 1}${slash}`;
+  // Lazy load images if necessary.
+  lazyImages(alm);
 
-	const max_pages = addons.elementor_max_pages;
+  // Trigger almComplete.
+  if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
+    window.almComplete(alm);
+  }
 
-	// Set button data attributes.
-	setButtonAtts(button, nextPage, url);
+  // End transitions.
+  AjaxLoadMore.transitionEnd();
 
-	// Lazy load images if necessary.
-	lazyImages(alm);
-
-	// Trigger almComplete.
-	if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
-		window.almComplete(alm);
-	}
-
-	// End transitions.
-	AjaxLoadMore.transitionEnd();
-
-	// ALM Done.
-	if (nextPage >= max_pages) {
-		AjaxLoadMore.triggerDone();
-	}
-}
-
-/**
- * Create Elementor params for ALM.
- *
- * @param {Object} alm The alm object.
- * @return {Object}    The modified object.
- */
-function elementorCreateParams(alm) {
-	// Get Settings
-	alm.addons.elementor_type = 'posts';
-	alm.addons.elementor_settings = JSON.parse(alm.listing.dataset.elementorSettings);
-
-	// Parse Container Settings
-	alm.addons.elementor_target = alm.addons.elementor_settings.target;
-	alm.addons.elementor_element = alm.addons.elementor_settings.target
-		? document.querySelector(`.elementor-element ${alm.addons.elementor_settings.target}`)
-		: '';
-	alm.addons.elementor_widget = elementorGetWidgetType(alm.addons.elementor_element);
-
-	// Masonry
-	alm = setElementorClasses(alm, alm.addons.elementor_widget);
-
-	// Pagination Element
-	alm.addons.elementor_pagination =
-		alm.addons.elementor_element.querySelector(alm.addons.elementor_pagination_class) ||
-		alm.addons.elementor_element.querySelector(`.${alm.addons.elementor_settings.pagination_class}`);
-	alm.addons.elementor_pagination = alm.addons.elementor_pagination ? alm.addons.elementor_pagination : false;
-
-	alm.addons.elementor_controls = alm.addons.elementor_settings.controls;
-	alm.addons.elementor_controls = alm.addons.elementor_controls === 'true' ? true : false;
-	alm.addons.elementor_scrolltop = parseInt(alm.addons.elementor_settings.scrolltop);
-
-	// Get next page URL.
-	alm.addons.elementor_next_page = elementorGetNextUrl(alm.addons.elementor_pagination);
-
-	// Get the max pages.
-	alm.addons.elementor_max_pages = alm.addons.elementor_element.querySelector('.e-load-more-anchor');
-	alm.addons.elementor_max_pages = alm.addons.elementor_max_pages ? parseInt(alm.addons.elementor_max_pages.dataset.maxPage) : 999;
-
-	alm.addons.elementor_paged = alm.addons.elementor_settings.paged ? parseInt(alm.addons.elementor_settings.paged) : 1;
-	alm.page = parseInt(alm.page) + alm.addons.elementor_paged;
-
-	// Masonry
-	alm = parseMasonryConfig(alm);
-
-	if (!alm.addons.elementor_element) {
-		console.warn("Ajax Load More: Unable to locate Elementor Widget. Are you sure you've set up your target parameter correctly?");
-	}
-	if (!alm.addons.elementor_pagination) {
-		console.warn(
-			'Ajax Load More: Unable to locate Elementor pagination. There are either no results or Ajax Load More is unable to locate the pagination widget?'
-		);
-	}
-	return alm;
+  // ALM Done.
+  if (nextPage >= max_pages) {
+    AjaxLoadMore.triggerDone();
+  }
 }
 
 /**
@@ -8734,19 +8486,26 @@ function elementorCreateParams(alm) {
  * @param {string} type The Elementor type.
  * @return {Object}     The modified object.
  */
-function setElementorClasses(alm, type = 'posts') {
-	// Container Class
-	alm.addons.elementor_container_class =
-		type === 'woocommerce' ? alm.addons.elementor_settings.woo_container_class : alm.addons.elementor_settings.posts_container_class;
+function setElementorClasses(alm) {
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'posts';
+  // Get the items based on the Elementor type.
+  alm.addons.elementor_container_class = alm.addons.elementor_settings.container_class; // Container class
 
-	// Item Class
-	alm.addons.elementor_item_class = type === 'woocommerce' ? alm.addons.elementor_settings.woo_item_class : alm.addons.elementor_settings.posts_item_class;
-
-	// Pagination Class
-	alm.addons.elementor_pagination_class =
-		type === 'woocommerce' ? `.${alm.addons.elementor_settings.woo_pagination_class}` : `.${alm.addons.elementor_settings.posts_pagination_class}`;
-
-	return alm;
+  switch (type) {
+    case 'woocommerce':
+      alm.addons.elementor_item_class = alm.addons.elementor_settings.woo_item_class; // item class.
+      alm.addons.elementor_pagination_class = ".".concat(alm.addons.elementor_settings.woo_pagination_class); // Pagination class.
+      break;
+    case 'loop-grid':
+      alm.addons.elementor_item_class = alm.addons.elementor_settings.loop_grid_item_class; // item class.
+      alm.addons.elementor_pagination_class = ".".concat(alm.addons.elementor_settings.loop_grid_pagination_class); // Pagination class.
+      break;
+    default:
+      alm.addons.elementor_item_class = alm.addons.elementor_settings.posts_item_class; // item class.
+      alm.addons.elementor_pagination_class = ".".concat(alm.addons.elementor_settings.posts_pagination_class); // Pagination class.
+      break;
+  }
+  return alm;
 }
 
 /**
@@ -8756,26 +8515,27 @@ function setElementorClasses(alm, type = 'posts') {
  * @return {Object}    The modified object.
  */
 function parseMasonryConfig(alm) {
-	if (!alm.addons.elementor_element) {
-		return alm; // Exit if not found.
-	}
+  var _target$dataset;
+  var addons = alm.addons;
+  if (!addons.elementor_element) {
+    return alm; // Exit if not found.
+  }
 
-	const target = alm.addons.elementor_element;
+  var target = addons.elementor_element;
+  var settings = target !== null && target !== void 0 && (_target$dataset = target.dataset) !== null && _target$dataset !== void 0 && _target$dataset.settings ? JSON.parse(target.dataset.settings) : '';
+  if (!settings) {
+    return alm; // Exit if not found.
+  }
 
-	const settings = target.dataset.settings ? JSON.parse(target.dataset.settings) : '';
-	if (!settings) {
-		return alm; // Exit if not found.
-	}
-
-	alm.addons.elementor_masonry = settings.hasOwnProperty('cards_masonry') || settings.hasOwnProperty('classic_masonry');
-	if (alm.addons.elementor_masonry) {
-		alm.addons.elementor_masonry_columns = parseInt(settings.cards_columns) || parseInt(settings.classic_columns);
-		alm.addons.elementor_masonry_columns_mobile = parseInt(settings.cards_columns_mobile) || parseInt(settings.classic_columns_mobile);
-		alm.addons.elementor_masonry_columns_tablet = parseInt(settings.cards_columns_tablet) || parseInt(settings.classic_columns_tablet);
-		alm.addons.elementor_masonry_gap = parseInt(settings.cards_row_gap.size);
-	}
-
-	return alm;
+  addons.elementor_masonry = settings.hasOwnProperty('cards_masonry') || settings.hasOwnProperty('classic_masonry') || settings.hasOwnProperty('masonry');
+  if (addons.elementor_masonry) {
+    var _settings$cards_row_g, _settings$row_gap;
+    addons.elementor_masonry_columns = parseInt(settings === null || settings === void 0 ? void 0 : settings.cards_columns) || parseInt(settings === null || settings === void 0 ? void 0 : settings.classic_columns) || parseInt(settings === null || settings === void 0 ? void 0 : settings.columns);
+    addons.elementor_masonry_columns_mobile = parseInt(settings === null || settings === void 0 ? void 0 : settings.cards_columns_mobile) || parseInt(settings === null || settings === void 0 ? void 0 : settings.classic_columns_mobile) || parseInt(settings === null || settings === void 0 ? void 0 : settings.columns_mobile);
+    addons.elementor_masonry_columns_tablet = parseInt(settings === null || settings === void 0 ? void 0 : settings.cards_columns_tablet) || parseInt(settings === null || settings === void 0 ? void 0 : settings.classic_columns_tablet) || parseInt(settings === null || settings === void 0 ? void 0 : settings.columns_tablet);
+    addons.elementor_masonry_gap = parseInt(settings === null || settings === void 0 || (_settings$cards_row_g = settings.cards_row_gap) === null || _settings$cards_row_g === void 0 ? void 0 : _settings$cards_row_g.size) || parseInt(settings === null || settings === void 0 || (_settings$row_gap = settings.row_gap) === null || _settings$row_gap === void 0 ? void 0 : _settings$row_gap.size);
+  }
+  return alm;
 }
 
 /**
@@ -8786,55 +8546,53 @@ function parseMasonryConfig(alm) {
  * @param {string} item_class      The item classname.
  */
 function positionMasonryItems(alm, container_class, item_class) {
-	const heights = [];
+  var heights = [];
 
-	// Get Elementor Settings
-	const columnsCount = alm.addons.elementor_masonry_columns;
-	const columnsCountTablet = alm.addons.elementor_masonry_columns_tablet;
-	const columnsCountMobile = alm.addons.elementor_masonry_columns_mobile;
-	const verticalSpaceBetween = alm.addons.elementor_masonry_gap;
-	let columns = columnsCount;
+  // Get Elementor Settings
+  var columnsCount = alm.addons.elementor_masonry_columns;
+  var columnsCountTablet = alm.addons.elementor_masonry_columns_tablet;
+  var columnsCountMobile = alm.addons.elementor_masonry_columns_mobile;
+  var verticalSpaceBetween = alm.addons.elementor_masonry_gap;
+  var columns = columnsCount;
 
-	// Get Elementor Breakpoints
-	const breakpoints = window.elementorFrontendConfig && window.elementorFrontendConfig.breakpoints ? window.elementorFrontendConfig.breakpoints : 0;
-	const windowW = window.innerWidth;
+  // Get Elementor Breakpoints
+  var breakpoints = window.elementorFrontendConfig && window.elementorFrontendConfig.breakpoints ? window.elementorFrontendConfig.breakpoints : 0;
+  var windowW = window.innerWidth;
 
-	// Set Columns
-	if (windowW > breakpoints.lg) {
-		columns = columnsCount;
-	} else if (windowW > breakpoints.md) {
-		columns = columnsCountTablet;
-	} else {
-		columns = columnsCountMobile;
-	}
+  // Set Columns
+  if (windowW > breakpoints.lg) {
+    columns = columnsCount;
+  } else if (windowW > breakpoints.md) {
+    columns = columnsCountTablet;
+  } else {
+    columns = columnsCountMobile;
+  }
 
-	// Get Containers
-	const container = document.querySelector(container_class);
-	if (!container) {
-		return false;
-	}
-	const items = container.querySelectorAll(item_class);
-	if (!items) {
-		return false;
-	}
+  // Get Containers
+  var container = document.querySelector(container_class);
+  if (!container) {
+    return false;
+  }
+  var items = container.querySelectorAll(item_class);
+  if (!items) {
+    return false;
+  }
 
-	// Loop items
-	items.forEach((item, index) => {
-		const row = Math.floor(index / columns);
-		const itemHeight = item.getBoundingClientRect().height + verticalSpaceBetween;
-
-		if (row) {
-			const itemPosition = jQuery(item).position();
-			const indexAtRow = index % columns;
-			let pullHeight = Math.round(itemPosition.top) - heights[indexAtRow];
-
-			pullHeight *= -1;
-			item.style.marginTop = `${Math.round(pullHeight)}px`;
-			heights[indexAtRow] += itemHeight;
-		} else {
-			heights.push(itemHeight);
-		}
-	});
+  // Loop items
+  items.forEach(function (item, index) {
+    var row = Math.floor(index / columns);
+    var itemHeight = item.getBoundingClientRect().height + verticalSpaceBetween;
+    if (row) {
+      var itemPosition = jQuery(item).position();
+      var indexAtRow = index % columns;
+      var pullHeight = Math.round(itemPosition.top) - heights[indexAtRow];
+      pullHeight *= -1;
+      item.style.marginTop = "".concat(Math.round(pullHeight), "px");
+      heights[indexAtRow] += itemHeight;
+    } else {
+      heights.push(itemHeight);
+    }
+  });
 }
 
 /**
@@ -8844,62 +8602,148 @@ function positionMasonryItems(alm, container_class, item_class) {
  * @return {string}            The Elementor type.
  */
 function elementorGetWidgetType(target) {
-	if (!target) {
-		return false;
-	}
-	// If container contains the woocommerce elementor class
-	const type = target.classList.contains('elementor-wc-products') ? 'woocommerce' : 'posts';
-	return type;
+  if (!target) {
+    return false;
+  }
+
+  // Get Elementor type based on container class.
+  if (target.classList.contains('elementor-wc-products')) {
+    // WooCommerce.
+    return 'woocommerce';
+  } else if (target.classList.contains('elementor-widget-loop-grid')) {
+    // Loop Grid.
+    return 'loop-grid';
+  }
+  return 'posts';
 }
 
 /**
- * Get the upcoming URL from the a.next link from the HTML
+ * Get the pagination container for the Elementor pagination.
  *
- * @param {HTMLElement} element   The target element
- * @param {string}      classname The classname.
- * @return {HTMLElement}          The next page element.
+ * @param {Object}  alm     The alm object.
+ * @param {Element} content The HTML content to search.
+ * @return {HTMLElement}    The pagination element.
  */
-function elementorGetNextPage(element, classname) {
-	const pagination = element.querySelector(classname);
-	return pagination ? elementorGetNextUrl(pagination) : '';
-}
+function elementorGetNextUrl(alm, content) {
+  var _addons$elementor_set, _element$querySelecto;
+  var _alm$addons = alm.addons,
+    addons = _alm$addons === void 0 ? {} : _alm$addons;
 
+  // Locate the pagination container.
+  var element = (content === null || content === void 0 ? void 0 : content.querySelector(addons === null || addons === void 0 ? void 0 : addons.elementor_pagination_class)) || (content === null || content === void 0 ? void 0 : content.querySelector(".".concat(addons === null || addons === void 0 || (_addons$elementor_set = addons.elementor_settings) === null || _addons$elementor_set === void 0 ? void 0 : _addons$elementor_set.pagination_class)));
+
+  // Get the next page URL from the pagination element.
+  var nextpage = element === null || element === void 0 || (_element$querySelecto = element.querySelector('a.next')) === null || _element$querySelecto === void 0 ? void 0 : _element$querySelecto.href;
+
+  // Return the next page URL.
+  return nextpage ? nextpage : false;
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/getParameterByName.js
 /**
- * Get the URL of the next page to load from the a.next href
+ * Return a query param by name.
  *
- * @param {HTMLElement} element The target element
- * @return {HTMLElement}        The next page element.
+ * @param {string} name The query param name.
+ * @param {string} url  The URL.
+ * @return {string}     The query param value.
  */
-function elementorGetNextUrl(element) {
-	if (!element) {
-		return '';
-	}
-	return element.querySelector('a.next') ? element.querySelector('a.next').href : '';
+function getParameterByName(name, url) {
+  if (!url) url = window.location.href;
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+  var results = regex.exec(url);
+  if (!results) {
+    return null;
+  }
+  if (!results[2]) {
+    return '';
+  }
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/getQueryVariable.js
+;// CONCATENATED MODULE: ./src/frontend/js/functions/getQueryVariable.js
 /**
  * Get a query variable from location querystring
  *
  * @param {string} variable
  * @since 5.3.4
  */
-const getQueryVariable = function (variable) {
-	const query = window.location.search.substring(1);
-	const vars = query.split('&');
-	for (let i = 0; i < vars.length; i++) {
-		const pair = vars[i].split('=');
-		if (decodeURIComponent(pair[0]) === variable) {
-			return decodeURIComponent(pair[1]);
-		}
-	}
-	return false;
-};
-/* harmony default export */ var helpers_getQueryVariable = (getQueryVariable);
-
+function getQueryVariable(variable) {
+  var query = window.location.search.substring(1);
+  var vars = query.split('&');
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split('=');
+    if (decodeURIComponent(pair[0]) === variable) {
+      return decodeURIComponent(pair[1]);
+    }
+  }
+  return false;
+}
 ;// CONCATENATED MODULE: ./src/frontend/js/addons/filters.js
 
-const FILTERS_CLASSNAME = 'alm-filters';
+
+
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function filtersCreateParams(alm) {
+  var _alm$listing;
+  var listing = alm.listing;
+  alm.addons.filters = (alm === null || alm === void 0 || (_alm$listing = alm.listing) === null || _alm$listing === void 0 || (_alm$listing = _alm$listing.dataset) === null || _alm$listing === void 0 ? void 0 : _alm$listing.filters) === 'true';
+  if (alm.addons.filters) {
+    alm.addons.filters_url = listing.dataset.filtersUrl === 'true';
+    alm.addons.filters_target = listing.dataset.filtersTarget ? listing.dataset.filtersTarget : false;
+    alm.addons.filters_paging = listing.dataset.filtersPaging === 'true';
+    alm.addons.filters_scroll = listing.dataset.filtersScroll === 'true';
+    alm.addons.filters_scrolltop = listing.dataset.filtersScrolltop ? listing.dataset.filtersScrolltop : '30';
+    alm.addons.filters_debug = listing.dataset.filtersDebug;
+    alm.facets = listing.dataset.facets === 'true';
+
+    // Display warning when `filters_target` parameter is missing.
+    if (!alm.addons.filters_target) {
+      console.warn('Ajax Load More: Unable to locate a target for Filters. Make sure you set a target parameter in the core Ajax Load More shortcode - e.g. [ajax_load_more filters="true" target="filters"]');
+    }
+
+    // Parse querystring value for pg.
+    var page = getParameterByName('pg');
+    alm.addons.filters_startpage = page !== null ? parseInt(page) : 0;
+
+    // Handle a paged URL with filters.
+    if (alm.addons.filters_startpage > 0) {
+      if (alm.addons.paging) {
+        // Paging add-on: Set current page value.
+        alm.page = alm.addons.filters_startpage - 1;
+      } else {
+        // Set posts_per_page value to load all required posts.
+        alm.posts_per_page = alm.posts_per_page * alm.addons.filters_startpage;
+        alm.paged = true;
+      }
+    }
+  }
+  return alm;
+}
+
+/**
+ * Create data attributes for a Filters item.
+ *
+ * @param {Object}      alm     The ALM object.
+ * @param {HTMLElement} element The element HTML node.
+ * @param {number}      pagenum The current page number.
+ * @return {HTMLElement}        Modified HTML element.
+ */
+function addFiltersAttributes(alm, element, pagenum) {
+  var canonical_url = alm.canonical_url;
+  var querystring = window.location.search;
+  element.classList.add('alm-filters');
+  element.dataset.page = pagenum;
+  if (pagenum > 1) {
+    element.dataset.url = canonical_url + buildFilterURL(alm, querystring, pagenum);
+  } else {
+    element.dataset.url = canonical_url + buildFilterURL(alm, querystring, 0);
+  }
+  return element;
+}
 
 /**
  * Parse a filter querystring for returning caches directories.
@@ -8908,41 +8752,37 @@ const FILTERS_CLASSNAME = 'alm-filters';
  * @since 5.3.1
  */
 function parseQuerystring(path) {
-	// Get querystring
-	const query = window.location.search.substring(1);
+  // Get querystring
+  var query = window.location.search.substring(1);
+  var obj = '';
+  var cache_dir = '';
 
-	let obj = '';
-	let cache_dir = '';
+  // Parse querystring into object
+  if (query) {
+    obj = JSON.parse('{"' + query.replace(/&/g, '","').replace(/=/g, '":"') + '"}', function (key, value) {
+      // Replace + with - in URL
+      return key === '' ? value : decodeURIComponent(value.replace(/\+/g, '-'));
+    });
 
-	// Parse querystring into object
-	if (query) {
-		obj = JSON.parse('{"' + query.replace(/&/g, '","').replace(/=/g, '":"') + '"}', function (key, value) {
-			// Replace + with - in URL
-			return key === '' ? value : decodeURIComponent(value.replace(/\+/g, '-'));
-		});
+    // Remove the following properties from the object as they should not be included in the cache ID
 
-		// Remove the following properties from the object as they should not be included in the cache ID
-
-		if (obj.pg) {
-			// `pg` object prop
-			delete obj.pg;
-		}
-
-		if (obj.auto) {
-			// `auto` object prop
-			delete obj.auto;
-		}
-	}
-
-	if (obj) {
-		cache_dir += '/';
-		Object.keys(obj).forEach((key, index) => {
-			cache_dir += index > 0 ? '--' : '';
-			cache_dir += `${key}--${obj[key]}`;
-		});
-	}
-
-	return path + cache_dir;
+    if (obj.pg) {
+      // `pg` object prop
+      delete obj.pg;
+    }
+    if (obj.auto) {
+      // `auto` object prop
+      delete obj.auto;
+    }
+  }
+  if (obj) {
+    cache_dir += '/';
+    Object.keys(obj).forEach(function (key, index) {
+      cache_dir += index > 0 ? '--' : '';
+      cache_dir += "".concat(key, "--").concat(obj[key]);
+    });
+  }
+  return path + cache_dir;
 }
 
 /**
@@ -8951,249 +8791,322 @@ function parseQuerystring(path) {
  * @param {Object} alm         The ALM object.
  * @param {string} querystring The current querystring.
  * @param {number} page        The page number.
+ * @return {string}            The querystring.
  * @since 5.3.5
  */
-function buildFilterURL(alm, querystring = '', page = 0) {
-	let qs = querystring;
+function buildFilterURL(alm) {
+  var querystring = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  var page = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  var qs = querystring;
+  if (alm.addons.filters_paging) {
+    if (page > 1) {
+      // Paged
+      if (qs) {
+        // If already has `pg` in querystring
+        if (getQueryVariable('pg')) {
+          qs = querystring.replace(/(pg=)[^\&]+/, '$1' + page);
+        } else {
+          qs = querystring + '&pg=' + page;
+        }
+      } else {
+        qs = '?pg=' + page;
+      }
+    } else {
+      // Not Paged
+      qs = querystring.replace(/(pg=)[^\&]+/, '');
+      qs = qs === '?' ? '' : qs; // Remove `?` if only symbol in querystring
+      qs = qs[qs.length - 1] === '&' ? qs.slice(0, -1) : qs; // Remove trailing `&` symbols
+    }
+  }
 
-	if (alm.addons.filters_paging) {
-		if (page > 1) {
-			// Paged
-			if (qs) {
-				// If already has `pg` in querystring
-				if (helpers_getQueryVariable('pg')) {
-					qs = querystring.replace(/(pg=)[^\&]+/, '$1' + page);
-				} else {
-					qs = querystring + '&pg=' + page;
-				}
-			} else {
-				qs = '?pg=' + page;
-			}
-		} else {
-			// Not Paged
-			qs = querystring.replace(/(pg=)[^\&]+/, '');
-			qs = qs === '?' ? '' : qs; // Remove `?` if only symbol in querystring
-			qs = qs[qs.length - 1] === '&' ? qs.slice(0, -1) : qs; // Remove trailing `&` symbols
-		}
-	}
+  return qs;
+}
+;// CONCATENATED MODULE: ./src/frontend/js/addons/next-page.js
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function nextpageCreateParams(alm) {
+  var _listing$dataset;
+  var listing = alm.listing;
+  alm.addons.nextpage = (listing === null || listing === void 0 || (_listing$dataset = listing.dataset) === null || _listing$dataset === void 0 ? void 0 : _listing$dataset.nextpage) === 'true';
+  if (alm.addons.nextpage) {
+    alm.addons.nextpage_urls = listing.dataset.nextpageUrls === undefined ? 'true' : listing.dataset.nextpageUrls;
+    alm.addons.nextpage_scroll = listing.dataset.nextpageScroll === undefined ? 'false:30' : listing.dataset.nextpageScroll;
+    alm.addons.nextpage_post_id = listing.dataset.nextpagePostId ? listing.dataset.nextpagePostId : false;
+    alm.addons.nextpage_startpage = listing.dataset.nextpageStartpage ? parseInt(listing.dataset.nextpageStartpage) : 1;
+    alm.addons.nextpage_title_template = listing.dataset.nextpageTitleTemplate;
+    alm.addons.nextpage_postTitle = alm.listing.dataset.nextpagePostTitle;
 
-	return qs;
+    // Set default fallbacks.
+    alm.posts_per_page = 1;
+    alm.orginal_posts_per_page = 1;
+    if (!alm.addons.nextpage_post_id) {
+      alm.addons.nextpage = false;
+    }
+    if (alm.addons.nextpage_startpage > 1) {
+      alm.paged = true;
+    }
+  }
+  return alm;
+}
+;// CONCATENATED MODULE: ./src/frontend/js/modules/insertScript.js
+/**
+ * Search nodes for <script/> tags and run scripts.
+ * Scripts cannot run with appendChild or innerHTML so this is necessary to function.
+ *
+ * @since 5.0
+ */
+var insertScript = {
+  /**
+   * Initiate the script insertion.
+   *
+   * @param {Array} nodes The HTML nodes.
+   */
+  init: function init(nodes) {
+    var _this = this;
+    if (!(nodes !== null && nodes !== void 0 && nodes.length)) {
+      return false;
+    }
+    nodes.forEach(function (node) {
+      _this.check(node);
+    });
+  },
+  /**
+   * Parse HTML node from script.
+   *
+   * @param {HTMLElement} node The HTML node/element.
+   * @return {HTMLElement}     The modified HTML node.
+   */
+  check: function check(node) {
+    if (this.isScript(node) === true) {
+      node.parentNode.replaceChild(this.clone(node), node);
+    } else {
+      var i = 0;
+      var children = node.childNodes;
+      if (children === undefined) {
+        var parser = new DOMParser();
+        var data = parser.parseFromString(node, 'text/html');
+        if (data) {
+          children = data.body.childNodes;
+        }
+      }
+      while (i < children.length) {
+        this.replace(children[i++]);
+      }
+    }
+    return node;
+  },
+  /**
+   * Replace the script tag with a clone.
+   *
+   * @param {HTMLElement} node The HTML node/element.
+   * @return {HTMLElement}     The modified node.
+   */
+  replace: function replace(node) {
+    if (this.isScript(node) === true) {
+      node.parentNode.replaceChild(this.clone(node), node);
+    } else {
+      var i = 0;
+      var children = node.childNodes;
+      while (i < children.length) {
+        this.replace(children[i++]);
+      }
+    }
+    return node;
+  },
+  /**
+   * Clone the tag.
+   *
+   * @param {HTMLElement} node The HTML node/element.
+   * @return {HTMLElement}     The cloned node.
+   */
+  clone: function clone(node) {
+    var script = document.createElement('script');
+    script.text = node.innerHTML;
+    for (var i = node.attributes.length - 1; i >= 0; i--) {
+      script.setAttribute(node.attributes[i].name, node.attributes[i].value);
+    }
+    return script;
+  },
+  /**
+   * Is the node a script tag.
+   *
+   * @param {HTMLElement} node The html node.
+   */
+  isScript: function isScript(node) {
+    return node.tagName === 'SCRIPT';
+  }
+};
+/* harmony default export */ var modules_insertScript = (insertScript);
+;// CONCATENATED MODULE: ./src/frontend/js/addons/paging.js
+
+
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function pagingCreateParams(alm) {
+  var listing = alm.listing;
+  alm.addons.paging = listing.dataset.paging === 'true';
+  if (alm.addons.paging) {
+    alm.addons.paging_init = true;
+    alm.addons.paging_controls = listing.dataset.pagingControls === 'true';
+    alm.addons.paging_show_at_most = listing.dataset.pagingShowAtMost ? parseInt(listing.dataset.pagingShowAtMost) : 6;
+    alm.addons.paging_classes = listing.dataset.pagingClasses;
+    alm.addons.paging_first_label = listing.dataset.pagingFirstLabel;
+    alm.addons.paging_previous_label = listing.dataset.pagingPreviousLabel;
+    alm.addons.paging_next_label = listing.dataset.pagingNextLabel;
+    alm.addons.paging_last_label = listing.dataset.pagingLastLabel;
+    alm.addons.paging_scroll = listing.dataset.pagingScroll ? listing.dataset.pagingScroll : false;
+    alm.addons.paging_scrolltop = listing.dataset.pagingScrolltop ? parseInt(listing.dataset.pagingScrolltop) : 100;
+    alm.addons.paging_container = listing.querySelector('.alm-paging-content');
+    alm.pause = alm.addons.preloaded ? true : alm.pause; // If preloaded, pause ALM.
+  }
+
+  return alm;
 }
 
 /**
- * Create data attributes for Filters paged results.
+ * Function dispatched after paging content has been loaded.
  *
- * @param {Object} alm     The ALM object.
- * @param {Array}  element An array of filter elements.
- * @since 5.3.1
+ * @param {Object}  alm              The alm object.
+ * @param {boolean} alm_is_filtering Is ALM filtering.
+ * @param {boolean} init             Is first run.
  */
-function createMasonryFiltersPage(alm, element) {
-	if (!alm.addons.filters) {
-		return element;
-	}
+function pagingComplete(alm) {
+  var alm_is_filtering = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+  var init = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  var main = alm.main,
+    AjaxLoadMore = alm.AjaxLoadMore,
+    last_loaded = alm.last_loaded;
+  main.classList.remove('alm-loading');
+  AjaxLoadMore.triggerAddons(alm);
+  if (init) {
+    if (typeof almPagingComplete === 'function') {
+      window.almPagingComplete();
+    }
+  } else {
+    // Dispatch almOnPagingComplete callback when not alm.init.
+    if (typeof almOnPagingComplete === 'function') {
+      window.almOnPagingComplete(alm); // Callback: Paging Add-on Complete.
+    }
+  }
 
-	const querystring = window.location.search;
-	let page = alm.page + 1;
-	page = alm.addons.preloaded === 'true' ? page + 1 : page;
-	element = masonryFiltersAtts(alm, element, querystring, page);
+  if (alm_is_filtering && alm.addons.filters && typeof almFiltersAddonComplete === 'function') {
+    window.almFiltersAddonComplete(main); // Callback: Filters Add-on Complete
+  }
 
-	return element;
+  if (typeof almComplete === 'function') {
+    window.almComplete(alm); // Callback: ALM Complete
+  }
+
+  // Trigger <script /> tags in templates.
+  modules_insertScript.init(last_loaded);
 }
+;// CONCATENATED MODULE: ./src/frontend/js/functions/constants.js
+var EXCLUDED_NODES = ['#text', '#comment'];
+;// CONCATENATED MODULE: ./src/frontend/js/functions/stripEmptyNodes.js
+
 
 /**
- * Create data attributes for Filters - used when ?pg=2, ?pg=3 etc are hit on page load
+ * Remove empty HTML nodes from array of nodes.
+ * Filter out nodes by nodeName.
  *
- * @param {Object} alm      The ALM object.
- * @param {Array}  elements An array of filter elements.
- * @since 5.3.1
+ * @param {Array} nodes Array of HTML nodes
+ * @return {Array} The filtered array of HTML nodes
+ * @since 5.1.3
  */
-function createMasonryFiltersPages(alm, elements) {
-	if (!alm.addons.filters) {
-		return elements;
-	}
-
-	let pagenum = 1;
-	const page = alm.page;
-	const querystring = window.location.search;
-
-	if (alm.addons.filters_startpage > 1) {
-		// Create pages
-		const posts_per_page = parseInt(alm.posts_per_page);
-		const return_data = [];
-
-		// Slice data array into individual pages
-		for (let i = 0; i < elements.length; i += posts_per_page) {
-			return_data.push(elements.slice(i, posts_per_page + i));
-		}
-
-		// Loop new data array
-		for (let k = 0; k < return_data.length; k++) {
-			const target = k > 0 ? k * posts_per_page : 0;
-			pagenum = k + 1;
-
-			if (elements[target]) {
-				elements[target] = masonryFiltersAtts(alm, elements[target], querystring, pagenum);
-			}
-		}
-	} else {
-		pagenum = page;
-		if (elements && elements[0]) {
-			elements[0] = masonryFiltersAtts(alm, elements[0], querystring, pagenum);
-		}
-	}
-
-	return elements;
-}
-
-/**
- * Create the attributes (page, url, classes)  for the masonry items.
- *
- * @param {Object}  alm         The ALM object.
- * @param {Element} element     The container element.
- * @param {string}  querystring The current querystring.
- * @param {number}  pagenum     The page number.
- * @return {Element}            Modified HTML element.
- */
-function masonryFiltersAtts(alm, element, querystring, pagenum) {
-	element.classList.add(FILTERS_CLASSNAME);
-	element.dataset.page = pagenum;
-	if (pagenum > 1) {
-		element.dataset.url = alm.canonical_url + buildFilterURL(alm, querystring, pagenum);
-	} else {
-		let updatedQS = querystring.replace(/(pg=)[^\&]+/, ''); // Remove `pg` from querysting
-		updatedQS = updatedQS === '?' ? '' : updatedQS; // Remove empty querysting
-
-		element.dataset.url = alm.canonical_url + updatedQS;
-	}
-
-	return element;
-}
-
+var stripEmptyNodes = function stripEmptyNodes() {
+  var nodes = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+  return (nodes === null || nodes === void 0 ? void 0 : nodes.length) && nodes.filter(function (node) {
+    return EXCLUDED_NODES.indexOf(node.nodeName.toLowerCase()) === -1;
+  });
+};
+/* harmony default export */ var functions_stripEmptyNodes = (stripEmptyNodes);
 ;// CONCATENATED MODULE: ./src/frontend/js/addons/seo.js
 /**
- * Create data attributes for SEO paged results.
+ * Create add-on params for ALM.
  *
- * @param {Object} alm
- * @param {Array}  element
- * @since 5.3.1
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
  */
-function createMasonrySEOPage(alm, element) {
-	if (!alm.addons.seo) {
-		return element;
-	}
-
-	const querystring = window.location.search;
-	const seo_class = 'alm-seo';
-	let page = alm.page + 1;
-	page = alm.addons.preloaded === 'true' ? page + 1 : page;
-	element = masonrySEOAtts(alm, element, querystring, seo_class, page);
-
-	return element;
+function seoCreateParams(alm) {
+  var _alm$listing;
+  var listing = alm.listing;
+  alm.addons.seo = listing.dataset.seo === 'true';
+  if (alm.addons.seo) {
+    alm.addons.seo_offset = listing.dataset.seoOffset || false;
+    alm.addons.seo_permalink = listing.dataset.seoPermalink;
+    alm.addons.seo_trailing_slash = listing.dataset.seoTrailingSlash === 'false' ? '' : '/';
+    alm.addons.seo_leading_slash = listing.dataset.seoLeadingSlash === 'true' ? '/' : '';
+    if (alm.addons.seo_offset === 'true') {
+      alm.offset = alm.posts_per_page;
+    }
+  }
+  alm.start_page = (alm === null || alm === void 0 || (_alm$listing = alm.listing) === null || _alm$listing === void 0 || (_alm$listing = _alm$listing.dataset) === null || _alm$listing === void 0 ? void 0 : _alm$listing.seoStartPage) || '';
+  if (alm.start_page) {
+    alm.start_page = parseInt(alm.start_page);
+    alm.addons.seo_scroll = listing.dataset.seoScroll;
+    alm.addons.seo_scrolltop = listing.dataset.seoScrolltop;
+    alm.addons.seo_controls = listing.dataset.seoControls;
+    alm.paged = false;
+    if (alm.start_page > 1) {
+      alm.paged = true;
+      if (alm.addons.paging) {
+        // Paging add-on: Set current page value.
+        alm.page = alm.start_page - 1;
+      } else {
+        // Set posts_per_page value to load all required posts.
+        alm.posts_per_page = alm.start_page * alm.posts_per_page;
+      }
+    }
+  } else {
+    alm.start_page = 1;
+  }
+  return alm;
 }
 
 /**
- * Create data attributes for SEO -  used when /page/2/, /page/3/ etc are hit on page load.
+ * Create data attributes for an SEO item.
  *
- * @param {Object} alm
- * @param {Array}  elements
- * @since 5.3.1
+ * @param {Object}      alm        The ALM object.
+ * @param {HTMLElement} element    The element HTML node.
+ * @param {number}      pagenum    The current page number.
+ * @param {boolean}     skipOffset Skip the SEO offset check.
+ * @return {HTMLElement}           Modified HTML element.
  */
-function createMasonrySEOPages(alm, elements) {
-	if (!alm.addons.seo) {
-		return elements;
-	}
-
-	let pagenum = 1;
-	const page = alm.page;
-	const seo_class = 'alm-seo';
-	const querystring = window.location.search;
-
-	if (alm.start_page > 1) {
-		// Create pages
-		const posts_per_page = parseInt(alm.posts_per_page);
-		const return_data = [];
-
-		// Slice data array into individual pages
-		for (let i = 0; i < elements.length; i += posts_per_page) {
-			return_data.push(elements.slice(i, posts_per_page + i));
-		}
-
-		// Loop new data array
-		for (let k = 0; k < return_data.length; k++) {
-			const target = k > 0 ? k * posts_per_page : 0;
-			pagenum = k + 1;
-			if (elements[target]) {
-				elements[target] = masonrySEOAtts(alm, elements[target], querystring, seo_class, pagenum);
-			}
-		}
-	} else {
-		pagenum = page;
-		elements[0] = masonrySEOAtts(alm, elements[0], querystring, seo_class, pagenum);
-	}
-
-	return elements;
-}
-
-/**
- * Create the attributes (page, url, classes) for the masonry items.
- *
- * @param {Object} alm
- * @param {Object} element
- * @param {string} querystring
- * @param {string} seo_class
- * @param {number} pagenum
- * @return {HTMLElement} Modified HTML element.
- */
-function masonrySEOAtts(alm, element, querystring, seo_class, pagenum) {
-	element.classList.add(seo_class);
-	element.dataset.page = pagenum;
-
-	if (alm.addons.seo_permalink === 'default') {
-		// Default Permalinks
-		if (pagenum > 1) {
-			element.dataset.url = alm.canonical_url + querystring + '&paged=' + pagenum;
-		} else {
-			element.dataset.url = alm.canonical_url + querystring;
-		}
-	} else {
-		// Pretty Permalinks
-		if (pagenum > 1) {
-			element.dataset.url = alm.canonical_url + alm.addons.seo_leading_slash + 'page/' + pagenum + alm.addons.seo_trailing_slash + querystring;
-		} else {
-			element.dataset.url = alm.canonical_url + querystring;
-		}
-	}
-
-	return element;
-}
-
-/**
- * Create data attributes for SEO -  used when /page/2/, /page/3/ etc are hit on page load.
- *
- * @param {Object}      alm         ALM object.
- * @param {HTMLElement} element     Div element.
- * @param {string}      querystring Current querystring.
- * @param {string}      seo_class   Classname to add to element.
- * @param {number}      pagenum     Current page number.
- * @return {HTMLElement}            Modified HTML element.
- * @since 5.3.1
- */
-function createSEOAttributes(alm, element, querystring, seo_class, pagenum) {
-	element.setAttribute('class', 'alm-reveal' + seo_class + alm.tcc);
-	element.dataset.page = pagenum;
-
-	if (alm.addons.seo_permalink === 'default') {
-		// Default Permalinks
-		element.dataset.url = pagenum > 1 ? alm.canonical_url + querystring + '&paged=' + pagenum : alm.canonical_url + querystring;
-	} else {
-		// Pretty Permalinks
-		element.dataset.url =
-			pagenum > 1
-				? alm.canonical_url + alm.addons.seo_leading_slash + 'page/' + pagenum + alm.addons.seo_trailing_slash + querystring
-				: alm.canonical_url + querystring;
-	}
-
-	return element;
+function addSEOAttributes(alm, element, pagenum) {
+  var skipOffset = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  var addons = alm.addons,
+    canonical_url = alm.canonical_url;
+  var _alm_localize = alm_localize,
+    _alm_localize$retain_ = _alm_localize.retain_querystring,
+    retain_querystring = _alm_localize$retain_ === void 0 ? true : _alm_localize$retain_;
+  var querystring = retain_querystring ? window.location.search : '';
+  pagenum = !skipOffset ? getSEOPageNum(addons === null || addons === void 0 ? void 0 : addons.seo_offset, pagenum) : pagenum;
+  element.classList.add('alm-seo');
+  element.dataset.page = pagenum;
+  if (addons.seo_permalink === 'default') {
+    // Default Permalinks
+    if (pagenum > 1) {
+      element.dataset.url = "".concat(canonical_url).concat(querystring, "&paged=").concat(pagenum);
+    } else {
+      element.dataset.url = "".concat(canonical_url).concat(querystring);
+    }
+  } else {
+    // Pretty Permalinks
+    if (pagenum > 1) {
+      element.dataset.url = "".concat(canonical_url).concat(addons.seo_leading_slash, "page/").concat(pagenum).concat(addons.seo_trailing_slash).concat(querystring);
+    } else {
+      element.dataset.url = "".concat(canonical_url).concat(querystring);
+    }
+  }
+  return element;
 }
 
 /**
@@ -9204,14 +9117,142 @@ function createSEOAttributes(alm, element, querystring, seo_class, pagenum) {
  * @return {number}           The page number.
  */
 function getSEOPageNum(seo_offset, page) {
-	if (seo_offset === 'true') {
-		return parseInt(page) + 1;
-	}
-	return page;
+  return seo_offset === 'true' ? parseInt(page) + 1 : parseInt(page);
 }
 
+/**
+ * Create div to hold offset values for SEO.
+ *
+ * @param {Object} alm The ALM object.
+ */
+function createSEOOffset(alm) {
+  var offsetDiv = document.createElement('div');
+  // Add data attributes.
+  offsetDiv = addSEOAttributes(alm, offsetDiv, 1, true);
+
+  // Insert into ALM container.
+  alm.main.insertBefore(offsetDiv, alm.listing);
+}
+;// CONCATENATED MODULE: ./src/frontend/js/addons/preloaded.js
+function preloaded_toConsumableArray(arr) { return preloaded_arrayWithoutHoles(arr) || preloaded_iterableToArray(arr) || preloaded_unsupportedIterableToArray(arr) || preloaded_nonIterableSpread(); }
+function preloaded_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function preloaded_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return preloaded_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return preloaded_arrayLikeToArray(o, minLen); }
+function preloaded_iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function preloaded_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return preloaded_arrayLikeToArray(arr); }
+function preloaded_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+
+
+
+
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function preloadedCreateParams(alm) {
+  var _listing$dataset;
+  var listing = alm.listing;
+  alm.addons.preloaded = listing.dataset.preloaded === 'true';
+  alm.addons.preloaded_amount = listing !== null && listing !== void 0 && (_listing$dataset = listing.dataset) !== null && _listing$dataset !== void 0 && _listing$dataset.preloadedAmount ? parseInt(listing.dataset.preloadedAmount) : alm.posts_per_page;
+  if (!alm.addons.preloaded) {
+    alm.addons.preloaded_amount = 0;
+  }
+  if (alm.addons.preloaded) {
+    var _alm$localize;
+    if (alm !== null && alm !== void 0 && (_alm$localize = alm.localize) !== null && _alm$localize !== void 0 && _alm$localize.total_posts) {
+      // Disable ALM if total_posts is equal to or less than preloaded_amount.
+      if (parseInt(alm.localize.total_posts) <= alm.addons.preloaded_amount) {
+        alm.addons.preloaded_total_posts = parseInt(alm.localize.total_posts);
+        alm.disable_ajax = true;
+      }
+    }
+  }
+  return alm;
+}
+
+/**
+ * Set parameters on HTML elements for preloaded results.
+ *
+ * @param {Object} alm The ALM object.
+ * @since 7.0.0
+ */
+function setPreloadedParams(alm) {
+  var addons = alm.addons,
+    listing = alm.listing;
+  if (addons.paging) {
+    // Exit if paging.
+    return;
+  }
+
+  // Parse preloaded data into array of HTML elements.
+  var data = functions_stripEmptyNodes(preloaded_toConsumableArray(listing === null || listing === void 0 ? void 0 : listing.childNodes));
+
+  // Get first element in the data array.
+  var firstElement = data !== null && data !== void 0 && data.length && data[0] ? data[0] : false;
+  if (firstElement) {
+    if (addons !== null && addons !== void 0 && addons.seo) {
+      addSEOAttributes(alm, firstElement, 1);
+    }
+    if (addons !== null && addons !== void 0 && addons.filters) {
+      addFiltersAttributes(alm, firstElement, 1);
+    }
+  }
+}
 ;// CONCATENATED MODULE: ./src/frontend/js/addons/singleposts.js
 
+
+/**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function singlepostsCreateParams(alm) {
+  var _listing$dataset;
+  var listing = alm.listing;
+  alm.addons.single_post = (listing === null || listing === void 0 || (_listing$dataset = listing.dataset) === null || _listing$dataset === void 0 ? void 0 : _listing$dataset.singlePost) === 'true';
+  if (alm.addons.single_post) {
+    alm.addons.single_post_id = listing.dataset.singlePostId;
+    alm.addons.single_post_query = listing.dataset.singlePostQuery;
+    alm.addons.single_post_order = listing.dataset.singlePostOrder === undefined ? 'previous' : listing.dataset.singlePostOrder;
+    alm.addons.single_post_init_id = listing.dataset.singlePostId;
+    alm.addons.single_post_taxonomy = listing.dataset.singlePostTaxonomy === undefined ? '' : listing.dataset.singlePostTaxonomy;
+    alm.addons.single_post_excluded_terms = listing.dataset.singlePostExcludedTerms === undefined ? '' : listing.dataset.singlePostExcludedTerms;
+    alm.addons.single_post_progress_bar = listing.dataset.singlePostProgressBar === undefined ? '' : listing.dataset.singlePostProgressBar;
+    alm.addons.single_post_target = listing.dataset.singlePostTarget === undefined ? '' : listing.dataset.singlePostTarget;
+    alm.addons.single_post_preview = listing.dataset.singlePostPreview === undefined ? false : true;
+
+    // Post Preview. Does this even work?
+    if (alm.addons.single_post_preview) {
+      var singlePostPreviewData = listing.dataset.singlePostPreview.split(':');
+      alm.addons.single_post_preview_data = {
+        button_label: singlePostPreviewData[0] ? singlePostPreviewData[0] : 'Continue Reading',
+        height: singlePostPreviewData[1] ? singlePostPreviewData[1] : 500,
+        element: singlePostPreviewData[2] ? singlePostPreviewData[2] : 'default',
+        className: 'alm-single-post--preview'
+      };
+    }
+    if (alm.addons.single_post_id === undefined) {
+      alm.addons.single_post_id = '';
+      alm.addons.single_post_init_id = '';
+    }
+
+    // Set default fallbacks.
+    alm.addons.single_post_permalink = '';
+    alm.addons.single_post_title = '';
+    alm.addons.single_post_slug = '';
+    alm.addons.single_post_cache = false;
+    alm.addons.single_post_title_template = listing.dataset.singlePostTitleTemplate;
+    alm.addons.single_post_siteTitle = listing.dataset.singlePostSiteTitle;
+    alm.addons.single_post_siteTagline = listing.dataset.singlePostSiteTagline;
+    alm.addons.single_post_scroll = listing.dataset.singlePostScroll;
+    alm.addons.single_post_scroll_speed = listing.dataset.singlePostScrollSpeed;
+    alm.addons.single_post_scroll_top = listing.dataset.singlePostScrolltop;
+    alm.addons.single_post_controls = listing.dataset.singlePostControls;
+  }
+  return alm;
+}
 
 /**
  * Create the HTML for loading Single Posts.
@@ -9222,105 +9263,151 @@ function getSEOPageNum(seo_offset, page) {
  * @return {Object}           Results data.
  * @since 5.1.8.1
  */
-function singlePostHTML(alm, response, cache_slug) {
-	const data = {
-		html: '',
-		meta: {
-			postcount: 0,
-			totalposts: 0,
-		},
-	};
+function singlepostsHTML(alm, response, cache_slug) {
+  var data = {
+    html: '',
+    meta: {
+      postcount: 0,
+      totalposts: 0
+    }
+  };
 
-	// Get target element.
-	const { single_post_target } = alm.addons;
+  // Get target element.
+  var _alm$addons = alm.addons,
+    single_post_target = _alm$addons.single_post_target,
+    single_post_id = _alm$addons.single_post_id;
+  if (response.status === 200 && response.data && single_post_target) {
+    var _window;
+    // Create temp div to hold response data.
+    var div = document.createElement('div');
+    div.innerHTML = response.data;
 
-	if (response.status === 200 && response.data && single_post_target) {
-		// Create temp div to hold response data.
-		const div = document.createElement('div');
-		div.innerHTML = response.data;
+    // Get target element.
+    var html = div.querySelector(single_post_target);
+    if (!html) {
+      console.warn("Ajax Load More: Unable to find ".concat(single_post_target, " element."));
+      return data;
+    }
 
-		// Get target element.
-		const html = div.querySelector(single_post_target);
+    // Get any custom target elements.
+    if ((_window = window) !== null && _window !== void 0 && _window.almSinglePostsCustomElements) {
+      var _window2;
+      var customElements = singlepostsGetCustomElements(div, (_window2 = window) === null || _window2 === void 0 ? void 0 : _window2.almSinglePostsCustomElements, single_post_id);
+      if (customElements) {
+        // Get first element in HTML.
+        var target = html.querySelector('article, section, div');
+        if (target) {
+          target.appendChild(customElements);
+        }
+      }
+    }
+    data.html = html.innerHTML;
+    data.meta = {
+      postcount: 1,
+      totalposts: 1
+    };
 
-		if (!html) {
-			console.warn(`Ajax Load More: Unable to find ${single_post_target} element.`);
-			return data;
-		}
-
-		// Get any custom target elements.
-		const customElements = window && window.almSinglePostsCustomElements;
-		if (customElements) {
-			html.appendChild(singlePostsGetCustomElements(div, customElements));
-		}
-
-		data.html = html.innerHTML;
-		data.meta = {
-			postcount: 1,
-			totalposts: 1,
-		};
-
-		// Create cache file.
-		createCache(alm, data, cache_slug);
-	}
-	return data;
+    // Create cache file.
+    createCache(alm, data, cache_slug);
+  }
+  return data;
 }
-/* harmony default export */ var singleposts = ((/* unused pure expression or super */ null && (singlePostHTML)));
+
+/**
+ * Find nested Next Page instance and prepend first element to the returned HTML.
+ *
+ * @param {Element} html The wrapper element.
+ * @return {Element}     The modified element.
+ */
+function getNestedNextPageElement(html) {
+  var nextpageElement = html.querySelector('.ajax-load-more-wrap .alm-nextpage');
+  if (!nextpageElement) {
+    return html;
+  }
+
+  // Clone the nextpage element and clear the contents.
+  var clone = nextpageElement.cloneNode(true);
+  clone.innerHTML = '';
+
+  // Insert the clone before the first child.
+  html.insertBefore(clone, html.querySelector(':first-child'));
+  return html;
+}
 
 /**
  * Collect custom target elements and append them to the returned HTML.
- *
  * This function is useful to get elements from outside the ALM target and bring them into the returned HTML.
  * Useful for when CSS or JS may be loaded in the <head/> and we need it brought into the HTML for Single Posts.
  *
  * e.g. window.almSinglePostsCustomElements = ['#woocommerce-inline-inline-css', '#wc-block-style-css'];
  *
- * @param {HTMLElement} content        The HTML element.
- * @param {Array}       customElements The elements to search for in content.
- * @return {HTMLElement}               The HTML elements.
+ * @param {HTMLElement}   content        The HTML element.
+ * @param {Array}         customElements The elements to search for in content.
+ * @param {string|number} id             The Post ID.
+ * @return {HTMLElement}                 The HTML elements.
  */
-function singlePostsGetCustomElements(content = '', customElements = []) {
-	// Create container element to hold elements.
-	const container = document.createElement('div');
-	container.classList.add('alm-custom-elements');
+function singlepostsGetCustomElements() {
+  var content = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var customElements = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+  var id = arguments.length > 2 ? arguments[2] : undefined;
+  if (!content || !customElements) {
+    return container; // Exit if empty.
+  }
 
-	// Exit if empty.
-	if (!content || !customElements) {
-		return container;
-	}
+  // Create container element if if doesn't exist.
+  var container = document.createElement('div');
+  container.classList.add('alm-custom-elements');
+  container.dataset.id = id;
 
-	// Convert customElements to an Array.
-	customElements = !Array.isArray(customElements) ? [customElements] : customElements;
+  // Convert customElements to an Array.
+  customElements = !Array.isArray(customElements) ? [customElements] : customElements;
 
-	// Loop Array to extract elements and append to container.
-	for (let i = 0; i < customElements.length; i++) {
-		const element = content.querySelector(customElements[i]);
-		if (element) {
-			container.appendChild(element);
-		}
-	}
-
-	return container;
+  // Loop Array to extract elements and append to container.
+  for (var i = 0; i < customElements.length; i++) {
+    var element = content.querySelector(customElements[i]);
+    if (element) {
+      element.classList.add('alm-custom-element');
+      container.appendChild(element);
+    }
+  }
+  return container;
 }
 
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/dispatchScrollEvent.js
+/**
+ * Create data attributes for a Single Post item.
+ *
+ * @param {Object}  alm     The ALM object.
+ * @param {Element} element The elements HTML element to add data params.
+ * @return {Array}          Modified HTML element.
+ */
+function addSinglePostsAttributes(alm, element) {
+  if (!element) {
+    return [];
+  }
+  var page = alm.page,
+    addons = alm.addons;
+  element.setAttribute('class', "alm-single-post post-".concat(addons.single_post_id));
+  element.dataset.id = addons.single_post_id;
+  element.dataset.url = addons.single_post_permalink;
+  element.dataset.page = addons.single_post_target ? parseInt(page) + 1 : page;
+  element.dataset.title = addons.single_post_title;
+  return element;
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/dispatchScrollEvent.js
 /**
  * Dispatch a window scroll event.
  *
  * @param {boolean} delay Should this be delayed.
  * @since 5.5
  */
-const dispatchScrollEvent = function (delay = true) {
-	if (typeof Event === 'function') {
-		setTimeout(
-			function () {
-				window.dispatchEvent(new CustomEvent('scroll'));
-			},
-			delay ? 150 : 1
-		);
-	}
-};
-/* harmony default export */ var helpers_dispatchScrollEvent = (dispatchScrollEvent);
-
+function dispatchScrollEvent() {
+  var delay = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+  if (typeof Event === 'function') {
+    setTimeout(function () {
+      window.dispatchEvent(new CustomEvent('scroll'));
+    }, delay ? 150 : 1);
+  }
+}
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/loadPrevious.js
 /**
  * Create a Load Previous button.
@@ -9332,43 +9419,49 @@ const dispatchScrollEvent = function (delay = true) {
  * @param {string} label     The label for the button.
  * @since 5.5.0
  */
-function createLoadPreviousButton(alm, container, page = 1, url, label) {
-	if (!label) {
-		return;
-	}
+function createLoadPreviousButton(alm, container) {
+  var page = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+  var url = arguments.length > 3 ? arguments[3] : undefined;
+  var label = arguments.length > 4 ? arguments[4] : undefined;
+  if (!label) {
+    return;
+  }
 
-	// Create wrapper.
-	const btnWrap = document.createElement('div');
-	btnWrap.classList.add('alm-btn-wrap--prev');
+  // Create wrapper.
+  var btnWrap = document.createElement('div');
+  btnWrap.classList.add('alm-btn-wrap--prev');
 
-	// Create button.
-	const button = document.createElement('a');
-	button.href = url;
-	button.innerHTML = label;
-	button.setAttribute('rel', 'prev');
-	button.dataset.page = page;
-	button.dataset.url = url;
-	button.setAttribute('class', `alm-load-more-btn alm-load-more-btn--prev ${alm.loading_style}`);
+  // Create button.
+  var button = document.createElement('a');
+  button.href = url;
+  button.innerHTML = label;
+  button.setAttribute('rel', 'prev');
+  button.dataset.page = page;
+  button.dataset.url = url;
+  button.setAttribute('class', "alm-load-more-btn alm-load-more-btn--prev ".concat(alm.loading_style));
 
-	// Click event.
-	button.addEventListener('click', function (e) {
-		alm.AjaxLoadMore.prevClick(e);
-	});
+  // Click event.
+  button.addEventListener('click', function (e) {
+    alm.AjaxLoadMore.prevClick(e);
+  });
 
-	// Set alm previous button to this button.
-	alm.AjaxLoadMore.setPreviousButton(button);
+  // Set alm previous button to this button.
+  alm.AjaxLoadMore.setPreviousButton(button);
 
-	// Append button to wrap.
-	btnWrap.appendChild(button);
+  // Append button to wrap.
+  btnWrap.appendChild(button);
 
-	// Get parent element.
-	const parent = container.parentNode;
+  // Get parent element.
+  var parent = container.parentNode;
 
-	// Append button before container.
-	parent.insertBefore(btnWrap, container);
+  // Append button before container.
+  parent.insertBefore(btnWrap, container);
 }
-
 ;// CONCATENATED MODULE: ./src/frontend/js/addons/woocommerce.js
+function woocommerce_typeof(o) { "@babel/helpers - typeof"; return woocommerce_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, woocommerce_typeof(o); }
+function woocommerce_regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ woocommerce_regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == woocommerce_typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(woocommerce_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function woocommerce_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function woocommerce_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { woocommerce_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { woocommerce_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
 
@@ -9378,70 +9471,79 @@ function createLoadPreviousButton(alm, container, page = 1, url, label) {
 
 
 /**
+ * Create add-on params for ALM.
+ *
+ * @param {Object} alm The alm object.
+ * @return {Object}    The modified object.
+ */
+function wooCreateParams(alm) {
+  var _listing$dataset;
+  var listing = alm.listing,
+    addons = alm.addons;
+  alm.addons.woocommerce = (listing === null || listing === void 0 || (_listing$dataset = listing.dataset) === null || _listing$dataset === void 0 ? void 0 : _listing$dataset.woo) === 'true';
+  if (alm.addons.woocommerce && listing.dataset.wooSettings) {
+    var _addons$woocommerce_s;
+    alm.addons.woocommerce_settings = JSON.parse(listing.dataset.wooSettings);
+    alm.addons.woocommerce_settings.results_text = document.querySelectorAll(addons === null || addons === void 0 || (_addons$woocommerce_s = addons.woocommerce_settings) === null || _addons$woocommerce_s === void 0 ? void 0 : _addons$woocommerce_s.results); // Add Results Text
+    alm.page = parseInt(alm.page) + parseInt(addons.woocommerce_settings.paged);
+  }
+  return alm;
+}
+
+/**
  * Set up instance of ALM WooCommerce
  *
  * @param {Object} alm ALM object.
  * @since 5.3.0
  */
 function wooInit(alm) {
-	if (!alm || !alm.addons.woocommerce) {
-		return false;
-	}
+  if (!alm || !alm.addons.woocommerce) {
+    return false;
+  }
+  alm.button.dataset.page = alm.addons.woocommerce_settings.paged + 1; // Page
 
-	alm.button.dataset.page = alm.addons.woocommerce_settings.paged + 1; // Page
+  // Get upcoming URL.
+  var nextPage = alm.addons.woocommerce_settings.paged_urls[alm.addons.woocommerce_settings.paged];
+  if (nextPage) {
+    alm.button.dataset.url = nextPage;
+  } else {
+    alm.button.dataset.url = '';
+  }
 
-	// Get upcoming URL.
-	const nextPage = alm.addons.woocommerce_settings.paged_urls[alm.addons.woocommerce_settings.paged];
-	if (nextPage) {
-		alm.button.dataset.url = nextPage;
-	} else {
-		alm.button.dataset.url = '';
-	}
+  // Set up URL and class parameters on first item in product listing
+  var container = document.querySelector(alm.addons.woocommerce_settings.container); // Get `ul.products`
+  if (container) {
+    var count = getContainerCount(alm.addons.woocommerce_settings.container);
+    var currentPage = alm.addons.woocommerce_settings.paged;
+    if (count > 1) {
+      // Display warning if multiple containers were found.
+      console.warn('ALM WooCommerce: Multiple containers with the same classname or ID found. The WooCommerce add-on requires a single container to be defined. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/');
+    }
+    container.setAttribute('aria-live', 'polite');
+    container.setAttribute('aria-atomic', 'true');
+    alm.listing.removeAttribute('aria-live');
+    alm.listing.removeAttribute('aria-atomic');
+    var products = container.querySelector(alm.addons.woocommerce_settings.products); // Get first `.product` item
+    if (products) {
+      products.classList.add('alm-woocommerce');
+      products.dataset.url = alm.addons.woocommerce_settings.paged_urls[alm.addons.woocommerce_settings.paged - 1];
+      products.dataset.page = alm.page;
+      products.dataset.pageTitle = document.title;
+    } else {
+      console.warn('ALM WooCommerce: Unable to locate products. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/#alm_woocommerce_products');
+    }
 
-	// Set up URL and class parameters on first item in product listing
-	const container = document.querySelector(alm.addons.woocommerce_settings.container); // Get `ul.products`
-	if (container) {
-		const count = getContainerCount(alm.addons.woocommerce_settings.container);
-		const currentPage = alm.addons.woocommerce_settings.paged;
-
-		if (count > 1) {
-			// Display warning if multiple containers were found.
-			console.warn(
-				'ALM WooCommerce: Multiple containers with the same classname or ID found. The WooCommerce add-on requires a single container to be defined. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/'
-			);
-		}
-
-		container.setAttribute('aria-live', 'polite');
-		container.setAttribute('aria-atomic', 'true');
-
-		alm.listing.removeAttribute('aria-live');
-		alm.listing.removeAttribute('aria-atomic');
-
-		const products = container.querySelector(alm.addons.woocommerce_settings.products); // Get first `.product` item
-		if (products) {
-			products.classList.add('alm-woocommerce');
-			products.dataset.url = alm.addons.woocommerce_settings.paged_urls[alm.addons.woocommerce_settings.paged - 1];
-			products.dataset.page = alm.page;
-			products.dataset.pageTitle = document.title;
-		} else {
-			console.warn(
-				'ALM WooCommerce: Unable to locate products. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/#alm_woocommerce_products'
-			);
-		}
-
-		// Paged URL: Create previous button.
-		if (currentPage > 1) {
-			if (alm.addons.woocommerce_settings.settings.previous_products) {
-				const prevURL = alm.addons.woocommerce_settings.paged_urls[currentPage - 2];
-				const label = alm.addons.woocommerce_settings.settings.previous_products;
-				createLoadPreviousButton(alm, container, currentPage - 1, prevURL, label);
-			}
-		}
-	} else {
-		console.warn(
-			'ALM WooCommerce: Unable to locate container element. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/#alm_woocommerce_container'
-		);
-	}
+    // Paged URL: Create previous button.
+    if (currentPage > 1) {
+      if (alm.addons.woocommerce_settings.settings.previous_products) {
+        var prevURL = alm.addons.woocommerce_settings.paged_urls[currentPage - 2];
+        var label = alm.addons.woocommerce_settings.settings.previous_products;
+        createLoadPreviousButton(alm, container, currentPage - 1, prevURL, label);
+      }
+    }
+  } else {
+    console.warn('ALM WooCommerce: Unable to locate container element. Get more information -> https://connekthq.com/plugins/ajax-load-more/docs/add-ons/woocommerce/#alm_woocommerce_container');
+  }
 }
 
 /**
@@ -9452,35 +9554,43 @@ function wooInit(alm) {
  * @since 5.3.0
  */
 function woocommerce(content, alm) {
-	if (!content || !alm) {
-		return false;
-	}
+  if (!content || !alm) {
+    return false;
+  }
+  return new Promise(function (resolve) {
+    var _alm$addons$woocommer = alm.addons.woocommerce_settings,
+      woocommerce_settings = _alm$addons$woocommer === void 0 ? {} : _alm$addons$woocommer;
+    var _woocommerce_settings = woocommerce_settings.settings,
+      settings = _woocommerce_settings === void 0 ? {} : _woocommerce_settings;
+    var container = document.querySelector(woocommerce_settings.container); // Get `ul.products`
+    var products = content.querySelectorAll(woocommerce_settings.products); // Get all `.products`
+    var waitForImages = settings && settings.images_loaded === 'true' ? true : false;
+    if (container && products) {
+      var wooProducts = Array.prototype.slice.call(products); // Convert NodeList to Array.
 
-	return new Promise((resolve) => {
-		const { woocommerce_settings = {} } = alm.addons;
-		const { settings = {} } = woocommerce_settings;
+      woocommerce_asyncToGenerator( /*#__PURE__*/woocommerce_regeneratorRuntime().mark(function _callee() {
+        return woocommerce_regeneratorRuntime().wrap(function _callee$(_context) {
+          while (1) switch (_context.prev = _context.next) {
+            case 0:
+              _context.next = 2;
+              return loadItems(container, wooProducts, alm, waitForImages);
+            case 2:
+              resolve(true);
+            case 3:
+            case "end":
+              return _context.stop();
+          }
+        }, _callee);
+      }))()["catch"](function (e) {
+        console.warn(e, 'There was an error with WooCommerce'); // eslint-disable-line no-console
+      });
 
-		const container = document.querySelector(woocommerce_settings.container); // Get `ul.products`
-		const products = content.querySelectorAll(woocommerce_settings.products); // Get all `.products`
-		const waitForImages = settings && settings.images_loaded === 'true' ? true : false;
-
-		if (container && products) {
-			const wooProducts = Array.prototype.slice.call(products); // Convert NodeList to Array.
-
-			(async function () {
-				// Load the Products.
-				await loadItems(container, wooProducts, alm, waitForImages);
-				resolve(true);
-			})().catch((e) => {
-				console.log(e, 'There was an error with WooCommerce'); // eslint-disable-line no-console
-			});
-
-			// Trigger almWooCommerceLoaded callback.
-			if (typeof almWooCommerceLoaded === 'function') {
-				window.almWooCommerceLoaded(products);
-			}
-		}
-	});
+      // Trigger almWooCommerceLoaded callback.
+      if (typeof almWooCommerceLoaded === 'function') {
+        window.almWooCommerceLoaded(products);
+      }
+    }
+  });
 }
 
 /**
@@ -9494,63 +9604,68 @@ function woocommerce(content, alm) {
  * @since 5.3.0
  */
 function wooGetContent(alm, url, response, cache_slug) {
-	// Default data object.
-	const data = {
-		html: '',
-		meta: {
-			postcount: 0,
-			totalposts: 0,
-		},
-	};
+  // Default data object.
+  var data = {
+    html: '',
+    meta: {
+      postcount: 0,
+      totalposts: 0
+    }
+  };
 
-	// Successful response.
-	if (response.status === 200 && response.data) {
-		const { addons, pagePrev, rel = 'next', page, localize } = alm;
-		const { total_posts } = localize;
-		const { woocommerce_settings = {} } = addons;
-		const currentPage = rel === 'prev' ? pagePrev : page + 1; // Get the page number.
+  // Successful response.
+  if (response.status === 200 && response.data) {
+    var addons = alm.addons,
+      pagePrev = alm.pagePrev,
+      _alm$rel = alm.rel,
+      rel = _alm$rel === void 0 ? 'next' : _alm$rel,
+      page = alm.page,
+      localize = alm.localize;
+    var total_posts = localize.total_posts;
+    var _addons$woocommerce_s2 = addons.woocommerce_settings,
+      woocommerce_settings = _addons$woocommerce_s2 === void 0 ? {} : _addons$woocommerce_s2;
+    var currentPage = rel === 'prev' ? pagePrev : page + 1; // Get the page number.
 
-		// Create temp div to hold response data.
-		const div = document.createElement('div');
-		div.innerHTML = response.data;
+    // Create temp div to hold response data.
+    var div = document.createElement('div');
+    div.innerHTML = response.data;
 
-		// Get Page Title
-		const title = div.querySelector('title').innerHTML;
-		data.pageTitle = title;
+    // Get Page Title
+    var title = div.querySelector('title').innerHTML;
+    data.pageTitle = title;
 
-		// Get WooCommerce products container.
-		const container = div.querySelector(woocommerce_settings.container);
-		if (!container) {
-			console.warn(`Ajax Load More WooCommerce: Unable to find WooCommerce ${woocommerce_settings.container} element.`);
-			return data;
-		}
+    // Get WooCommerce products container.
+    var container = div.querySelector(woocommerce_settings.container);
+    if (!container) {
+      console.warn("Ajax Load More WooCommerce: Unable to find WooCommerce ".concat(woocommerce_settings.container, " element."));
+      return data;
+    }
 
-		// Get the first item and append data attributes.
-		const item = container ? container.querySelector(woocommerce_settings.products) : null;
-		if (item) {
-			item.classList.add('alm-woocommerce');
-			item.dataset.url = url;
-			item.dataset.page = currentPage;
-			item.dataset.pageTitle = title;
-		}
+    // Get the first item and append data attributes.
+    var item = container ? container.querySelector(woocommerce_settings.products) : null;
+    if (item) {
+      item.classList.add('alm-woocommerce');
+      item.dataset.url = url;
+      item.dataset.page = currentPage;
+      item.dataset.pageTitle = title;
+    }
 
-		// Count the number of returned items.
-		const items = container.querySelectorAll(woocommerce_settings.products);
-		if (items) {
-			// Set the html to the elementor container data.
-			data.html = container ? container.innerHTML : '';
-			data.meta.postcount = items.length;
-			data.meta.totalposts = total_posts;
+    // Count the number of returned items.
+    var items = container.querySelectorAll(woocommerce_settings.products);
+    if (items) {
+      // Set the html to the elementor container data.
+      data.html = container ? container.innerHTML : '';
+      data.meta.postcount = items.length;
+      data.meta.totalposts = total_posts;
 
-			// Create cache file.
-			createCache(alm, data, cache_slug);
-		}
+      // Create cache file.
+      createCache(alm, data, cache_slug);
+    }
 
-		// Results Text
-		almWooCommerceResultsText(div, alm);
-	}
-
-	return data;
+    // Results Text
+    almWooCommerceResultsText(div, alm);
+  }
+  return data;
 }
 
 /**
@@ -9560,37 +9675,37 @@ function wooGetContent(alm, url, response, cache_slug) {
  * @since 5.5.0
  */
 function woocommerceLoaded(alm) {
-	const nextPageNum = alm.page + 2;
-	const nextPage = alm.addons.woocommerce_settings.paged_urls[nextPageNum - 1]; // Get URL.
+  var nextPageNum = alm.page + 2;
+  var nextPage = alm.addons.woocommerce_settings.paged_urls[nextPageNum - 1]; // Get URL.
 
-	// Set button data attributes.
-	if (alm.rel === 'prev' && alm.buttonPrev) {
-		const prevPageNum = alm.pagePrev - 1;
-		const prevPage = alm.addons.woocommerce_settings.paged_urls[alm.pagePrev - 2];
-		setButtonAtts(alm.buttonPrev, prevPageNum, prevPage);
-		helpers_dispatchScrollEvent(true);
-	} else {
-		setButtonAtts(alm.button, nextPageNum, nextPage);
-	}
+  // Set button data attributes.
+  if (alm.rel === 'prev' && alm.buttonPrev) {
+    var prevPageNum = alm.pagePrev - 1;
+    var prevPage = alm.addons.woocommerce_settings.paged_urls[alm.pagePrev - 2];
+    setButtonAtts(alm.buttonPrev, prevPageNum, prevPage);
+    dispatchScrollEvent(true);
+  } else {
+    setButtonAtts(alm.button, nextPageNum, nextPage);
+  }
 
-	// Lazy load images if necessary.
-	lazyImages(alm);
+  // Lazy load images if necessary.
+  lazyImages(alm);
 
-	// Trigger almComplete.
-	if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
-		window.almComplete(alm);
-	}
+  // Trigger almComplete.
+  if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
+    window.almComplete(alm);
+  }
 
-	// End transitions.
-	alm.AjaxLoadMore.transitionEnd();
+  // End transitions.
+  alm.AjaxLoadMore.transitionEnd();
 
-	// ALM Done.
-	if (alm.rel === 'prev' && alm.pagePrev <= 1) {
-		alm.AjaxLoadMore.triggerDonePrev();
-	}
-	if (alm.rel === 'next' && nextPageNum > parseInt(alm.addons.woocommerce_settings.pages)) {
-		alm.AjaxLoadMore.triggerDone();
-	}
+  // ALM Done.
+  if (alm.rel === 'prev' && alm.pagePrev <= 1) {
+    alm.AjaxLoadMore.triggerDonePrev();
+  }
+  if (alm.rel === 'next' && nextPageNum > parseInt(alm.addons.woocommerce_settings.pages)) {
+    alm.AjaxLoadMore.triggerDone();
+  }
 }
 
 /**
@@ -9599,26 +9714,23 @@ function woocommerceLoaded(alm) {
  * @since 5.3.8
  */
 function wooReset() {
-	return new Promise((resolve) => {
-		const url = window.location;
-		lib_axios
-			.get(url)
-			.then((response) => {
-				if (response.status === 200 && response.data) {
-					const div = document.createElement('div');
-					div.innerHTML = response.data; // Add data to div
+  return new Promise(function (resolve) {
+    var url = window.location;
+    lib_axios.get(url).then(function (response) {
+      if (response.status === 200 && response.data) {
+        var div = document.createElement('div');
+        div.innerHTML = response.data; // Add data to div
 
-					const alm = div.querySelector('.ajax-load-more-wrap .alm-listing[data-woo="true"]'); // Get ALM instance
-					const settings = alm ? alm.dataset.wooSettings : ''; // Get settings data
-					resolve(settings);
-				} else {
-					resolve(false);
-				}
-			})
-			.catch(function () {
-				resolve(false);
-			});
-	});
+        var alm = div.querySelector('.ajax-load-more-wrap .alm-listing[data-woo="true"]'); // Get ALM instance
+        var settings = alm ? alm.dataset.wooSettings : ''; // Get settings data
+        resolve(settings);
+      } else {
+        resolve(false);
+      }
+    })["catch"](function () {
+      resolve(false);
+    });
+  });
 }
 
 /**
@@ -9628,24 +9740,25 @@ function wooReset() {
  * @param {Object}  alm    ALM object.
  * @since 5.3
  */
-function almWooCommerceResultsText(target = '', alm) {
-	if (target && alm && alm.addons.woocommerce_settings.results_text) {
-		const currentResults = target.querySelector(alm.addons.woocommerce_settings.results);
-
-		if (alm.addons.woocommerce_settings.results_text) {
-			//let link = alm.addons.woocommerce_settings.settings.previous_page_link;
-			//let label = alm.addons.woocommerce_settings.settings.previous_page_label;
-			//let sep = alm.addons.woocommerce_settings.settings.previous_page_sep;
-			alm.addons.woocommerce_settings.results_text.forEach((element) => {
-				element.innerHTML = currentResults.innerHTML;
-				// if (link && label) {
-				// 	element.innerHTML = returnButton(currentResults, link, label, sep);
-				// } else {
-				// 	element.innerHTML = currentResults.innerHTML;
-				// }
-			});
-		}
-	}
+function almWooCommerceResultsText() {
+  var target = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var alm = arguments.length > 1 ? arguments[1] : undefined;
+  if (target && alm && alm.addons.woocommerce_settings.results_text) {
+    var currentResults = target.querySelector(alm.addons.woocommerce_settings.results);
+    if (alm.addons.woocommerce_settings.results_text) {
+      //let link = alm.addons.woocommerce_settings.settings.previous_page_link;
+      //let label = alm.addons.woocommerce_settings.settings.previous_page_label;
+      //let sep = alm.addons.woocommerce_settings.settings.previous_page_sep;
+      alm.addons.woocommerce_settings.results_text.forEach(function (element) {
+        element.innerHTML = currentResults.innerHTML;
+        // if (link && label) {
+        // 	element.innerHTML = returnButton(currentResults, link, label, sep);
+        // } else {
+        // 	element.innerHTML = currentResults.innerHTML;
+        // }
+      });
+    }
+  }
 }
 
 /**
@@ -9656,21 +9769,21 @@ function almWooCommerceResultsText(target = '', alm) {
  * @deprecated 5.5
  */
 function almWooCommerceResultsTextInit(alm) {
-	if (alm && alm.addons.woocommerce_settings.results_text) {
-		const results = document.querySelectorAll(alm.addons.woocommerce_settings.results);
-		if (results.length < 1) {
-			return false;
-		}
-		const link = alm.addons.woocommerce_settings.settings.previous_page_link;
-		const label = alm.addons.woocommerce_settings.settings.previous_page_label;
-		const sep = alm.addons.woocommerce_settings.settings.previous_page_sep;
-		// Loop all result text elements
-		results.forEach((element) => {
-			if (link && label) {
-				element.innerHTML = returnButton(element, link, label, sep);
-			}
-		});
-	}
+  if (alm && alm.addons.woocommerce_settings.results_text) {
+    var results = document.querySelectorAll(alm.addons.woocommerce_settings.results);
+    if (results.length < 1) {
+      return false;
+    }
+    var link = alm.addons.woocommerce_settings.settings.previous_page_link;
+    var label = alm.addons.woocommerce_settings.settings.previous_page_label;
+    var sep = alm.addons.woocommerce_settings.settings.previous_page_sep;
+    // Loop all result text elements
+    results.forEach(function (element) {
+      if (link && label) {
+        element.innerHTML = returnButton(element, link, label, sep);
+      }
+    });
+  }
 }
 
 /**
@@ -9682,8 +9795,8 @@ function almWooCommerceResultsTextInit(alm) {
  * @param {string}  seperator HTML separator.
  */
 function returnButton(text, link, label, seperator) {
-	const button = ` ${seperator} <a href="${link}">${label}</a>`;
-	return text.innerHTML + button;
+  var button = " ".concat(seperator, " <a href=\"").concat(link, "\">").concat(label, "</a>");
+  return text.innerHTML + button;
 }
 
 /**
@@ -9693,103 +9806,261 @@ function returnButton(text, link, label, seperator) {
  * @return {number}          The total umber of containers.
  */
 function getContainerCount(container) {
-	if (!container) {
-		return 0;
-	}
-	const containers = document.querySelectorAll(container); // Get all containers.
-	if (containers) {
-		return containers.length;
-	}
-	return 0;
+  if (!container) {
+    return 0;
+  }
+  var containers = document.querySelectorAll(container); // Get all containers.
+  if (containers) {
+    return containers.length;
+  }
+  return 0;
 }
+;// CONCATENATED MODULE: ./src/frontend/js/functions/displayResults.js
 
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/almAppendChildren.js
-const nodeNameArray = ['#text', '#comment'];
+
+
+var displayResults_imagesLoaded = __webpack_require__(564);
 
 /**
- * Loop array of elements and append to target
+ * Append and display Ajax results to the ALM container.
  *
- * @param {Element} target     Target element to append items
- * @param {Element} array      An array of elements
- * @param {string}  transition The transiton
- * @since 5.0
+ * @param {Object} alm   The ALM object.
+ * @param {Array}  nodes The HTML nodes to append.
+ * @return {Promise}     The Promise object.
  */
-function almAppendChildren(target = null, array = null, transition = 'fade') {
-	if (!target || !array) {
-		return false;
-	}
-	for (let i = 0; i < array.length; i++) {
-		const element = array[i];
-		almAppendChild(target, element, transition);
-	}
+function displayResults(alm, nodes) {
+  var container = alm.listing,
+    transition = alm.transition,
+    speed = alm.speed,
+    images_loaded = alm.images_loaded;
+  return new Promise(function (resolve) {
+    if (!container || !nodes) {
+      resolve(true);
+      return;
+    }
+    var useTransition = transition === 'fade' ? true : false;
+
+    // Add each node to the alm listing container.
+    nodes.forEach(function (node) {
+      var nodeName = node.nodeName.toLowerCase();
+      if (useTransition || images_loaded) {
+        node.style.opacity = 0;
+        if (useTransition) {
+          node.style.transition = "all ".concat(speed, "ms ease");
+        }
+      }
+
+      /**
+       * Do not append elements that are not actual element nodes (i.e. #text node).
+       * Add item if not in exclude array.
+       */
+      if (EXCLUDED_NODES.indexOf(nodeName) === -1) {
+        container.appendChild(node);
+      }
+    });
+
+    // Run srcSet polyfill.
+    srcsetPolyfill(container, alm.ua);
+
+    // Lazy load images.
+    lazyImages(alm);
+
+    // Display the results.
+    if (images_loaded) {
+      displayResults_imagesLoaded(container, function () {
+        display(alm, nodes, useTransition);
+      });
+    } else {
+      display(alm, nodes, useTransition);
+    }
+    resolve(true);
+  });
 }
 
 /**
- * Append a child element to a container
+ * Append and display Ajax results to the Paging container.
  *
- * @param {Element} target     Target element to append items
- * @param {Element} element    The element to append
- * @param {string}  transition The transiton
- * @since 5.0
+ * @param {Object} alm   The ALM object.
+ * @param {Array}  nodes The HTML nodes to append.
+ * @return {Promise}     The Promise object.
  */
-function almAppendChild(target = null, element = null, transition = 'fade') {
-	if (!target || !element) {
-		return false;
-	}
-	// Do not append elements that are not actual element nodes (i.e. #text node)
-	// Add item if not in exclude array
-	if (nodeNameArray.indexOf(element.nodeName.toLowerCase()) === -1) {
-		if (transition === 'masonry') {
-			// If Masonry, opacity = zero
-			element.style.opacity = 0;
-		}
-		target.appendChild(element);
-	}
+function displayPagingResults(alm, nodes) {
+  var addons = alm.addons;
+  var container = addons.paging_container;
+  return new Promise(function (resolve) {
+    if (!container || !nodes) {
+      resolve(true);
+      return;
+    }
+
+    // Clear contents of Paging container.
+    container.style.opacity = 0;
+    container.innerHTML = '';
+
+    // Add each node to the paging container.
+    nodes.forEach(function (node) {
+      var nodeName = node.nodeName.toLowerCase();
+      /**
+       * Do not append elements that are not actual element nodes (i.e. #text node).
+       * Add item if not in exclude array.
+       */
+      if (EXCLUDED_NODES.indexOf(nodeName) === -1) {
+        container.appendChild(node);
+      }
+    });
+
+    // Run srcSet polyfill.
+    srcsetPolyfill(container, alm.ua);
+
+    // Lazy load images.
+    lazyImages(alm);
+    resolve(true);
+  });
 }
 
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/almDomParser.js
 /**
- * Convert a plain text string into an array of HTML nodes.
+ * Display the loaded results via CSS transition.
  *
- * @param {string} html The HTML string
- * @param {string} type The element type.
- * @return {Array}      The HTML nodes as an array.
- * @since 5.0
+ * @param {Object}  alm           The ALM object.
+ * @param {Array}   nodes         The HTML nodes to append.
+ * @param {boolean} useTransition Use CSS transition.
  */
-function almDomParser(html = '', type = 'text/html') {
-	if (!html) {
-		return '';
-	}
-	const parser = new DOMParser();
-	const data = parser.parseFromString(html, type);
-	const results = data ? Array.prototype.slice.call(data.body.childNodes) : data;
-	return results;
+function display(alm, nodes) {
+  var useTransition = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+  var delay = alm.transition_delay,
+    images_loaded = alm.images_loaded;
+  var offset = useTransition ? parseInt(delay) : 0; // Delay offset timing.
+
+  if (nodes) {
+    setTimeout(function () {
+      if (useTransition || images_loaded) {
+        nodes.forEach(function (node, index) {
+          setTimeout(function () {
+            node.style.opacity = 1;
+          }, index * offset);
+        });
+      }
+      alm.AjaxLoadMore.transitionEnd();
+    }, 50);
+  }
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/formatHTML.js
+function formatHTML_toConsumableArray(arr) { return formatHTML_arrayWithoutHoles(arr) || formatHTML_iterableToArray(arr) || formatHTML_unsupportedIterableToArray(arr) || formatHTML_nonIterableSpread(); }
+function formatHTML_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function formatHTML_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return formatHTML_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return formatHTML_arrayLikeToArray(o, minLen); }
+function formatHTML_iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function formatHTML_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return formatHTML_arrayLikeToArray(arr); }
+function formatHTML_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+
+
+
+
+
+/**
+ * Create data attributes for Single Posts, SEO and Filter paged results.
+ *
+ * @param {Object} alm      The ALM object.
+ * @param {Array}  elements The element HTML nodes.
+ * @return {Array}          The modified elements.
+ * @since 7.0.0
+ */
+function formatHTML(alm, elements) {
+  var _elements;
+  if (!((_elements = elements) !== null && _elements !== void 0 && _elements.length)) {
+    return [];
+  }
+  var addons = alm.addons,
+    page = alm.page,
+    posts_per_page = alm.posts_per_page,
+    init = alm.init,
+    start_page = alm.start_page,
+    container_type = alm.container_type;
+
+  // Single Posts.
+  if (addons !== null && addons !== void 0 && addons.single_post) {
+    var singleWrap = document.createElement('div');
+    singleWrap.innerHTML = alm.html;
+    singleWrap = addSinglePostsAttributes(alm, singleWrap);
+    singleWrap = getNestedNextPageElement(singleWrap);
+
+    // Single Post Preview.
+    if (addons !== null && addons !== void 0 && addons.single_post_preview && addons !== null && addons !== void 0 && addons.single_post_preview_data && typeof almSinglePostCreatePreview === 'function') {
+      var singlePreview = almSinglePostCreatePreview(singleWrap, addons.single_post_id, addons.single_post_preview_data);
+      if (singlePreview) {
+        singleWrap.replaceChildren(singlePreview);
+      }
+    }
+    alm.last_loaded = [singleWrap];
+    return [singleWrap];
+  }
+
+  // Exit if not SEO or Filters.
+  if (!(addons !== null && addons !== void 0 && addons.seo) && !(addons !== null && addons !== void 0 && addons.filters)) {
+    return elements;
+  }
+  var current = parseInt(page) + 1;
+  current = addons !== null && addons !== void 0 && addons.preloaded ? current + 1 : current;
+
+  // If init and SEO or Filter start_page, set pagenum to 1.
+  if (init && (parseInt(start_page) > 1 || (addons === null || addons === void 0 ? void 0 : addons.filters_startpage) > 1)) {
+    current = 1;
+  }
+
+  // Call to Action add-on: Add 1 if CTA is true.
+  var per_page = addons !== null && addons !== void 0 && addons.cta ? parseInt(posts_per_page) + 1 : parseInt(posts_per_page);
+
+  // If table, format the return data.
+  if (container_type === 'table') {
+    elements = formatTable(elements);
+  }
+
+  /**
+   * Split elements array into individual pages.
+   */
+  var pages = [];
+  for (var i = 0; i < ((_elements2 = elements) === null || _elements2 === void 0 ? void 0 : _elements2.length); i += per_page) {
+    var _elements2;
+    pages.push(elements.slice(i, per_page + i));
+  }
+
+  /**
+   * Loop pages and modify first element in return data.
+   */
+  if (pages) {
+    for (var _i = 0; _i < pages.length; _i++) {
+      var index = _i > 0 ? _i * per_page : 0;
+      if (elements[index]) {
+        if (addons !== null && addons !== void 0 && addons.seo) {
+          elements[index] = addSEOAttributes(alm, elements[index], _i + current);
+        }
+        if (addons !== null && addons !== void 0 && addons.filters) {
+          elements[index] = addFiltersAttributes(alm, elements[index], _i + current);
+        }
+      }
+    }
+  }
+  return elements;
 }
 
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/getParameterByName.js
 /**
- * Return a query param by name.
+ * Format return table data.
  *
- * @param {string} name The query param name.
- * @param {string} url  The URL.
- * @return {string}     The query param value.
+ * @param {Array} elements The element HTML nodes.
+ * @return {Array}         The modified elements.
  */
-const getParameterByName = function (name, url) {
-	if (!url) url = window.location.href;
-	name = name.replace(/[\[\]]/g, '\\$&');
-	const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-	const results = regex.exec(url);
-	if (!results) {
-		return null;
-	}
-	if (!results[2]) {
-		return '';
-	}
-	return decodeURIComponent(results[2].replace(/\+/g, ' '));
-};
-/* harmony default export */ var helpers_getParameterByName = (getParameterByName);
-
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/getScrollPercentage.js
+function formatTable() {
+  var _elements3;
+  var elements = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+  if (!elements) {
+    return [];
+  }
+  var tableChildren = (_elements3 = elements) !== null && _elements3 !== void 0 && _elements3.length ? elements[0].childNodes : [];
+  if (tableChildren) {
+    elements = functions_stripEmptyNodes(formatHTML_toConsumableArray(tableChildren));
+  }
+  return elements;
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/getScrollPercentage.js
 /**
  * Get the scroll distance in pixels from a percentage.
  *
@@ -9798,20 +10069,18 @@ const getParameterByName = function (name, url) {
  * @since 5.2
  */
 function getScrollPercentage(alm) {
-	if (!alm) {
-		return false;
-	}
+  if (!alm) {
+    return false;
+  }
+  var is_negative = alm.scroll_distance_orig.toString().indexOf('-') === -1 ? false : true; // Is this a negative number
+  var raw_distance = alm.scroll_distance_orig.toString().replace('-', '').replace('%', ''); // Remove - and perc
+  var wh = alm.window.innerHeight; // window height
+  var height = Math.floor(wh / 100 * parseInt(raw_distance)); // Do math to get distance
+  var newdistance = is_negative ? "-".concat(height) : height; // Set the distance
 
-	const is_negative = alm.scroll_distance_orig.toString().indexOf('-') === -1 ? false : true; // Is this a negative number
-	const raw_distance = alm.scroll_distance_orig.toString().replace('-', '').replace('%', ''); // Remove - and perc
-	const wh = alm.window.innerHeight; // window height
-	const height = Math.floor((wh / 100) * parseInt(raw_distance)); // Do math to get distance
-	const newdistance = is_negative ? `-${height}` : height; // Set the distance
-
-	return parseInt(newdistance);
+  return parseInt(newdistance);
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/getTotals.js
+;// CONCATENATED MODULE: ./src/frontend/js/functions/getTotals.js
 /**
  * Get the total posts remaining in the current query by ALM instance ID.
  * Note: Uses localized ALM variables.
@@ -9821,45 +10090,111 @@ function getScrollPercentage(alm) {
  * @param {string} id   An optional Ajax Load More ID.
  * @return {number}     A total post count.
  */
-function getTotals(type, id = '') {
-	// Get the ALM localized variable name.
-	const localize_var = id ? `ajax_load_more_${id.replace(/-/g, '_')}_vars` : 'ajax_load_more_vars';
+function getTotals(type) {
+  var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  // Get the ALM localized variable name.
+  var localize_var = id ? "ajax_load_more_".concat(id.replace(/-/g, '_'), "_vars") : 'ajax_load_more_vars';
 
-	// Get the localized value from the window object.
-	const localized = window[localize_var];
-	const total_posts = localized.total_posts;
-	const post_count = localized.post_count;
-	const page = localized.page;
-	const pages = localized.pages;
+  // Get the localized value from the window object.
+  var localized = window[localize_var];
+  if (!localized) {
+    return null;
+  }
 
-	if (!localized) {
-		return null;
-	}
+  // Deconstruct the object.
+  var total_posts = localized.total_posts,
+    post_count = localized.post_count,
+    page = localized.page,
+    pages = localized.pages;
+  switch (type) {
+    case 'total_posts':
+      return total_posts ? parseInt(total_posts) : '';
+    case 'post_count':
+      return post_count ? parseInt(post_count) : '';
+    case 'page':
+      return page ? parseInt(page) : '';
+    case 'pages':
+      return pages ? parseInt(pages) : '';
+    case 'remaining':
+      if (!total_posts || !post_count) {
+        return '';
+      }
+      return parseInt(total_posts) - parseInt(post_count);
+  }
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/noResults.js
+/**
+ * Set the results text if required.
+ *
+ * @param {Element} element Target HTML element
+ * @param {string}  html    Text as HTML to display.
+ * @since 5.1
+ */
+function noResults(element) {
+  var html = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  if (!html || !element) {
+    return; // Exit if empty.
+  }
 
-	switch (type) {
-		case 'total_posts':
-			return total_posts ? parseInt(total_posts) : '';
+  // Remove empty <p/> tags.
+  html = html.replace(/(<p><\/p>)+/g, '');
 
-		case 'post_count':
-			return post_count ? parseInt(post_count) : '';
+  // Is this a paging instance.
+  var paging = element === null || element === void 0 ? void 0 : element.querySelector('.alm-paging-content');
+  if (paging) {
+    paging.innerHTML = html;
+  } else {
+    element.innerHTML = html;
+  }
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/parsers.js
+function parsers_toConsumableArray(arr) { return parsers_arrayWithoutHoles(arr) || parsers_iterableToArray(arr) || parsers_unsupportedIterableToArray(arr) || parsers_nonIterableSpread(); }
+function parsers_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function parsers_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return parsers_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return parsers_arrayLikeToArray(o, minLen); }
+function parsers_iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function parsers_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return parsers_arrayLikeToArray(arr); }
+function parsers_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 
-		case 'page':
-			return page ? parseInt(page) : '';
 
-		case 'pages':
-			return pages ? parseInt(pages) : '';
-
-		case 'remaining':
-			if (!total_posts || !post_count) {
-				return '';
-			}
-			return parseInt(total_posts) - parseInt(post_count);
-	}
+/**
+ * Convert a plain text string into an array of HTML nodes.
+ *
+ * @param {string} html The HTML string
+ * @param {string} type The element type.
+ * @return {Array}      The HTML nodes as an array.
+ * @since 5.0
+ */
+function domParser() {
+  var _data$body;
+  var html = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'text/html';
+  if (!html) {
+    return [];
+  }
+  var parser = new DOMParser();
+  var data = parser.parseFromString(html, type);
+  var nodes = data === null || data === void 0 || (_data$body = data.body) === null || _data$body === void 0 ? void 0 : _data$body.childNodes;
+  return nodes ? functions_stripEmptyNodes(parsers_toConsumableArray(nodes)) : [];
 }
 
-// EXTERNAL MODULE: ./src/frontend/js/helpers/helpers.js
-var helpers = __webpack_require__(503);
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/queryParams.js
+/**
+ * Convert retun table data into an array of HTML elements.
+ *
+ * @param {string} html Plain text HTML.
+ * @return {Array}      Array of HTML elements.
+ * @since 5.0
+ */
+function tableParser() {
+  var html = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+  if (!html) {
+    return [];
+  }
+  // Create table element and add results to table body.
+  var tbody = document.createElement('tbody');
+  tbody.innerHTML = html;
+  return [tbody];
+}
+;// CONCATENATED MODULE: ./src/frontend/js/functions/queryParams.js
 
 
 /**
@@ -9871,186 +10206,185 @@ var helpers = __webpack_require__(503);
  * @since 3.6
  */
 function getAjaxParams(alm, queryType) {
-	const { addons, extensions } = alm;
+  var addons = alm.addons,
+    extensions = alm.extensions;
 
-	// Defaults
-	const data = {
-		action: 'alm_get_posts',
-		query_type: queryType,
-		id: alm.id,
-		post_id: parseInt(alm.post_id),
-		slug: alm.slug,
-		canonical_url: alm.canonical_url,
-		posts_per_page: parseInt(alm.posts_per_page),
-		page: parseInt(alm.page),
-		offset: parseInt(alm.offset),
-		post_type: alm.post_type,
-		repeater: alm.repeater,
-		seo_start_page: alm.start_page,
-	};
+  // Defaults
+  var data = {
+    action: 'alm_get_posts',
+    query_type: queryType,
+    id: alm.id,
+    post_id: parseInt(alm.post_id),
+    slug: alm.slug,
+    canonical_url: encodeURIComponent(alm.canonical_url),
+    posts_per_page: parseInt(alm.posts_per_page),
+    page: parseInt(alm.page),
+    offset: parseInt(alm.offset),
+    post_type: alm.post_type,
+    repeater: alm.repeater,
+    seo_start_page: alm.start_page
+  };
 
-	// Addons & Extensions
+  // Addons & Extensions
 
-	if (extensions.acf) {
-		data.acf = getTypeParams(alm, 'acf');
-		if (extensions.acf_field_type !== 'relationship') {
-			data.action = 'alm_acf';
-		}
-	}
-	if (addons.comments === 'true') {
-		data.comments = getTypeParams(alm, 'comments');
-		data.posts_per_page = addons.comments_per_page;
-		data.action = 'alm_comments';
-	}
-	if (addons.cta) {
-		data.cta = getTypeParams(alm, 'cta');
-	}
-	if (addons.filters) {
-		data.filters = addons.filters;
-		data.filters_startpage = addons.filters_startpage;
-		data.filters_target = addons.filters_target;
-		data.facets = alm.facets;
-	}
-	if (addons.nextpage) {
-		data.nextpage = getTypeParams(alm, 'nextpage');
-		data.action = 'alm_nextpage';
-	}
-	if (addons.paging) {
-		data.paging = addons.paging;
-	}
-	if (addons.preloaded === 'true') {
-		data.preloaded = addons.preloaded;
-		data.preloaded_amount = parseInt(addons.preloaded_amount);
-	}
-	if (addons.single_post) {
-		data.single_post = getTypeParams(alm, 'single_post');
-	}
-	if (extensions.term_query) {
-		data.term_query = getTypeParams(alm, 'term_query');
-		data.action = 'alm_get_terms';
-	}
-	if (alm.theme_repeater) {
-		data.theme_repeater = alm.theme_repeater;
-	}
-	if (alm.addons.users) {
-		data.users = getTypeParams(alm, 'users');
-		data.action = 'alm_users';
-	}
+  if (extensions.acf) {
+    data.acf = getTypeParams(alm, 'acf');
+    if (extensions.acf_field_type !== 'relationship') {
+      data.action = 'alm_acf';
+    }
+  }
+  if (addons.comments) {
+    data.comments = getTypeParams(alm, 'comments');
+    data.posts_per_page = addons.comments_per_page;
+    data.action = 'alm_comments';
+  }
+  if (addons.cta) {
+    data.cta = getTypeParams(alm, 'cta');
+  }
+  if (addons.filters) {
+    data.filters = addons.filters;
+    data.filters_startpage = addons.filters_startpage;
+    data.filters_target = addons.filters_target;
+    data.facets = alm.facets;
+  }
+  if (addons.nextpage) {
+    data.nextpage = getTypeParams(alm, 'nextpage');
+    data.action = 'alm_nextpage';
+  }
+  if (addons.paging) {
+    data.paging = addons.paging;
+  }
+  if (addons.preloaded) {
+    data.preloaded = addons.preloaded;
+    data.preloaded_amount = parseInt(addons.preloaded_amount);
+  }
+  if (addons.single_post) {
+    data.single_post = getTypeParams(alm, 'single_post');
+  }
+  if (extensions.term_query) {
+    data.term_query = getTypeParams(alm, 'term_query');
+    data.action = 'alm_get_terms';
+  }
+  if (alm.extensions.users) {
+    data.users = getTypeParams(alm, 'users');
+    data.action = 'alm_users';
+  }
+  if (alm.theme_repeater) {
+    data.theme_repeater = alm.theme_repeater;
+  }
 
-	// Query Data Params
+  // Query data params from ALM HTML element.
+  if (alm.listing.dataset.lang) {
+    data.lang = alm.listing.dataset.lang;
+  }
+  if (alm.listing.dataset.stickyPosts) {
+    data.sticky_posts = alm.listing.dataset.stickyPosts;
+  }
+  if (alm.listing.dataset.postFormat) {
+    data.post_format = alm.listing.dataset.postFormat;
+  }
+  if (alm.listing.dataset.category) {
+    data.category = alm.listing.dataset.category;
+  }
+  if (alm.listing.dataset.categoryAnd) {
+    data.category__and = alm.listing.dataset.categoryAnd;
+  }
+  if (alm.listing.dataset.categoryNotIn) {
+    data.category__not_in = alm.listing.dataset.categoryNotIn;
+  }
+  if (alm.listing.dataset.tag) {
+    data.tag = alm.listing.dataset.tag;
+  }
+  if (alm.listing.dataset.tagAnd) {
+    data.tag__and = alm.listing.dataset.tagAnd;
+  }
+  if (alm.listing.dataset.tagNotIn) {
+    data.tag__not_in = alm.listing.dataset.tagNotIn;
+  }
+  if (alm.listing.dataset.taxonomy) {
+    data.taxonomy = alm.listing.dataset.taxonomy;
+  }
+  if (alm.listing.dataset.taxonomyTerms) {
+    data.taxonomy_terms = alm.listing.dataset.taxonomyTerms;
+  }
+  if (alm.listing.dataset.taxonomyOperator) {
+    data.taxonomy_operator = alm.listing.dataset.taxonomyOperator;
+  }
+  if (alm.listing.dataset.taxonomyIncludeChildren) {
+    data.taxonomy_include_children = alm.listing.dataset.taxonomyIncludeChildren;
+  }
+  if (alm.listing.dataset.taxonomyRelation) {
+    data.taxonomy_relation = alm.listing.dataset.taxonomyRelation;
+  }
+  if (alm.listing.dataset.sortKey) {
+    data.sort_key = alm.listing.dataset.sortKey;
+  }
+  if (alm.listing.dataset.metaKey) {
+    data.meta_key = alm.listing.dataset.metaKey;
+  }
+  if (alm.listing.dataset.metaValue) {
+    data.meta_value = alm.listing.dataset.metaValue;
+  }
+  if (alm.listing.dataset.metaCompare) {
+    data.meta_compare = alm.listing.dataset.metaCompare;
+  }
+  if (alm.listing.dataset.metaRelation) {
+    data.meta_relation = alm.listing.dataset.metaRelation;
+  }
+  if (alm.listing.dataset.metaType) {
+    data.meta_type = alm.listing.dataset.metaType;
+  }
+  if (alm.listing.dataset.author) {
+    data.author = alm.listing.dataset.author;
+  }
+  if (alm.listing.dataset.year) {
+    data.year = alm.listing.dataset.year;
+  }
+  if (alm.listing.dataset.month) {
+    data.month = alm.listing.dataset.month;
+  }
+  if (alm.listing.dataset.day) {
+    data.day = alm.listing.dataset.day;
+  }
+  if (alm.listing.dataset.order) {
+    data.order = alm.listing.dataset.order;
+  }
+  if (alm.listing.dataset.orderby) {
+    data.orderby = alm.listing.dataset.orderby;
+  }
+  if (alm.listing.dataset.postStatus) {
+    data.post_status = alm.listing.dataset.postStatus;
+  }
+  if (alm.listing.dataset.postIn) {
+    data.post__in = alm.listing.dataset.postIn;
+  }
+  if (alm.listing.dataset.postNotIn) {
+    data.post__not_in = alm.listing.dataset.postNotIn;
+  }
+  if (alm.listing.dataset.exclude) {
+    data.exclude = alm.listing.dataset.exclude;
+  }
+  if (alm.listing.dataset.search) {
+    data.search = alm.listing.dataset.search;
+  }
+  if (alm.listing.dataset.s) {
+    data.search = alm.listing.dataset.s;
+  }
+  if (alm.listing.dataset.customArgs) {
+    data.custom_args = alm.listing.dataset.customArgs;
+  }
+  if (alm.listing.dataset.vars) {
+    data.vars = alm.listing.dataset.vars;
+  }
 
-	if (alm.listing.dataset.lang) {
-		data.lang = alm.listing.dataset.lang;
-	}
-	if (alm.listing.dataset.stickyPosts) {
-		data.sticky_posts = alm.listing.dataset.stickyPosts;
-	}
-	if (alm.listing.dataset.postFormat) {
-		data.post_format = alm.listing.dataset.postFormat;
-	}
-	if (alm.listing.dataset.category) {
-		data.category = alm.listing.dataset.category;
-	}
-	if (alm.listing.dataset.categoryAnd) {
-		data.category__and = alm.listing.dataset.categoryAnd;
-	}
-	if (alm.listing.dataset.categoryNotIn) {
-		data.category__not_in = alm.listing.dataset.categoryNotIn;
-	}
-	if (alm.listing.dataset.tag) {
-		data.tag = alm.listing.dataset.tag;
-	}
-	if (alm.listing.dataset.tagAnd) {
-		data.tag__and = alm.listing.dataset.tagAnd;
-	}
-	if (alm.listing.dataset.tagNotIn) {
-		data.tag__not_in = alm.listing.dataset.tagNotIn;
-	}
-	if (alm.listing.dataset.taxonomy) {
-		data.taxonomy = alm.listing.dataset.taxonomy;
-	}
-	if (alm.listing.dataset.taxonomyTerms) {
-		data.taxonomy_terms = alm.listing.dataset.taxonomyTerms;
-	}
-	if (alm.listing.dataset.taxonomyOperator) {
-		data.taxonomy_operator = alm.listing.dataset.taxonomyOperator;
-	}
-	if (alm.listing.dataset.taxonomyIncludeChildren) {
-		data.taxonomy_include_children = alm.listing.dataset.taxonomyIncludeChildren;
-	}
-	if (alm.listing.dataset.taxonomyRelation) {
-		data.taxonomy_relation = alm.listing.dataset.taxonomyRelation;
-	}
-	if (alm.listing.dataset.sortKey) {
-		data.sort_key = alm.listing.dataset.sortKey;
-	}
-	if (alm.listing.dataset.metaKey) {
-		data.meta_key = alm.listing.dataset.metaKey;
-	}
-	if (alm.listing.dataset.metaValue) {
-		data.meta_value = alm.listing.dataset.metaValue;
-	}
-	if (alm.listing.dataset.metaCompare) {
-		data.meta_compare = alm.listing.dataset.metaCompare;
-	}
-	if (alm.listing.dataset.metaRelation) {
-		data.meta_relation = alm.listing.dataset.metaRelation;
-	}
-	if (alm.listing.dataset.metaType) {
-		data.meta_type = alm.listing.dataset.metaType;
-	}
-	if (alm.listing.dataset.author) {
-		data.author = alm.listing.dataset.author;
-	}
-	if (alm.listing.dataset.year) {
-		data.year = alm.listing.dataset.year;
-	}
-	if (alm.listing.dataset.month) {
-		data.month = alm.listing.dataset.month;
-	}
-	if (alm.listing.dataset.day) {
-		data.day = alm.listing.dataset.day;
-	}
-	if (alm.listing.dataset.order) {
-		data.order = alm.listing.dataset.order;
-	}
-	if (alm.listing.dataset.orderby) {
-		data.orderby = alm.listing.dataset.orderby;
-	}
-	if (alm.listing.dataset.postStatus) {
-		data.post_status = alm.listing.dataset.postStatus;
-	}
-	if (alm.listing.dataset.postIn) {
-		data.post__in = alm.listing.dataset.postIn;
-	}
-	if (alm.listing.dataset.postNotIn) {
-		data.post__not_in = alm.listing.dataset.postNotIn;
-	}
-	if (alm.listing.dataset.exclude) {
-		data.exclude = alm.listing.dataset.exclude;
-	}
-	if (alm.listing.dataset.search) {
-		data.search = alm.listing.dataset.search;
-	}
-	if (alm.listing.dataset.s) {
-		data.search = alm.listing.dataset.s;
-	}
-	if (alm.listing.dataset.customArgs) {
-		data.custom_args = alm.listing.dataset.customArgs;
-	}
-	if (alm.listing.dataset.vars) {
-		data.vars = alm.listing.dataset.vars;
-	}
+  // Cache Params
 
-	// Cache Params
-
-	if (addons.cache) {
-		data.cache_id = addons.cache_id;
-		data.cache_logged_in = addons.cache_logged_in;
-		data.cache_slug = getCacheSlug(alm, data);
-	}
-
-	return data;
+  if (addons.cache) {
+    data.cache_id = addons.cache_id;
+    data.cache_logged_in = addons.cache_logged_in;
+    data.cache_slug = getCacheSlug(alm, data);
+  }
+  return data;
 }
 
 /**
@@ -10061,74 +10395,68 @@ function getAjaxParams(alm, queryType) {
  * @return {Object}     The query params.
  */
 function getTypeParams(alm, type) {
-	const { addons, extensions } = alm;
-	switch (type) {
-		case 'acf':
-			return {
-				acf: 'true',
-				post_id: extensions.acf_post_id,
-				field_type: extensions.acf_field_type,
-				field_name: extensions.acf_field_name,
-				parent_field_name: extensions.acf_parent_field_name,
-				row_index: extensions.acf_row_index,
-			};
-
-		case 'comments':
-			return {
-				comments: 'true',
-				post_id: addons.comments_post_id,
-				per_page: addons.comments_per_page,
-				type: addons.comments_type,
-				style: addons.comments_style,
-				template: addons.comments_template,
-				callback: addons.comments_callback,
-			};
-
-		case 'cta':
-			return {
-				cta: 'true',
-				cta_position: addons.cta_position,
-				cta_repeater: addons.cta_repeater,
-				cta_theme_repeater: addons.cta_theme_repeater,
-			};
-
-		case 'nextpage':
-			return {
-				nextpage: 'true',
-				urls: addons.nextpage_urls,
-				scroll: addons.nextpage_scroll,
-				pageviews: addons.nextpage_pageviews,
-				post_id: addons.nextpage_post_id,
-				startpage: addons.nextpage_startpage,
-				nested: alm.nested,
-			};
-
-		case 'single_post':
-			return {
-				single_post: 'true',
-				id: addons.single_post_id,
-				slug: addons.single_post_slug,
-			};
-
-		case 'term_query':
-			return {
-				term_query: 'true',
-				taxonomy: extensions.term_query_taxonomy,
-				hide_empty: extensions.term_query_hide_empty,
-				number: extensions.term_query_number,
-			};
-
-		case 'users':
-			return {
-				users: 'true',
-				role: alm.listing.dataset.usersRole,
-				include: alm.listing.dataset.usersInclude,
-				exclude: alm.listing.dataset.usersExclude,
-				per_page: alm.posts_per_page,
-				order: alm.listing.dataset.usersOrder,
-				orderby: alm.listing.dataset.usersOrderby,
-			};
-	}
+  var addons = alm.addons,
+    extensions = alm.extensions;
+  switch (type) {
+    case 'acf':
+      return {
+        acf: 'true',
+        post_id: extensions.acf_post_id,
+        field_type: extensions.acf_field_type,
+        field_name: extensions.acf_field_name,
+        parent_field_name: extensions.acf_parent_field_name,
+        row_index: extensions.acf_row_index
+      };
+    case 'comments':
+      return {
+        comments: 'true',
+        post_id: addons.comments_post_id,
+        per_page: addons.comments_per_page,
+        type: addons.comments_type,
+        style: addons.comments_style,
+        template: addons.comments_template,
+        callback: addons.comments_callback
+      };
+    case 'cta':
+      return {
+        cta: 'true',
+        cta_position: addons.cta_position,
+        cta_repeater: addons.cta_repeater,
+        cta_theme_repeater: addons.cta_theme_repeater
+      };
+    case 'nextpage':
+      return {
+        nextpage: 'true',
+        urls: addons.nextpage_urls,
+        scroll: addons.nextpage_scroll,
+        post_id: addons.nextpage_post_id,
+        startpage: addons.nextpage_startpage,
+        nested: alm.nested
+      };
+    case 'single_post':
+      return {
+        single_post: 'true',
+        id: addons.single_post_id,
+        slug: addons.single_post_slug
+      };
+    case 'term_query':
+      return {
+        term_query: 'true',
+        taxonomy: extensions.term_query_taxonomy,
+        hide_empty: extensions.term_query_hide_empty,
+        number: extensions.term_query_number
+      };
+    case 'users':
+      return {
+        users: 'true',
+        role: alm.listing.dataset.usersRole,
+        include: alm.listing.dataset.usersInclude,
+        exclude: alm.listing.dataset.usersExclude,
+        per_page: alm.posts_per_page,
+        order: alm.listing.dataset.usersOrder,
+        orderby: alm.listing.dataset.usersOrderby
+      };
+  }
 }
 
 /**
@@ -10139,93 +10467,66 @@ function getTypeParams(alm, type) {
  * @since 3.6
  */
 function getRestAPIParams(alm) {
-	const data = {
-		id: alm.id,
-		post_id: parseInt(alm.post_id),
-		posts_per_page: alm.posts_per_page,
-		page: alm.page,
-		offset: alm.offset,
-		slug: alm.slug,
-		canonical_url: alm.canonical_url,
-		post_type: alm.post_type,
-		post_format: alm.listing.dataset.postFormat,
-		category: alm.listing.dataset.category,
-		category__not_in: alm.listing.dataset.categoryNotIn,
-		tag: alm.listing.dataset.tag,
-		tag__not_in: alm.listing.dataset.tagNotIn,
-		taxonomy: alm.listing.dataset.taxonomy,
-		taxonomy_terms: alm.listing.dataset.taxonomyTerms,
-		taxonomy_operator: alm.listing.dataset.taxonomyOperator,
-		taxonomy_relation: alm.listing.dataset.taxonomyRelation,
-		meta_key: alm.listing.dataset.metaKey,
-		meta_value: alm.listing.dataset.metaValue,
-		meta_compare: alm.listing.dataset.metaCompare,
-		meta_relation: alm.listing.dataset.metaRelation,
-		meta_type: alm.listing.dataset.metaType,
-		author: alm.listing.dataset.author,
-		year: alm.listing.dataset.year,
-		month: alm.listing.dataset.month,
-		day: alm.listing.dataset.day,
-		post_status: alm.listing.dataset.postStatus,
-		order: alm.listing.dataset.order,
-		orderby: alm.listing.dataset.orderby,
-		post__in: alm.listing.dataset.postIn,
-		post__not_in: alm.listing.dataset.postNotIn,
-		search: alm.listing.dataset.search,
-		s: alm.listing.dataset.s,
-		custom_args: alm.listing.dataset.customArgs,
-		vars: alm.listing.dataset.vars,
-		lang: alm.lang,
-		preloaded: alm.addons.preloaded,
-		preloaded_amount: alm.addons.preloaded_amount,
-		seo_start_page: alm.start_page,
-	};
-	return data;
+  var data = {
+    id: alm.id,
+    post_id: parseInt(alm.post_id),
+    posts_per_page: alm.posts_per_page,
+    page: alm.page,
+    offset: alm.offset,
+    slug: alm.slug,
+    canonical_url: encodeURIComponent(alm.canonical_url),
+    post_type: alm.post_type,
+    post_format: alm.listing.dataset.postFormat,
+    category: alm.listing.dataset.category,
+    category__not_in: alm.listing.dataset.categoryNotIn,
+    tag: alm.listing.dataset.tag,
+    tag__not_in: alm.listing.dataset.tagNotIn,
+    taxonomy: alm.listing.dataset.taxonomy,
+    taxonomy_terms: alm.listing.dataset.taxonomyTerms,
+    taxonomy_operator: alm.listing.dataset.taxonomyOperator,
+    taxonomy_relation: alm.listing.dataset.taxonomyRelation,
+    meta_key: alm.listing.dataset.metaKey,
+    meta_value: alm.listing.dataset.metaValue,
+    meta_compare: alm.listing.dataset.metaCompare,
+    meta_relation: alm.listing.dataset.metaRelation,
+    meta_type: alm.listing.dataset.metaType,
+    author: alm.listing.dataset.author,
+    year: alm.listing.dataset.year,
+    month: alm.listing.dataset.month,
+    day: alm.listing.dataset.day,
+    post_status: alm.listing.dataset.postStatus,
+    order: alm.listing.dataset.order,
+    orderby: alm.listing.dataset.orderby,
+    post__in: alm.listing.dataset.postIn,
+    post__not_in: alm.listing.dataset.postNotIn,
+    search: alm.listing.dataset.search,
+    s: alm.listing.dataset.s,
+    custom_args: alm.listing.dataset.customArgs,
+    vars: alm.listing.dataset.vars,
+    lang: alm.lang,
+    preloaded: alm.addons.preloaded,
+    preloaded_amount: alm.addons.preloaded_amount,
+    seo_start_page: alm.start_page
+  };
+  return data;
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/stripEmptyNodes.js
+;// CONCATENATED MODULE: ./src/frontend/js/functions/windowResize.js
 /**
- * Remove empty HTML nodes from array of nodes
- * Remove all empty text nodes from SEO and Filters return
+ * Trigger a window resize browser function.
  *
- * @param {Array} nodes Array of HTML nodes
- * @return {Array}      The filtered array of HTML nodes
- * @since 5.1.3
+ * @since 5.3.1
  */
-const stripEmptyNodes = function (nodes = '') {
-	if (!nodes) {
-		return false;
-	}
-
-	// Exclude these nodeNames from being rendered
-	const nodeNameArray = ['#text', '#comment'];
-
-	// Filter data by nodeName
-	return nodes.filter((node) => nodeNameArray.indexOf(node.nodeName.toLowerCase()) === -1);
-};
-/* harmony default export */ var helpers_stripEmptyNodes = (stripEmptyNodes);
-
-;// CONCATENATED MODULE: ./src/frontend/js/helpers/tableWrap.js
-/**
- * Wrap `table` containers in tbody elements
- * innerHTML and DOMParser do not work with <tr/> <td/> elements etc.
- *
- * @param {string} html Plain text HTML.
- * @return {Array} Array of HTML elements.
- * @since 5.0
- */
-const tableWrap = function (html = null) {
-	if (!html) {
-		return false;
-	}
-	const table_reveal = document.createElement('tbody');
-	table_reveal.innerHTML = html;
-
-	const table_reveal_array = [table_reveal];
-	return table_reveal_array;
-};
-/* harmony default export */ var helpers_tableWrap = (tableWrap);
-
+function triggerWindowResize() {
+  if (typeof Event === 'function') {
+    // Modern browsers.
+    window.dispatchEvent(new Event('resize'));
+  } else {
+    // Executed on old browsers and especially IE.
+    var resizeEvent = window.document.createEvent('UIEvents');
+    resizeEvent.initUIEvent('resize', true, false, window, 0);
+    window.dispatchEvent(resizeEvent);
+  }
+}
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/almDebug.js
 /**
  * Display Ajax Load More debug results.
@@ -10235,39 +10536,43 @@ const tableWrap = function (html = null) {
  * @since 5.1.6
  */
 function almDebug(alm) {
-	if (alm && alm.debug) {
-		const obj = {
-			query: alm.debug,
-			localize: alm.localize,
-		};
-		console.log('ALM Debug:', obj); // eslint-disable-line no-console
-	}
+  if (alm && alm.debug) {
+    var obj = {
+      query: alm.debug,
+      localize: alm.localize
+    };
+    console.log('ALM Debug:', obj); // eslint-disable-line no-console
+  }
 }
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/fade.js
 /**
  * Fade element in.
  *
  * @param {HTMLElement} element The HTML element to fade in.
  * @param {number}      speed   The transition speed.
+ * @return {Promise}            The Promise object.
  */
-const almFadeIn = (element, speed) => {
-	if (speed === 0) {
-		element.style.opacity = 1;
-		element.style.height = 'auto';
-	} else {
-		speed = speed / 10;
-		let op = 0; // initial opacity
-		const timer = setInterval(function () {
-			if (op > 0.9) {
-				element.style.opacity = 1;
-				clearInterval(timer);
-			}
-			element.style.opacity = op;
-			op += 0.1;
-		}, speed);
-		element.style.height = 'auto';
-	}
+var almFadeIn = function almFadeIn(element, speed) {
+  return new Promise(function (resolve) {
+    if (speed === 0) {
+      element.style.opacity = 1;
+      element.style.height = 'auto';
+      resolve(true);
+    } else {
+      speed = speed / 10;
+      var op = 0; // initial opacity
+      var timer = setInterval(function () {
+        if (op > 0.9) {
+          element.style.opacity = 1;
+          resolve(true);
+          clearInterval(timer);
+        }
+        element.style.opacity = op;
+        op += 0.1;
+      }, speed);
+      element.style.height = 'auto';
+    }
+  });
 };
 
 /**
@@ -10275,109 +10580,112 @@ const almFadeIn = (element, speed) => {
  *
  * @param {HTMLElement} element The HTML element to fade out.
  * @param {number}      speed   The transition speed.
+ * @return {Promise}            The Promise object.
  */
-const almFadeOut = (element, speed) => {
-	speed = speed / 10;
-	element.style.opacity = 0.5;
-	const fadeEffect = setInterval(function () {
-		if (element.style.opacity < 0.1) {
-			clearInterval(fadeEffect);
-		} else {
-			element.style.opacity -= 0.1;
-		}
-	}, speed);
+var almFadeOut = function almFadeOut(element, speed) {
+  return new Promise(function (resolve) {
+    speed = speed / 10;
+    element.style.opacity = 0.5;
+    var fadeEffect = setInterval(function () {
+      if (element.style.opacity < 0.1) {
+        element.style.opacity = 0;
+        clearInterval(fadeEffect);
+        resolve(true);
+      } else {
+        element.style.opacity -= 0.1;
+      }
+    }, speed);
+  });
 };
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/tableofcontents.js
 
 
 
 /**
- * Create a numbered table of contents navigation
+ * Create a numbered table of contents navigation.
  *
  * @param {Object}  alm            The alm object.
  * @param {boolean} init           Init boolean.
  * @param {boolean} from_preloaded Preloaded boolean.
  * @since 5.2
  */
-function tableOfContents(alm, init = false, from_preloaded = false) {
-	const totalPosts = alm.localize && alm.localize.post_count ? parseInt(alm.localize.post_count) : 0;
+function tableOfContents(alm) {
+  var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+  var from_preloaded = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  var totalPosts = alm.localize && alm.localize.post_count ? parseInt(alm.localize.post_count) : 0;
 
-	// eslint-disable-next-line eqeqeq
-	if (totalPosts == 0 && !alm.addons.single_post) {
-		// Exit if zero posts and not single posts
-		return false;
-	}
+  // eslint-disable-next-line eqeqeq
+  if (totalPosts == 0 && !alm.addons.single_post) {
+    // Exit if zero posts and not single posts
+    return false;
+  }
+  if (alm && alm.tableofcontents && alm.transition !== 'masonry') {
+    var offset = alm.tableofcontents.dataset.offset ? parseInt(alm.tableofcontents.dataset.offset) : 30;
+    var startPage = alm.start_page ? parseInt(alm.start_page) : 0;
+    var filterStartPage = alm.addons.filters_startpage ? parseInt(alm.addons.filters_startpage) : 0;
+    var nextpageStartPage = alm.addons.nextpage_startpage ? parseInt(alm.addons.nextpage_startpage) : 0;
+    var page = parseInt(alm.page);
+    var preloaded = alm.addons.preloaded ? true : false;
 
-	if (alm && alm.tableofcontents && alm.transition_container && alm.transition !== 'masonry') {
-		const offset = alm.tableofcontents.dataset.offset ? parseInt(alm.tableofcontents.dataset.offset) : 30;
-		const startPage = alm.start_page ? parseInt(alm.start_page) : 0;
-		const filterStartPage = alm.addons.filters_startpage ? parseInt(alm.addons.filters_startpage) : 0;
-		const nextpageStartPage = alm.addons.nextpage_startpage ? parseInt(alm.addons.nextpage_startpage) : 0;
-		let page = parseInt(alm.page);
-		const preloaded = alm.addons.preloaded === 'true' ? true : false;
+    // Exit if Paging or Next Page
+    if (alm.addons.paging || alm.addons.nextpage) {
+      return false;
+    }
 
-		// Exit if Paging or Next Page
-		if (alm.addons.paging || alm.addons.nextpage) {
-			return false;
-		}
-
-		// Init
-
-		if (init) {
-			setTimeout(function () {
-				// Paged results
-				if ((alm.addons.seo && startPage > 1) || (alm.addons.filters && filterStartPage > 1) || (alm.addons.nextpage && nextpageStartPage > 1)) {
-					// SEO
-					if (alm.addons.seo && startPage > 1) {
-						for (let i = 0; i < startPage; i++) {
-							createTOCButton(alm, i, offset);
-						}
-					}
-					// Filters
-					if (alm.addons.filters && filterStartPage > 1) {
-						for (let i = 0; i < filterStartPage; i++) {
-							createTOCButton(alm, i, offset);
-						}
-					}
-					// Nextpage
-					if (alm.addons.nextpage && nextpageStartPage > 1) {
-						for (let i = 0; i < nextpageStartPage; i++) {
-							createTOCButton(alm, i, offset);
-						}
-					}
-				} else {
-					if (!from_preloaded && preloaded) {
-						page = page + 1;
-					}
-					createTOCButton(alm, page, offset);
-				}
-			}, 100);
-		} else {
-			// Preloaded
-			if (preloaded) {
-				if (alm.addons.seo && startPage > 0) {
-					page = page;
-				} else if (alm.addons.filters && filterStartPage > 0) {
-					page = page;
-				} else {
-					page = page + 1;
-				}
-			}
-
-			createTOCButton(alm, page, offset);
-		}
-	}
+    // Init.
+    if (init) {
+      setTimeout(function () {
+        // Paged results
+        if (alm.addons.seo && startPage > 1 || alm.addons.filters && filterStartPage > 1 || alm.addons.nextpage && nextpageStartPage > 1) {
+          // SEO
+          if (alm.addons.seo && startPage > 1) {
+            for (var i = 0; i < startPage; i++) {
+              createTOCButton(alm, i, offset);
+            }
+          }
+          // Filters
+          if (alm.addons.filters && filterStartPage > 1) {
+            for (var _i = 0; _i < filterStartPage; _i++) {
+              createTOCButton(alm, _i, offset);
+            }
+          }
+          // Nextpage
+          if (alm.addons.nextpage && nextpageStartPage > 1) {
+            for (var _i2 = 0; _i2 < nextpageStartPage; _i2++) {
+              createTOCButton(alm, _i2, offset);
+            }
+          }
+        } else {
+          if (!from_preloaded && preloaded) {
+            page = page + 1;
+          }
+          createTOCButton(alm, page, offset);
+        }
+      }, 100);
+    } else {
+      // Preloaded
+      if (preloaded) {
+        if (alm.addons.seo && startPage > 0) {
+          page = page;
+        } else if (alm.addons.filters && filterStartPage > 0) {
+          page = page;
+        } else {
+          page = page + 1;
+        }
+      }
+      createTOCButton(alm, page, offset);
+    }
+  }
 }
 
 /**
  * Clear table of contents.
  */
 function clearTOC() {
-	const toc = document.querySelector('.alm-toc');
-	if (toc) {
-		toc.innerHTML = '';
-	}
+  var toc = document.querySelector('.alm-toc');
+  if (toc) {
+    toc.innerHTML = '';
+  }
 }
 
 /**
@@ -10388,81 +10696,102 @@ function clearTOC() {
  * @param {number} offset The page offset.
  */
 function createTOCButton(alm, page, offset) {
-	if (!alm.tableofcontents) {
-		return false;
-	}
+  if (!alm.tableofcontents) {
+    return false;
+  }
+  page = parseInt(page);
+  var posts_per_page = parseInt(alm.posts_per_page);
 
-	const button = document.createElement('button');
-	button.type = 'button';
+  // Create button.
+  var button = document.createElement('button');
+  button.type = 'button';
+  button.innerHTML = getTOCLabel(alm, page + 1);
+  button.dataset.page = alm.addons.single_post_target && alm.init ? page - 1 : page + 1;
+  button.dataset.target = (page + 1) * posts_per_page - posts_per_page + 1;
 
-	page = parseInt(page) + 1;
-	button.innerHTML = getTOCLabel(alm, page);
-	button.dataset.page = alm.addons.single_post_target && alm.init ? page - 1 : page;
-	alm.tableofcontents.appendChild(button);
+  // Add button to TOC.
+  alm.tableofcontents.appendChild(button);
 
-	button.addEventListener('click', function () {
-		const thePage = this.dataset.page;
-		let target = document.querySelector(`.alm-reveal:nth-child(${thePage})`) || document.querySelector(`.alm-nextpage:nth-child(${thePage})`);
+  // Click event listener.
+  button.addEventListener('click', function () {
+    var current = this.dataset.page;
+    var target = this.dataset.target;
 
-		// Single Posts
-		if (alm.addons.single_post_target) {
-			target = document.querySelector(`.alm-reveal.alm-single-post[data-page="${thePage}"]`);
-		}
+    // Get all listing children.
+    var children = alm.listing.children;
 
-		if (!target) {
-			return false;
-		}
-		const top = typeof getOffset === 'function' ? getOffset(target).top : target.offsetTop;
-		almScroll(top - offset);
+    // Find element.
+    var element = children[target - 1];
 
-		// Set Focus for A11y
-		setTimeout(function () {
-			modules_setFocus(alm, target, thePage, false);
-		}, 1000);
-	});
+    // Next Page.
+    if (alm.addons.nextpage) {
+      element = document.querySelector(".alm-nextpage[data-page=\"".concat(current, "\"]"));
+    }
+    // Single Posts.
+    if (alm.addons.single_post_target) {
+      element = document.querySelector(".alm-single-post[data-page=\"".concat(current, "\"]"));
+    }
+    if (!element) {
+      return; // Exit if no target.
+    }
+
+    var top = typeof getOffset === 'function' ? getOffset(element).top : element.offsetTop;
+    almScroll(top - offset);
+    setTimeout(function () {
+      setFocus(alm, element, target, false);
+    }, 500);
+  });
 }
 
 /**
  * Get Button Label.
  *
  * @param {Object} alm  The alm object.
- * @param {string} page Current page.
- * @return {string} Label.
+ * @param {string} page The current page.
+ * @return {string}     The Label.
  */
 function getTOCLabel(alm, page) {
-	let label = page;
+  var label = page;
 
-	// Single Posts
-	if (alm.addons.single_post) {
-		let thePage = page - 1;
-		let element;
-		if (alm.addons.single_post_target) {
-			// Special functionality for Single Post with a loading target type
-			if (alm.init) {
-				thePage = thePage;
-			} else {
-				thePage = thePage + 1;
-			}
-			const posts = document.querySelectorAll(`.alm-reveal.alm-single-post`);
-			if (posts) {
-				element = posts[thePage];
-			}
-		} else {
-			element = document.querySelector(`.alm-reveal.alm-single-post[data-page=${page - 1}]`);
-		}
-		label = element ? element.dataset.title : label;
-	}
+  // Single Posts
+  if (alm.addons.single_post) {
+    var thePage = page - 1;
+    var element;
+    if (alm.addons.single_post_target) {
+      // Special functionality for Single Post with a loading target type
+      if (alm.init) {
+        thePage = thePage;
+      } else {
+        thePage = thePage + 1;
+      }
+      var posts = document.querySelectorAll(".alm-single-post");
+      if (posts) {
+        element = posts[thePage];
+      }
+    } else {
+      element = document.querySelector(".alm-single-post[data-page=".concat(page - 1, "]"));
+    }
+    label = element ? element.dataset.title : label;
+  }
 
-	// Dynamic function name
-	const funcName = `almTOCLabel_${alm.id}`;
-	if (typeof window[funcName] === 'function') {
-		label = window[funcName](page, label);
-	}
-
-	return label;
+  // Dynamic function name.
+  var funcName = "almTOCLabel_".concat(alm.id);
+  if (typeof window[funcName] === 'function') {
+    label = window[funcName](page, label);
+  }
+  return label;
 }
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/filtering.js
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || filtering_unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function filtering_toConsumableArray(arr) { return filtering_arrayWithoutHoles(arr) || filtering_iterableToArray(arr) || filtering_unsupportedIterableToArray(arr) || filtering_nonIterableSpread(); }
+function filtering_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function filtering_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return filtering_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return filtering_arrayLikeToArray(o, minLen); }
+function filtering_iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function filtering_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return filtering_arrayLikeToArray(arr); }
+function filtering_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 
 
 
@@ -10475,26 +10804,28 @@ function getTOCLabel(alm, page) {
  * @param {string} type       Type of filter.
  * @since 2.6.1
  */
-function almFilter(transition, speed = 150, data, type = 'filter') {
-	if (data.target) {
-		// Target has been specified.
-		const alm = document.querySelectorAll('.ajax-load-more-wrap[data-id="' + data.target.toLowerCase() + '"]');
-		if (alm) {
-			alm.forEach(function (element) {
-				almFilterTransition(transition, speed, data, type, element);
-			});
-		}
-	} else {
-		// Target not specified.
-		const alm = document.querySelectorAll('.ajax-load-more-wrap');
-		if (alm) {
-			alm.forEach(function (element) {
-				almFilterTransition(transition, speed, data, type, element);
-			});
-		}
-	}
-
-	clearTOC(); // Clear table of contents if required
+function almFilter(transition) {
+  var speed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 150;
+  var data = arguments.length > 2 ? arguments[2] : undefined;
+  var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'filter';
+  if (data.target) {
+    // Target has been specified.
+    var alm = document.querySelectorAll('.ajax-load-more-wrap[data-id="' + data.target.toLowerCase() + '"]');
+    if (alm) {
+      alm.forEach(function (element) {
+        almFilterTransition(transition, speed, data, type, element);
+      });
+    }
+  } else {
+    // Target not specified.
+    var _alm = document.querySelectorAll('.ajax-load-more-wrap');
+    if (_alm) {
+      _alm.forEach(function (element) {
+        almFilterTransition(transition, speed, data, type, element);
+      });
+    }
+  }
+  clearTOC(); // Clear table of contents if required
 }
 
 /**
@@ -10508,32 +10839,25 @@ function almFilter(transition, speed = 150, data, type = 'filter') {
  * @since 2.13.1
  */
 function almFilterTransition(transition, speed, data, type, element) {
-	if (transition === 'fade' || transition === 'masonry') {
-		// Fade, Masonry transition
+  if (transition === 'fade' || transition === 'masonry') {
+    // Fade, Masonry transition
 
-		switch (type) {
-			case 'filter':
-				element.classList.add('alm-is-filtering');
-				almFadeOut(element, speed);
-				break;
+    switch (type) {
+      case 'filter':
+        element.classList.add('alm-is-filtering');
+        almFadeOut(element, speed);
+        break;
+    }
 
-			case 'tab':
-				element.classList.add('alm-loading');
-				const new_element = element.querySelector('.alm-listing');
-				element.style.height = new_element.offsetHeight + 'px';
-				almFadeOut(new_element, speed);
-				break;
-		}
-
-		// Move to next function
-		setTimeout(function () {
-			almCompleteFilterTransition(speed, data, type, element);
-		}, speed);
-	} else {
-		// No transition
-		element.classList.add('alm-is-filtering');
-		almCompleteFilterTransition(speed, data, type, element);
-	}
+    // Move to next function
+    setTimeout(function () {
+      almCompleteFilterTransition(speed, data, type, element);
+    }, speed);
+  } else {
+    // No transition
+    element.classList.add('alm-is-filtering');
+    almCompleteFilterTransition(speed, data, type, element);
+  }
 }
 
 /**
@@ -10546,36 +10870,42 @@ function almFilterTransition(transition, speed, data, type, element) {
  * @since 3.3
  */
 function almCompleteFilterTransition(speed, data, type, element) {
-	const btnWrap = element.querySelector('.alm-btn-wrap'); // Get `.alm-btn-wrap` element
-	const listing = element.querySelectorAll('.alm-listing'); // Get `.alm-listing` element
+  var btnWrap = element.querySelector('.alm-btn-wrap'); // Get `.alm-btn-wrap` element
+  var listing = element.querySelectorAll('.alm-listing'); // Get `.alm-listing` element
 
-	if (!listing || !btnWrap) {
-		// Bail early if elements doesn't exist.
-		return false;
-	}
+  if (!listing || !btnWrap) {
+    // Exit if elements doesn't exist.
+    return false;
+  }
 
-	// Loop over all .alm-listing divs and clear HTML.
-	[...listing].forEach(function (e) {
-		e.innerHTML = '';
-	});
+  // Loop over all .alm-listing divs and clear HTML.
+  filtering_toConsumableArray(listing).forEach(function (element) {
+    // Is this a paging instance.
+    var paging = element.querySelector('.alm-paging-content');
+    if (paging) {
+      paging.innerHTML = '';
+    } else {
+      element.innerHTML = '';
+    }
+  });
 
-	// Get Load More button
-	const button = btnWrap.querySelector('.alm-load-more-btn');
-	if (button) {
-		button.classList.remove('done'); // Reset Button
-	}
+  // Get Load More button
+  var button = btnWrap.querySelector('.alm-load-more-btn');
+  if (button) {
+    button.classList.remove('done'); // Reset Button
+  }
 
-	// Clear paging navigation
-	const paging = btnWrap.querySelector('.alm-paging');
-	if (paging) {
-		paging.style.opacity = 0;
-	}
+  // Clear paging navigation
+  var paging = btnWrap.querySelector('.alm-paging');
+  if (paging) {
+    paging.style.opacity = 0;
+  }
 
-	// Reset Preloaded Amount
-	data.preloadedAmount = 0;
+  // Reset Preloaded Amount
+  data.preloadedAmount = 0;
 
-	// Dispatch Filters
-	almSetFilters(speed, data, type, element);
+  // Dispatch Filters
+  almSetFilters(speed, data, type, element);
 }
 
 /**
@@ -10588,138 +10918,59 @@ function almCompleteFilterTransition(speed, data, type, element) {
  * @since 2.6.1
  */
 function almSetFilters(speed, data, type, element) {
-	// Get `alm-listing` container.
-	const listing = element.querySelector('.alm-listing') || element.querySelector('.alm-comments');
-	if (!listing) {
-		return false;
-	}
+  // Get `alm-listing` container.
+  var listing = element.querySelector('.alm-listing') || element.querySelector('.alm-comments');
+  if (!listing) {
+    return false;
+  }
+  switch (type) {
+    case 'filter':
+      // Update data attributes
+      for (var _i = 0, _Object$entries = Object.entries(data); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          key = _Object$entries$_i[0],
+          value = _Object$entries$_i[1];
+        // Convert camelCase data atts back to dashes (-).
+        key = key.replace(/\W+/g, '-').replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
+        listing.setAttribute('data-' + key, value);
+      }
+      // Fade ALM back (Filters only)
+      almFadeIn(element, speed);
+      break;
+  }
 
-	switch (type) {
-		case 'filter':
-			// Update data attributes
-			for (let [key, value] of Object.entries(data)) {
-				// Convert camelCase data atts back to dashes (-).
-				key = key
-					.replace(/\W+/g, '-')
-					.replace(/([a-z\d])([A-Z])/g, '$1-$2')
-					.toLowerCase();
-				listing.setAttribute('data-' + key, value);
-			}
-			// Fade ALM back (Filters only)
-			almFadeIn(element, speed);
-			break;
-
-		case 'tab':
-			// Update `data-tab-template` attribute
-			listing.setAttribute('data-preloaded', 'false');
-			listing.setAttribute('data-pause', 'false');
-			listing.setAttribute('data-tab-template', data.tabTemplate);
-
-			break;
-	}
-
-	// Re-initiate Ajax Load More.
-	let target = '';
-	if (data.target) {
-		// Target has been specified
-		target = document.querySelector('.ajax-load-more-wrap[data-id="' + data.target + '"]');
-		if (target) {
-			window.almInit(target);
-		}
-	} else {
-		// Target not specified
-		target = document.querySelector('.ajax-load-more-wrap');
-		if (target) {
-			window.almInit(target);
-		}
-	}
-
-	switch (type) {
-		case 'filter':
-			// Filters Complete (not the add-on)
-			if (typeof almFilterComplete === 'function') {
-				// Standard Filtering
-				almFilterComplete();
-			}
-			break;
-
-		case 'tab':
-			// Tabs Complete
-			if (typeof almTabsComplete === 'function') {
-				// Standard Filtering
-				almTabsComplete();
-			}
-			break;
-	}
+  // Re-initiate Ajax Load More.
+  var target = '';
+  if (data.target) {
+    // Target has been specified
+    target = document.querySelector('.ajax-load-more-wrap[data-id="' + data.target + '"]');
+    if (target) {
+      window.almInit(target);
+    }
+  } else {
+    // Target not specified
+    target = document.querySelector('.ajax-load-more-wrap');
+    if (target) {
+      window.almInit(target);
+    }
+  }
+  switch (type) {
+    case 'filter':
+      // Filters Complete (not the add-on)
+      if (typeof almFilterComplete === 'function') {
+        // Standard Filtering
+        almFilterComplete();
+      }
+      break;
+  }
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/modules/insertScript.js
-/**
- * Search nodes for <script/> tags and run scripts.
- * Scripts cannot run with appendChild or innerHTML so this is necessary to function.
- *
- * @since 5.0
- */
-const insertScript = {
-	init(node) {
-		if (this.isScript(node) === true) {
-			node.parentNode.replaceChild(this.clone(node), node);
-		} else {
-			let i = 0;
-			let children = node.childNodes;
-
-			if (children === undefined) {
-				const parser = new DOMParser();
-				const data = parser.parseFromString(node, 'text/html');
-				if (data) {
-					children = data.body.childNodes;
-				}
-			}
-			while (i < children.length) {
-				this.replace(children[i++]);
-			}
-		}
-		return node;
-	},
-
-	replace(node) {
-		if (this.isScript(node) === true) {
-			node.parentNode.replaceChild(this.clone(node), node);
-		} else {
-			let i = 0;
-			const children = node.childNodes;
-			while (i < children.length) {
-				this.replace(children[i++]);
-			}
-		}
-		return node;
-	},
-
-	isScript(node) {
-		return node.tagName === 'SCRIPT';
-	},
-
-	clone(node) {
-		const script = document.createElement('script');
-		script.text = node.innerHTML;
-		for (let i = node.attributes.length - 1; i >= 0; i--) {
-			script.setAttribute(node.attributes[i].name, node.attributes[i].value);
-		}
-		return script;
-	},
-};
-/* harmony default export */ var modules_insertScript = (insertScript);
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/masonry.js
+function masonry_typeof(o) { "@babel/helpers - typeof"; return masonry_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, masonry_typeof(o); }
+function masonry_regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ masonry_regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == masonry_typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(masonry_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function masonry_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function masonry_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { masonry_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { masonry_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-
-
-
-
-
-
-
-const masonry_imagesLoaded = __webpack_require__(564);
+var masonry_imagesLoaded = __webpack_require__(564);
 
 /**
  * Function to trigger built-in Ajax Load More Masonry.
@@ -10730,148 +10981,124 @@ const masonry_imagesLoaded = __webpack_require__(564);
  * @since 3.1
  */
 function almMasonry(alm, init, filtering) {
-	if (!alm.masonry) {
-		console.warn('Ajax Load More: Unable to locate Masonry settings.');
-	}
+  if (!alm.masonry) {
+    console.warn('Ajax Load More: Unable to locate Masonry settings.');
+  }
+  var container = alm.listing,
+    last_loaded = alm.last_loaded,
+    speed = alm.speed;
+  return new Promise(function (resolve) {
+    var _alm$masonry;
+    var selector = alm.masonry.selector;
+    var animation = alm.masonry.animation;
+    var horizontalOrder = (alm === null || alm === void 0 || (_alm$masonry = alm.masonry) === null || _alm$masonry === void 0 ? void 0 : _alm$masonry.horizontalorder) === 'true' ? true : false;
+    var masonry_init = alm.masonry.init;
+    var columnWidth = alm.masonry.columnwidth;
+    var duration = (speed + 100) / 1000 + 's'; // Add 100 for some delay
+    var hidden = 'scale(0.5)';
+    var visible = 'scale(1)';
+    if (animation === 'zoom-out') {
+      hidden = 'translateY(-20px) scale(1.25)';
+      visible = 'translateY(0) scale(1)';
+    }
+    if (animation === 'slide-up') {
+      hidden = 'translateY(50px)';
+      visible = 'translateY(0)';
+    }
+    if (animation === 'slide-down') {
+      hidden = 'translateY(-50px)';
+      visible = 'translateY(0)';
+    }
+    if (animation === 'none') {
+      hidden = 'translateY(0)';
+      visible = 'translateY(0)';
+    }
 
-	return new Promise((resolve) => {
-		const container = alm.listing;
-		const html = alm.html;
-		const selector = alm.masonry.selector;
-		let columnWidth = alm.masonry.columnwidth;
-		const animation = alm.masonry.animation;
-		let horizontalOrder = alm.masonry.horizontalorder;
-		const speed = alm.speed;
-		const masonry_init = alm.masonry.init;
+    // columnWidth
+    if (columnWidth) {
+      if (!isNaN(columnWidth)) {
+        columnWidth = parseInt(columnWidth); // Check if number.
+      }
+    } else {
+      columnWidth = selector; // No columnWidth, use the selector
+    }
 
-		const duration = (speed + 100) / 1000 + 's'; // Add 100 for some delay
-		let hidden = 'scale(0.5)';
-		let visible = 'scale(1)';
+    if (!filtering) {
+      // First Run.
+      if (masonry_init && init) {
+        masonry_imagesLoaded(container, function () {
+          var _window;
+          var defaults = {
+            itemSelector: selector,
+            transitionDuration: duration,
+            columnWidth: columnWidth,
+            // eslint-disable-line
+            horizontalOrder: horizontalOrder,
+            // eslint-disable-line
+            hiddenStyle: {
+              transform: hidden,
+              opacity: 0
+            },
+            visibleStyle: {
+              transform: visible,
+              opacity: 1
+            }
+          };
 
-		if (animation === 'zoom-out') {
-			hidden = 'translateY(-20px) scale(1.25)';
-			visible = 'translateY(0) scale(1)';
-		}
+          // Get custom Masonry options (https://masonry.desandro.com/options.html).
+          var alm_masonry_vars = (_window = window) === null || _window === void 0 ? void 0 : _window.alm_masonry_vars;
+          if (alm_masonry_vars) {
+            Object.keys(alm_masonry_vars).forEach(function (key) {
+              // Loop object	to create key:prop
+              defaults[key] = alm_masonry_vars[key];
+            });
+          }
 
-		if (animation === 'slide-up') {
-			hidden = 'translateY(50px)';
-			visible = 'translateY(0)';
-		}
-
-		if (animation === 'slide-down') {
-			hidden = 'translateY(-50px)';
-			visible = 'translateY(0)';
-		}
-
-		if (animation === 'none') {
-			hidden = 'translateY(0)';
-			visible = 'translateY(0)';
-		}
-
-		// columnWidth
-		if (columnWidth) {
-			if (!isNaN(columnWidth)) {
-				columnWidth = parseInt(columnWidth); // Check if number.
-			}
-		} else {
-			columnWidth = selector; // No columnWidth, use the selector
-		}
-
-		// horizontalOrder
-		horizontalOrder = horizontalOrder === 'true' ? true : false;
-
-		if (!filtering) {
-			// First Run.
-			if (masonry_init && init) {
-				// Run srcSet polyfill.
-				srcsetPolyfill(container, alm.ua);
-
-				masonry_imagesLoaded(container, function () {
-					const defaults = {
-						itemSelector: selector,
-						transitionDuration: duration,
-						columnWidth: columnWidth, // eslint-disable-line
-						horizontalOrder: horizontalOrder, // eslint-disable-line
-						hiddenStyle: {
-							transform: hidden,
-							opacity: 0,
-						},
-						visibleStyle: {
-							transform: visible,
-							opacity: 1,
-						},
-					};
-
-					// Get custom Masonry options (https://masonry.desandro.com/options.html).
-					const alm_masonry_vars = window.alm_masonry_vars;
-					if (alm_masonry_vars) {
-						Object.keys(alm_masonry_vars).forEach(function (key) {
-							// Loop object	to create key:prop
-							defaults[key] = alm_masonry_vars[key];
-						});
-					}
-
-					const data = container.querySelectorAll(selector);
-
-					// Create Filters URL, if required.
-					if (alm.addons.filters) {
-						createMasonryFiltersPages(alm, Array.prototype.slice.call(data));
-					}
-
-					// Create SEO URL, if required.
-					if (alm.addons.seo) {
-						createMasonrySEOPages(alm, Array.prototype.slice.call(data));
-					}
-
-					// Init Masonry, delay to allow time for items to be added to the page.
-					setTimeout(function () {
-						alm.msnry = new Masonry(container, defaults);
-						almFadeIn(container.parentNode, 125); // Fade In
-						resolve(true);
-					}, 1);
-				});
-			}
-
-			// Standard / Append content.
-			else {
-				// Loop all items and create array of node elements
-				const data = helpers_stripEmptyNodes(almDomParser(html, 'text/html'));
-
-				if (data) {
-					// Append elements listing.
-					almAppendChildren(alm.listing, data, 'masonry');
-
-					// Run srcSet polyfill.
-					srcsetPolyfill(container, alm.ua);
-
-					// imagesLoaded & append.
-					masonry_imagesLoaded(container, function () {
-						alm.msnry.appended(data);
-
-						// Set Focus.
-						modules_setFocus(alm, data, data.length, false);
-
-						// Create Filters URL, if required.
-						if (alm.addons.filters) {
-							createMasonryFiltersPage(alm, data[0]);
-						}
-
-						// Create SEO URL, if required.
-						if (alm.addons.seo) {
-							createMasonrySEOPage(alm, data[0]);
-						}
-
-						resolve(true);
-					});
-				}
-			}
-		} else {
-			// Reset
-			container.parentNode.style.opacity = 0;
-			almMasonry(alm, true, false);
-			resolve(true);
-		}
-	});
+          // Init Masonry, delay to allow time for items to be added to the page.
+          setTimeout( /*#__PURE__*/masonry_asyncToGenerator( /*#__PURE__*/masonry_regeneratorRuntime().mark(function _callee() {
+            return masonry_regeneratorRuntime().wrap(function _callee$(_context) {
+              while (1) switch (_context.prev = _context.next) {
+                case 0:
+                  alm.msnry = new Masonry(container, defaults);
+                  _context.next = 3;
+                  return almFadeIn(container.parentNode, 175);
+                case 3:
+                  resolve(true);
+                case 4:
+                case "end":
+                  return _context.stop();
+              }
+            }, _callee);
+          })), 25);
+        });
+      } else {
+        // Standard / Append content.
+        // eslint-disable-next-line no-lonely-if
+        if (last_loaded) {
+          // ImagesLoaded & appended.
+          masonry_imagesLoaded(container, function () {
+            setTimeout( /*#__PURE__*/masonry_asyncToGenerator( /*#__PURE__*/masonry_regeneratorRuntime().mark(function _callee2() {
+              return masonry_regeneratorRuntime().wrap(function _callee2$(_context2) {
+                while (1) switch (_context2.prev = _context2.next) {
+                  case 0:
+                    alm.msnry.appended(last_loaded);
+                    resolve(true);
+                  case 2:
+                  case "end":
+                    return _context2.stop();
+                }
+              }, _callee2);
+            })), 25);
+          });
+        }
+      }
+    } else {
+      // Reset instance.
+      container.parentNode.style.opacity = 0;
+      almMasonry(alm, true, false);
+      resolve(true);
+    }
+  });
 }
 
 /**
@@ -10881,76 +11108,86 @@ function almMasonry(alm, init, filtering) {
  * @return {Object}    Configuration object.
  */
 function almMasonryConfig(alm) {
-	alm.masonry = {};
-	alm.masonry.init = true;
-	if (alm.msnry) {
-		// destroy masonry if it currently exists.
-		alm.msnry.destroy();
-	} else {
-		alm.msnry = '';
-	}
-	const masonry_config = JSON.parse(alm.listing.dataset.masonryConfig);
-	if (masonry_config) {
-		alm.masonry.selector = masonry_config.selector;
-		alm.masonry.columnwidth = masonry_config.columnwidth;
-		alm.masonry.animation = masonry_config.animation === '' ? 'standard' : masonry_config.animation;
-		alm.masonry.horizontalorder = masonry_config.horizontalorder === '' ? 'true' : masonry_config.horizontalorder;
-		alm.transition_container = false;
-		alm.images_loaded = false;
-	} else {
-		console.warn('Ajax Load More: Unable to locate Masonry configuration settings.');
-	}
-
-	return alm;
+  alm.masonry = {};
+  alm.masonry.init = true;
+  if (alm.msnry) {
+    // destroy masonry if it currently exists.
+    alm.msnry.destroy();
+  } else {
+    alm.msnry = '';
+  }
+  var masonry_config = JSON.parse(alm.listing.dataset.masonryConfig);
+  if (masonry_config) {
+    alm.masonry.selector = masonry_config.selector;
+    alm.masonry.columnwidth = masonry_config.columnwidth;
+    alm.masonry.animation = masonry_config.animation === '' ? 'standard' : masonry_config.animation;
+    alm.masonry.horizontalorder = masonry_config.horizontalorder === '' ? 'true' : masonry_config.horizontalorder;
+    alm.images_loaded = true;
+    alm.transition_delay = 0;
+  } else {
+    console.warn('Ajax Load More: Unable to locate Masonry configuration settings.');
+  }
+  return alm;
 }
-
-;// CONCATENATED MODULE: ./src/frontend/js/modules/noResults.js
-/**
- * Set the results text if required.
- *
- * @param {HTMLElement} target The target HTML element
- * @param {string}      html   The HTML.
- * @since 5.1
- */
-const almNoResults = (target, html = '') => {
-	if (html === '') {
-		return false; // exit if empty
-	}
-
-	// Remove empty <p/> tags
-	html = html.replace(/(<p><\/p>)+/g, '');
-
-	// Append to DOM
-	target.innerHTML = html;
-};
-
-/* harmony default export */ var noResults = (almNoResults);
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/placeholder.js
+function placeholder_typeof(o) { "@babel/helpers - typeof"; return placeholder_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, placeholder_typeof(o); }
+function placeholder_regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ placeholder_regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == placeholder_typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(placeholder_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function placeholder_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function placeholder_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { placeholder_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { placeholder_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
-function showPlaceholder(alm) {
-	if (!alm || !alm.main || alm.addons.paging || alm.rel === 'prev') {
-		return false;
-	}
-	if (alm.placeholder) {
-		alm.placeholder.style.display = 'block';
-		almFadeIn(alm.placeholder, 150);
-	}
+/**
+ * Show placeholder div.
+ *
+ * @param {string} type The direction.
+ * @param {Object} alm  The ALM object.
+ */
+function placeholder() {
+  return _placeholder.apply(this, arguments);
 }
-
-function hidePlaceholder(alm) {
-	if (!alm || !alm.main || alm.addons.paging) {
-		return false;
-	}
-	if (alm.placeholder) {
-		almFadeOut(alm.placeholder, 150);
-		setTimeout(function () {
-			alm.placeholder.style.display = 'none';
-		}, 75);
-	}
+function _placeholder() {
+  _placeholder = placeholder_asyncToGenerator( /*#__PURE__*/placeholder_regeneratorRuntime().mark(function _callee() {
+    var type,
+      alm,
+      placeholder,
+      addons,
+      rel,
+      _args = arguments;
+    return placeholder_regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          type = _args.length > 0 && _args[0] !== undefined ? _args[0] : 'show';
+          alm = _args.length > 1 ? _args[1] : undefined;
+          placeholder = alm.placeholder, addons = alm.addons, rel = alm.rel;
+          if (!(!placeholder || addons.paging || rel === 'prev')) {
+            _context.next = 5;
+            break;
+          }
+          return _context.abrupt("return", false);
+        case 5:
+          _context.t0 = type;
+          _context.next = _context.t0 === 'hide' ? 8 : 12;
+          break;
+        case 8:
+          _context.next = 10;
+          return almFadeOut(placeholder, 175);
+        case 10:
+          setTimeout(function () {
+            placeholder.style.display = 'none';
+          }, 75);
+          return _context.abrupt("break", 15);
+        case 12:
+          placeholder.style.display = 'block';
+          almFadeIn(placeholder, 175);
+          return _context.abrupt("break", 15);
+        case 15:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _placeholder.apply(this, arguments);
 }
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/resultsText.js
 
 
@@ -10961,12 +11198,13 @@ function hidePlaceholder(alm) {
  * @param {string} type Type of results.
  * @since 5.1
  */
-function almResultsText(alm, type = 'standard') {
-	if (!alm.resultsText || alm.nested === 'true') {
-		return false;
-	}
-	const resultsType = type === 'nextpage' || type === 'woocommerce' ? type : 'standard';
-	almGetResultsText(alm, resultsType);
+function almResultsText(alm) {
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
+  if (!alm.resultsText || alm.nested === 'true') {
+    return false;
+  }
+  var resultsType = type === 'nextpage' || type === 'woocommerce' ? type : 'standard';
+  almGetResultsText(alm, resultsType);
 }
 
 /**
@@ -10976,41 +11214,37 @@ function almResultsText(alm, type = 'standard') {
  * @param {string} type Type of results.
  * @since 4.1
  */
-function almGetResultsText(alm, type = 'standard') {
-	if (!alm.resultsText || !alm.localize || alm.nested === 'true') {
-		return false;
-	}
+function almGetResultsText(alm) {
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
+  if (!alm.resultsText || !alm.localize || alm.nested === 'true') {
+    return false;
+  }
+  var page = 0;
+  var pages = 0;
+  var post_count = 0;
+  var total_posts = 0;
+  var posts_per_page = alm.orginal_posts_per_page;
+  switch (type) {
+    // Nextpage
+    case 'nextpage':
+      page = parseInt(alm.localize.page);
+      post_count = page;
+      pages = parseInt(alm.localize.total_posts);
+      total_posts = parseInt(pages);
+      almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, posts_per_page);
+      break;
 
-	let page = 0;
-	let pages = 0;
-	let post_count = 0;
-	let total_posts = 0;
-	const posts_per_page = alm.orginal_posts_per_page;
-
-	switch (type) {
-		// Nextpage
-		case 'nextpage':
-			page = parseInt(alm.localize.page);
-			post_count = page;
-			pages = parseInt(alm.localize.total_posts);
-			total_posts = parseInt(pages);
-			almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, posts_per_page);
-
-			break;
-
-		// WooCommerce
-		case 'woocommerce':
-			// Don't do anything
-			break;
-
-		default:
-			page = getTotals('page', alm.id);
-			pages = getTotals('pages', alm.id);
-			post_count = getTotals('post_count', alm.id);
-			total_posts = getTotals('total_posts', alm.id);
-
-			almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, posts_per_page);
-	}
+    // WooCommerce
+    case 'woocommerce':
+      // Don't do anything
+      break;
+    default:
+      page = getTotals('page', alm.id);
+      pages = getTotals('pages', alm.id);
+      post_count = getTotals('post_count', alm.id);
+      total_posts = getTotals('total_posts', alm.id);
+      almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, posts_per_page);
+  }
 }
 
 /**
@@ -11020,36 +11254,33 @@ function almGetResultsText(alm, type = 'standard') {
  * @param {string} type Type of results.
  * @since 4.1
  */
-function almInitResultsText(alm, type = 'standard') {
-	if (!alm.resultsText || !alm.localize || alm.nested === 'true') {
-		return false;
-	}
-
-	let page = 0;
-	let pages = Math.ceil(alm.localize.total_posts / alm.orginal_posts_per_page);
-	let post_count = parseInt(alm.localize.post_count);
-	const total_posts = parseInt(alm.localize.total_posts);
-
-	switch (type) {
-		case 'nextpage': // Nextpage
-			page = alm.addons.nextpage_startpage;
-			post_count = page;
-			pages = total_posts;
-			almRenderResultsText(alm.resultsText, page, total_posts, post_count, total_posts, alm.posts_per_page);
-			break;
-
-		case 'preloaded': // Preloaded
-			page = alm.addons.paging && alm.addons.seo ? parseInt(alm.start_page) + 1 : parseInt(alm.page) + 1;
-			almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, alm.posts_per_page);
-			break;
-
-		case 'woocommerce': // WooCommerce
-			// Don't do anything
-			break;
-
-		default:
-			console.log('No results to set.'); // eslint-disable-line no-console
-	}
+function almInitResultsText(alm) {
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'standard';
+  if (!alm.resultsText || !alm.localize || alm.nested === 'true') {
+    return false;
+  }
+  var page = 0;
+  var pages = Math.ceil(alm.localize.total_posts / alm.orginal_posts_per_page);
+  var post_count = parseInt(alm.localize.post_count);
+  var total_posts = parseInt(alm.localize.total_posts);
+  switch (type) {
+    case 'nextpage':
+      // Nextpage
+      page = alm.addons.nextpage_startpage;
+      post_count = page;
+      pages = total_posts;
+      almRenderResultsText(alm.resultsText, page, total_posts, post_count, total_posts, alm.posts_per_page);
+      break;
+    case 'preloaded':
+      // Preloaded
+      page = alm.addons.paging && alm.addons.seo ? alm.start_page + 1 : parseInt(alm.page) + 1;
+      almRenderResultsText(alm.resultsText, page, pages, post_count, total_posts, alm.posts_per_page);
+      break;
+    case 'woocommerce':
+      // WooCommerce
+      // Don't do anything
+      break;
+  }
 }
 
 /**
@@ -11063,33 +11294,31 @@ function almInitResultsText(alm, type = 'standard') {
  * @param {string}  per_page    Total amount of posts per page.
  * @since 4.1
  */
-const almRenderResultsText = function (el, page, pages, post_count, total_posts, per_page) {
-	el.forEach(function (result) {
-		pages = parseInt(pages);
-		let text = pages > 0 ? alm_localize.results_text : alm_localize.no_results_text;
+var almRenderResultsText = function almRenderResultsText(el, page, pages, post_count, total_posts, per_page) {
+  el.forEach(function (result) {
+    pages = parseInt(pages);
+    var text = pages > 0 ? alm_localize.results_text : alm_localize.no_results_text;
 
-		// Paging add-on.
-		// Start and End values for posts in view.
-		const start = page * per_page - per_page + 1;
-		const end_val = page * per_page;
-		const end = end_val <= total_posts ? end_val : total_posts;
-
-		if (pages > 0) {
-			text = text.replace('{num}', `<span class="alm-results-num">${page}</span>`); // Deprecated
-			text = text.replace('{page}', `<span class="alm-results-page">${page}</span>`);
-			text = text.replace('{start}', `<span class="alm-results-start">${start}</span>`);
-			text = text.replace('{end}', `<span class="alm-results-start">${end}</span>`);
-			text = text.replace('{total}', `<span class="alm-results-total">${pages}</span>`); // Deprecated
-			text = text.replace('{pages}', `<span class="alm-results-pages">${pages}</span>`);
-			text = text.replace('{post_count}', `<span class="alm-results-post_count">${post_count}</span>`);
-			text = text.replace('{total_posts}', `<span class="alm-results-total_posts">${total_posts}</span>`);
-			result.innerHTML = text;
-		} else {
-			result.innerHTML = text;
-		}
-	});
+    // Paging add-on.
+    // Start and End values for posts in view.
+    var start = page * per_page - per_page + 1;
+    var end_val = page * per_page;
+    var end = end_val <= total_posts ? end_val : total_posts;
+    if (pages > 0) {
+      text = text.replace('{num}', "<span class=\"alm-results-num\">".concat(page, "</span>")); // Deprecated
+      text = text.replace('{page}', "<span class=\"alm-results-page\">".concat(page, "</span>"));
+      text = text.replace('{start}', "<span class=\"alm-results-start\">".concat(start, "</span>"));
+      text = text.replace('{end}', "<span class=\"alm-results-start\">".concat(end, "</span>"));
+      text = text.replace('{total}', "<span class=\"alm-results-total\">".concat(pages, "</span>")); // Deprecated
+      text = text.replace('{pages}', "<span class=\"alm-results-pages\">".concat(pages, "</span>"));
+      text = text.replace('{post_count}', "<span class=\"alm-results-post_count\">".concat(post_count, "</span>"));
+      text = text.replace('{total_posts}', "<span class=\"alm-results-total_posts\">".concat(total_posts, "</span>"));
+      result.innerHTML = text;
+    } else {
+      result.innerHTML = text;
+    }
+  });
 };
-
 ;// CONCATENATED MODULE: ./src/frontend/js/modules/setLocalizedVars.js
 
 
@@ -11100,46 +11329,42 @@ const almRenderResultsText = function (el, page, pages, post_count, total_posts,
  * @since 4.1
  */
 function setLocalizedVars(alm) {
-	const { addons } = alm;
-	return new Promise((resolve) => {
-		let type = 'standard';
+  var addons = alm.addons;
+  return new Promise(function (resolve) {
+    var type = 'standard';
+    if (addons.nextpage) {
+      // Nextpage
+      type = 'nextpage';
+      if (addons.paging) {
+        alm.AjaxLoadMore.setLocalizedVar('page', parseInt(alm.page) + 1);
+      } else {
+        alm.AjaxLoadMore.setLocalizedVar('page', parseInt(alm.page) + parseInt(addons.nextpage_startpage) + 1);
+      }
+    } else if (addons.woocommerce) {
+      // WooCommerce
+      type = 'woocommerce';
+      alm.AjaxLoadMore.setLocalizedVar('page', parseInt(alm.page) + 1);
+    } else {
+      // Standard ALM.
+      var page = parseInt(alm.page) + 1 + (addons.preloaded && !addons.paging ? 1 : 0); // Add 1 page for preloaded.
+      alm.AjaxLoadMore.setLocalizedVar('page', parseInt(page));
+      var pages = Math.ceil(alm.totalposts / alm.orginal_posts_per_page);
+      alm.AjaxLoadMore.setLocalizedVar('pages', parseInt(pages));
+    }
 
-		if (addons.nextpage) {
-			// Nextpage
-			type = 'nextpage';
-			if (addons.paging) {
-				alm.AjaxLoadMore.setLocalizedVar('page', parseInt(alm.page) + 1);
-			} else {
-				alm.AjaxLoadMore.setLocalizedVar('page', parseInt(alm.page) + parseInt(addons.nextpage_startpage) + 1);
-			}
-		} else if (addons.woocommerce) {
-			// WooCommerce
-			type = 'woocommerce';
-			alm.AjaxLoadMore.setLocalizedVar('page', parseInt(alm.page) + 1);
-		} else {
-			// Standard ALM.
-			const page = addons.preloaded === 'true' ? parseInt(alm.page) + 2 : parseInt(alm.page) + 1;
-			alm.AjaxLoadMore.setLocalizedVar('page', parseInt(page));
+    // Total Posts `total_posts`.
+    // Only update if !preloaded && !nextpage && !woocommerce
+    if (addons.preloaded !== 'true' && !addons.nextpage && !addons.woocommerce) {
+      alm.AjaxLoadMore.setLocalizedVar('total_posts', alm.totalposts);
+    }
 
-			let pages = Math.ceil(alm.totalposts / alm.orginal_posts_per_page);
-			pages = addons.preloaded === 'true' ? pages + 1 : pages;
-			alm.AjaxLoadMore.setLocalizedVar('pages', parseInt(pages));
-		}
+    // Viewing count.
+    alm.AjaxLoadMore.setLocalizedVar('post_count', getPostCount(alm));
 
-		// Total Posts `total_posts`.
-		// Only update if !preloaded && !nextpage && !woocommerce
-		if (addons.preloaded !== 'true' && !addons.nextpage && !addons.woocommerce) {
-			alm.AjaxLoadMore.setLocalizedVar('total_posts', alm.totalposts);
-		}
-
-		// Viewing count.
-		alm.AjaxLoadMore.setLocalizedVar('post_count', almSetPostCount(alm));
-
-		// Set Results Text (if required).
-		almResultsText(alm, type);
-
-		resolve(true);
-	});
+    // Set Results Text (if required).
+    almResultsText(alm, type);
+    resolve(true);
+  });
 }
 
 /**
@@ -11148,20 +11373,21 @@ function setLocalizedVars(alm) {
  * @param {Object} alm ALM object.
  * @return {number}    Total post count.
  */
-function almSetPostCount(alm) {
-	const { postcount, addons } = alm;
-	const { preloaded_amount } = addons;
+function getPostCount(alm) {
+  var postcount = alm.postcount,
+    addons = alm.addons,
+    start_page = alm.start_page;
+  var preloaded_amount = addons.preloaded_amount;
 
-	// Construct post count.
-	let count = parseInt(postcount) + parseInt(preloaded_amount);
-	count = alm.start_page > 1 ? count - parseInt(preloaded_amount) : count; // SEO
-	count = addons.filters_startpage > 1 ? count - parseInt(preloaded_amount) : count; // Filters
-	count = addons.single_post ? count + 1 : count; // Single Posts
-	count = addons.nextpage ? count + 1 : count; // Next Page
+  // Construct post count.
+  var count = parseInt(postcount) + parseInt(preloaded_amount);
+  count = start_page > 1 ? count - parseInt(preloaded_amount) : count; // SEO
+  count = addons.filters_startpage > 1 ? count - parseInt(preloaded_amount) : count; // Filters
+  count = addons.single_post ? count + 1 : count; // Single Posts
+  count = addons.nextpage ? count + 1 : count; // Next Page
 
-	return count;
+  return count;
 }
-
 // EXTERNAL MODULE: ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js
 var injectStylesIntoStyleTag = __webpack_require__(379);
 var injectStylesIntoStyleTag_default = /*#__PURE__*/__webpack_require__.n(injectStylesIntoStyleTag);
@@ -11180,8 +11406,8 @@ var insertStyleElement_default = /*#__PURE__*/__webpack_require__.n(insertStyleE
 // EXTERNAL MODULE: ./node_modules/style-loader/dist/runtime/styleTagTransform.js
 var styleTagTransform = __webpack_require__(589);
 var styleTagTransform_default = /*#__PURE__*/__webpack_require__.n(styleTagTransform);
-// EXTERNAL MODULE: ./node_modules/mini-css-extract-plugin/dist/loader.js??ruleSet[1].rules[1].use[1]!./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].use[3]!./src/frontend/scss/ajax-load-more.scss
-var ajax_load_more = __webpack_require__(789);
+// EXTERNAL MODULE: ./node_modules/mini-css-extract-plugin/dist/loader.js??ruleSet[1].rules[2].use[1]!./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[2].use[3]!./src/frontend/scss/ajax-load-more.scss
+var ajax_load_more = __webpack_require__(792);
 var ajax_load_more_default = /*#__PURE__*/__webpack_require__.n(ajax_load_more);
 ;// CONCATENATED MODULE: ./src/frontend/scss/ajax-load-more.scss
 
@@ -11213,6 +11439,16 @@ var update = injectStylesIntoStyleTag_default()((ajax_load_more_default()), opti
        /* harmony default export */ var scss_ajax_load_more = ((ajax_load_more_default()) && (ajax_load_more_default()).locals ? (ajax_load_more_default()).locals : undefined);
 
 ;// CONCATENATED MODULE: ./src/frontend/js/ajax-load-more.js
+function ajax_load_more_typeof(o) { "@babel/helpers - typeof"; return ajax_load_more_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, ajax_load_more_typeof(o); }
+function ajax_load_more_regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ ajax_load_more_regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == ajax_load_more_typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(ajax_load_more_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function ajax_load_more_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function ajax_load_more_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { ajax_load_more_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { ajax_load_more_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function ajax_load_more_toConsumableArray(arr) { return ajax_load_more_arrayWithoutHoles(arr) || ajax_load_more_iterableToArray(arr) || ajax_load_more_unsupportedIterableToArray(arr) || ajax_load_more_nonIterableSpread(); }
+function ajax_load_more_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function ajax_load_more_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return ajax_load_more_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return ajax_load_more_arrayLikeToArray(o, minLen); }
+function ajax_load_more_iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function ajax_load_more_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return ajax_load_more_arrayLikeToArray(arr); }
+function ajax_load_more_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 // ALM Modules
 
 
@@ -11248,2141 +11484,1758 @@ var update = injectStylesIntoStyleTag_default()((ajax_load_more_default()), opti
 
 
 // External packages.
-const qs = __webpack_require__(129);
-const ajax_load_more_imagesLoaded = __webpack_require__(564);
+var qs = __webpack_require__(129);
+var ajax_load_more_imagesLoaded = __webpack_require__(564);
 
 // Axios Config.
 lib_axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 // Axios Interceptor for nested data objects
-lib_axios.interceptors.request.use((config) => {
-	config.paramsSerializer = (params) => {
-		// Qs is already included in the Axios package
-		return qs.stringify(params, {
-			arrayFormat: 'brackets',
-			encode: false,
-		});
-	};
-	return config;
+lib_axios.interceptors.request.use(function (config) {
+  config.paramsSerializer = function (params) {
+    // Qs is already included in the Axios package
+    return qs.stringify(params, {
+      arrayFormat: 'brackets',
+      encode: false
+    });
+  };
+  return config;
 });
 
-// Polyfills
+// Focus Polyfill.
 __webpack_require__(334);
-__webpack_require__(793);
 
 // Global filtering state.
-let alm_is_filtering = false;
+var alm_is_filtering = false;
 
 // Start ALM
 (function () {
-	'use strict';
-
-	/**
-	 * Initiate Ajax Load More.
-	 *
-	 * @param {Element} el    The Ajax Load More DOM element/container.
-	 * @param {number}  index The current index number of the Ajax Load More instance.
-	 */
-	const ajaxloadmore = function (el, index) {
-		// Move user to top of page to prevent loading of unnessasry posts
-		if (alm_localize && alm_localize.scrolltop === 'true') {
-			window.scrollTo(0, 0);
-		}
-
-		// Set ALM Variables
-		let alm = this;
-		alm.AjaxLoadMore = {};
-		alm.addons = {};
-		alm.extensions = {};
-		alm.integration = {};
-		alm.window = window;
-		alm.page = 0;
-		alm.postcount = 0;
-		alm.totalposts = 0;
-		alm.proceed = false;
-		alm.disable_ajax = false;
-		alm.init = true;
-		alm.loading = true;
-		alm.finished = false;
-		alm.timer = null;
-		alm.rel = 'next';
-
-		alm.ua = window.navigator.userAgent ? window.navigator.userAgent : ''; // Browser User Agent
-		alm.vendor = window.navigator.vendor ? window.navigator.vendor : ''; // Browser Vendor
-		alm.isSafari = /Safari/i.test(alm.ua) && /Apple Computer/.test(alm.vendor) && !/Mobi|Android/i.test(alm.ua);
-
-		el.classList.add('alm-' + index); // Add unique classname.
-		el.setAttribute('data-alm-id', index); // Add unique data id.
-
-		// The defined or generated ID for the ALM instance.
-		alm.master_id = el.dataset.id ? `ajax_load_more_${el.dataset.id}` : el.id;
-		alm.master_id = alm.master_id.replace(/-/g, '_');
-
-		// Localized <script/> variables.
-		alm.localize = window[alm.master_id + '_vars'];
-
-		// Add ALM object to the global window scope.
-		window[alm.master_id] = alm; // e.g. window.ajax_load_more or window.ajax_load_more_{id}
-
-		// ALM Element Containers
-		alm.main = el; // Top level DOM element
-		alm.listing = el.querySelector('.alm-listing') || el.querySelector('.alm-comments');
-		alm.content = alm.listing;
-		alm.el = alm.content;
-		alm.ajax = el.querySelector('.alm-ajax');
-		alm.container_type = alm.listing.dataset.containerType;
-		alm.loading_style = alm.listing.dataset.loadingStyle;
-
-		// Instance Params
-		alm.canonical_url = el.dataset.canonicalUrl;
-		alm.nested = el.dataset.nested ? el.dataset.nested : null;
-		alm.is_search = el.dataset.search;
-		alm.slug = el.dataset.slug;
-		alm.post_id = el.dataset.postId;
-		alm.id = el.dataset.id ? el.dataset.id : '';
-
-		// No results template
-		const alm_no_results = el.querySelector('.alm-no-results');
-		alm.no_results = alm_no_results ? alm_no_results.innerHTML : '';
-
-		// Shortcode Params
-		alm.repeater = alm.listing.dataset.repeater; // Repeaters
-		alm.theme_repeater = alm.listing.dataset.themeRepeater;
-
-		alm.post_type = alm.listing.dataset.postType ? alm.listing.dataset.postType : 'post';
-		alm.sticky_posts = alm.listing.dataset.stickyPosts ? alm.listing.dataset.stickyPosts : null;
-
-		alm.btnWrap = el.querySelectorAll('.alm-btn-wrap'); // Get all `.alm-button-wrap` divs
-		alm.btnWrap = Array.prototype.slice.call(alm.btnWrap); // Convert NodeList to array
-		alm.btnWrap[alm.btnWrap.length - 1].style.visibility = 'visible'; // Get last element (used for nesting)
-		alm.trigger = alm.btnWrap[alm.btnWrap.length - 1];
-		alm.button = alm.trigger.querySelector('button.alm-load-more-btn');
-
-		alm.button_label = alm.listing.dataset.buttonLabel;
-		alm.button_loading_label = alm.listing.dataset.buttonLoadingLabel;
-		alm.button_done_label = alm.listing.dataset.buttonDoneLabel;
-
-		alm.placeholder = alm.main.querySelector('.alm-placeholder');
-
-		alm.scroll_distance = alm.listing.dataset.scrollDistance;
-		alm.scroll_distance = alm.scroll_distance ? alm.scroll_distance : 100;
-		alm.scroll_container = alm.listing.dataset.scrollContainer;
-		alm.scroll_direction = alm.listing.dataset.scrollDirection;
-		alm.max_pages = alm.listing.dataset.maxPages ? parseInt(alm.listing.dataset.maxPages) : 0;
-		alm.pause_override = alm.listing.dataset.pauseOverride ? alm.listing.dataset.pauseOverride : false; // true | false
-		alm.pause = alm.listing.dataset.pause ? alm.listing.dataset.pause : false; // true | false
-		alm.transition = alm.listing.dataset.transition; // Transition
-		alm.transition_container = alm.listing.dataset.transitionContainer; // Transition Container
-		alm.tcc = alm.listing.dataset.transitionContainerClasses; // Transition Container Classes
-		alm.speed = alm_localize.speed ? parseInt(alm_localize.speed) : 150;
-		alm.images_loaded = alm.listing.dataset.imagesLoaded ? alm.listing.dataset.imagesLoaded : false;
-		alm.destroy_after = alm.listing.dataset.destroyAfter ? alm.listing.dataset.destroyAfter : '';
-		alm.orginal_posts_per_page = parseInt(alm.listing.dataset.postsPerPage); // Used for paging add-on
-		alm.posts_per_page = alm.listing.dataset.postsPerPage;
-		alm.offset = alm.listing.dataset.offset ? parseInt(alm.listing.dataset.offset) : 0;
-		alm.lazy_images = alm.listing.dataset.lazyImages ? alm.listing.dataset.lazyImages : false;
-		alm.integration.woocommerce = alm.listing.dataset.woocommerce ? alm.listing.dataset.woocommerce : false;
-		alm.integration.woocommerce = alm.integration.woocommerce === 'true' ? true : false;
-		alm.is_search = alm.is_search === undefined ? false : alm.is_search;
-		alm.search_value = alm.is_search === 'true' ? alm.slug : ''; // Convert to value of slug for appending to seo url
-
-		// Add-on Shortcode Params
-
-		// Elementor add-on
-		alm.addons.elementor = alm.listing.dataset.elementor === 'posts' && alm.listing.dataset.elementorSettings ? true : false;
-		if (alm.addons.elementor) {
-			alm = elementorCreateParams(alm);
-		}
-
-		// WooCommerce add-on
-		alm.addons.woocommerce = alm.listing.dataset.woo && alm.listing.dataset.woo === 'true' ? true : false;
-		if (alm.addons.woocommerce && alm.listing.dataset.wooSettings) {
-			alm.addons.woocommerce_settings = JSON.parse(alm.listing.dataset.wooSettings);
-			alm.addons.woocommerce_settings.results_text = document.querySelectorAll(alm.addons.woocommerce_settings.results); // Add Results Text
-			alm.page = parseInt(alm.page) + parseInt(alm.addons.woocommerce_settings.paged);
-		}
-
-		// Cache add-on
-		alm.addons.cache = alm.listing.dataset.cache && alm.listing.dataset.cache === 'true' ? true : false;
-		if (alm.addons.cache) {
-			alm.addons.cache_id = alm.listing.dataset.cacheId;
-			alm.addons.cache_path = alm.listing.dataset.cachePath;
-			alm.addons.cache_logged_in = alm.listing.dataset.cacheLoggedIn ? alm.listing.dataset.cacheLoggedIn : false;
-		}
-
-		// CTA add-on
-		alm.addons.cta = alm.listing.dataset.cta && alm.listing.dataset.cta === 'true' ? true : false;
-		if (alm.addons.cta) {
-			alm.addons.cta_position = alm.listing.dataset.ctaPosition;
-			alm.addons.cta_repeater = alm.listing.dataset.ctaRepeater;
-			alm.addons.cta_theme_repeater = alm.listing.dataset.ctaThemeRepeater;
-		}
-
-		// Nextpage add-on
-		alm.addons.nextpage = alm.listing.dataset.nextpage;
-		if (alm.addons.nextpage === 'true') {
-			alm.addons.nextpage_urls = alm.listing.dataset.nextpageUrls;
-			alm.addons.nextpage_scroll = alm.listing.dataset.nextpageScroll;
-			alm.addons.nextpage_pageviews = alm.listing.dataset.nextpagePageviews;
-			alm.addons.nextpage_post_id = alm.listing.dataset.nextpagePostId;
-			alm.addons.nextpage_startpage = parseInt(alm.listing.dataset.nextpageStartpage);
-			alm.addons.nextpage_title_template = alm.listing.dataset.nextpageTitleTemplate;
-		}
-
-		// Single Posts add-on
-		alm.addons.single_post = alm.listing.dataset.singlePost;
-		if (alm.addons.single_post === 'true') {
-			alm.addons.single_post_id = alm.listing.dataset.singlePostId;
-			alm.addons.single_post_query = alm.listing.dataset.singlePostQuery;
-			alm.addons.single_post_order = alm.listing.dataset.singlePostOrder === undefined ? 'previous' : alm.listing.dataset.singlePostOrder;
-			alm.addons.single_post_init_id = alm.listing.dataset.singlePostId;
-			alm.addons.single_post_taxonomy = alm.listing.dataset.singlePostTaxonomy === undefined ? '' : alm.listing.dataset.singlePostTaxonomy;
-			alm.addons.single_post_excluded_terms = alm.listing.dataset.singlePostExcludedTerms === undefined ? '' : alm.listing.dataset.singlePostExcludedTerms;
-			alm.addons.single_post_progress_bar = alm.listing.dataset.singlePostProgressBar === undefined ? '' : alm.listing.dataset.singlePostProgressBar;
-			alm.addons.single_post_target = alm.listing.dataset.singlePostTarget === undefined ? '' : alm.listing.dataset.singlePostTarget;
-			alm.addons.single_post_preview = alm.listing.dataset.singlePostPreview === undefined ? false : true;
-
-			if (alm.addons.single_post_preview) {
-				const singlePostPreviewData = alm.listing.dataset.singlePostPreview.split(':');
-				alm.addons.single_post_preview_data = {
-					button_label: singlePostPreviewData[0] ? singlePostPreviewData[0] : 'Continue Reading',
-					height: singlePostPreviewData[1] ? singlePostPreviewData[1] : 500,
-					element: singlePostPreviewData[2] ? singlePostPreviewData[2] : 'default',
-					className: 'alm-single-post--preview',
-				};
-			}
-		}
-
-		// Comments add-on
-		alm.addons.comments = alm.listing.dataset.comments ? alm.listing.dataset.comments : false;
-		if (alm.addons.comments === 'true') {
-			alm.addons.comments_post_id = alm.listing.dataset.comments_post_id; // current post id
-			alm.addons.comments_per_page = alm.listing.dataset.comments_per_page;
-			alm.addons.comments_per_page = alm.addons.comments_per_page === undefined ? '5' : alm.addons.comments_per_page;
-			alm.addons.comments_type = alm.listing.dataset.comments_type;
-			alm.addons.comments_style = alm.listing.dataset.comments_style;
-			alm.addons.comments_template = alm.listing.dataset.comments_template;
-			alm.addons.comments_callback = alm.listing.dataset.comments_callback;
-		}
-
-		alm.addons.filters = alm.listing.dataset.filters;
-		alm.addons.seo = alm.listing.dataset.seo;
-		alm.addons.seo_offset = alm.listing.dataset.seoOffset;
-
-		// Preloaded
-		alm.addons.preloaded = alm.listing.dataset.preloaded; // Preloaded add-on
-		alm.addons.preloaded_amount = alm.listing.dataset.preloadedAmount ? alm.listing.dataset.preloadedAmount : 0;
-		alm.is_preloaded = alm.listing.dataset.isPreloaded === 'true' ? true : false;
-
-		// Users
-		alm.addons.users = alm.listing.dataset.users === 'true' ? true : false; // Users add-on
-		if (alm.addons.users) {
-			// Override paging params for users
-			alm.orginal_posts_per_page = alm.listing.dataset.usersPerPage;
-			alm.posts_per_page = alm.listing.dataset.usersPerPage;
-		}
-
-		// Extension Shortcode Params
-
-		// REST API.
-		alm.extensions.restapi = alm.listing.dataset.restapi === 'true' ? true : false;
-		if (alm.extensions.restapi) {
-			alm.extensions.restapi_base_url = alm.listing.dataset.restapiBaseUrl;
-			alm.extensions.restapi_namespace = alm.listing.dataset.restapiNamespace;
-			alm.extensions.restapi_endpoint = alm.listing.dataset.restapiEndpoint;
-			alm.extensions.restapi_template_id = alm.listing.dataset.restapiTemplateId;
-			alm.extensions.restapi_debug = alm.listing.dataset.restapiDebug;
-		}
-
-		// ACF.
-		alm.extensions.acf = alm.listing.dataset.acf === 'true' ? true : false;
-		if (alm.extensions.acf) {
-			alm.extensions.acf_field_type = alm.listing.dataset.acfFieldType;
-			alm.extensions.acf_field_name = alm.listing.dataset.acfFieldName;
-			alm.extensions.acf_parent_field_name = alm.listing.dataset.acfParentFieldName;
-			alm.extensions.acf_row_index = alm.listing.dataset.acfRowIndex;
-			alm.extensions.acf_post_id = alm.listing.dataset.acfPostId;
-			// if field type, name or post ID is empty.
-			if (alm.extensions.acf_field_type === undefined || alm.extensions.acf_field_name === undefined || alm.extensions.acf_post_id === undefined) {
-				alm.extensions.acf = false;
-			}
-		}
-
-		// Term Query.
-		alm.extensions.term_query = alm.listing.dataset.termQuery === 'true' ? true : false;
-		if (alm.extensions.term_query) {
-			alm.extensions.term_query_taxonomy = alm.listing.dataset.termQueryTaxonomy;
-			alm.extensions.term_query_hide_empty = alm.listing.dataset.termQueryHideEmpty;
-			alm.extensions.term_query_number = alm.listing.dataset.termQueryNumber;
-		}
-
-		// Paging.
-		alm.addons.paging = alm.listing.dataset.paging; // Paging add-on
-		if (alm.addons.paging === 'true') {
-			alm.addons.paging = true;
-			alm.addons.paging_init = true;
-			alm.addons.paging_controls = alm.listing.dataset.pagingControls === 'true' ? true : false;
-			alm.addons.paging_show_at_most = alm.listing.dataset.pagingShowAtMost;
-			alm.addons.paging_classes = alm.listing.dataset.pagingClasses;
-			alm.addons.paging_show_at_most = alm.addons.paging_show_at_most === undefined ? 7 : alm.addons.paging_show_at_most;
-
-			alm.addons.paging_first_label = alm.listing.dataset.pagingFirstLabel;
-			alm.addons.paging_previous_label = alm.listing.dataset.pagingPreviousLabel;
-			alm.addons.paging_next_label = alm.listing.dataset.pagingNextLabel;
-			alm.addons.paging_last_label = alm.listing.dataset.pagingLastLabel;
-
-			alm.addons.paging_scroll = alm.listing.dataset.pagingScroll ? alm.listing.dataset.pagingScroll : false;
-			alm.addons.paging_scrolltop = alm.listing.dataset.pagingScrolltop ? parseInt(alm.listing.dataset.pagingScrolltop) : 100;
-
-			// If preloaded, pause ALM
-			alm.pause = alm.addons.preloaded === 'true' ? true : alm.pause;
-		} else {
-			alm.addons.paging = false;
-		}
-
-		// Filters
-		if (alm.addons.filters === 'true') {
-			alm.addons.filters = true;
-			alm.addons.filters_url = alm.listing.dataset.filtersUrl === 'true' ? true : false;
-			alm.addons.filters_target = alm.listing.dataset.filtersTarget ? alm.listing.dataset.filtersTarget : false;
-			alm.addons.filters_paging = alm.listing.dataset.filtersPaging === 'true' ? true : false;
-			alm.addons.filters_scroll = alm.listing.dataset.filtersScroll === 'true' ? true : false;
-			alm.addons.filters_scrolltop = alm.listing.dataset.filtersScrolltop ? alm.listing.dataset.filtersScrolltop : '30';
-			alm.addons.filters_analtyics = alm.listing.dataset.filtersAnalytics;
-			alm.addons.filters_debug = alm.listing.dataset.filtersDebug;
-			alm.addons.filters_startpage = 0;
-			alm.facets = alm.listing.dataset.facets === 'true' ? true : false;
-
-			// Display warning when `filters_target` parameter is missing.
-			if (!alm.addons.filters_target) {
-				console.warn(
-					'Ajax Load More: Unable to locate a target for Filters. Make sure you set a target parameter in the core Ajax Load More shortcode - e.g. [ajax_load_more filters="true" target="filters"]'
-				);
-			}
-
-			// Get Paged Querystring Val
-			const page = helpers_getParameterByName('pg');
-			alm.addons.filters_startpage = page !== null ? parseInt(page) : 0;
-
-			// If not Paging add-on
-			if (!alm.addons.paging && alm.addons.filters_startpage > 0) {
-				alm.posts_per_page = alm.posts_per_page * alm.addons.filters_startpage;
-				alm.isPaged = alm.addons.filters_startpage > 0 ? true : false;
-			}
-		} else {
-			alm.addons.filters = false;
-		}
-
-		/* REST API */
-		if (alm.extensions.restapi) {
-			alm.extensions.restapi_debug = alm.extensions.restapi_debug === undefined ? false : alm.extensions.restapi_debug;
-			alm.extensions.restapi = alm.extensions.restapi_template_id === '' ? false : alm.extensions.restapi;
-		}
-
-		/* Preloaded */
-		if (alm.addons.preloaded === 'true') {
-			// Preloaded Amount
-			alm.addons.preloaded_amount = alm.addons.preloaded_amount === undefined ? alm.posts_per_page : alm.addons.preloaded_amount;
-			if (alm.localize && alm.localize.total_posts !== null) {
-				// Disable ALM if total_posts is equal to or less than preloaded_amount.
-				if (parseInt(alm.localize.total_posts) <= parseInt(alm.addons.preloaded_amount)) {
-					alm.addons.preloaded_total_posts = alm.localize.total_posts;
-					alm.disable_ajax = true;
-				}
-			}
-		} else {
-			alm.addons.preloaded = 'false';
-		}
-		/* End Preloaded  */
-
-		/* SEO */
-		alm.addons.seo = alm.addons.seo === undefined ? false : alm.addons.seo;
-		alm.addons.seo = alm.addons.seo === 'true' ? true : alm.addons.seo;
-
-		if (alm.addons.seo) {
-			alm.addons.seo_permalink = alm.listing.dataset.seoPermalink;
-			alm.addons.seo_pageview = alm.listing.dataset.seoPageview;
-			alm.addons.seo_trailing_slash = alm.listing.dataset.seoTrailingSlash === 'false' ? '' : '/';
-			alm.addons.seo_leading_slash = alm.listing.dataset.seoLeadingSlash === 'true' ? '/' : '';
-		}
-		alm.start_page = alm.listing.dataset.seoStartPage;
-
-		if (alm.start_page) {
-			alm.addons.seo_scroll = alm.listing.dataset.seoScroll;
-			alm.addons.seo_scrolltop = alm.listing.dataset.seoScrolltop;
-			alm.addons.seo_controls = alm.listing.dataset.seoControls;
-			alm.isPaged = false;
-			if (alm.start_page > 1) {
-				alm.isPaged = true; // Is this a paged page > 1 ?
-				alm.posts_per_page = alm.start_page * alm.posts_per_page;
-			}
-			if (alm.addons.paging) {
-				// If paging, reset posts_per_page
-				alm.posts_per_page = alm.orginal_posts_per_page;
-			}
-		} else {
-			alm.start_page = 1;
-		}
-		/* End SEO  */
-
-		/* Nextpage */
-		if (alm.addons.nextpage === 'true') {
-			alm.addons.nextpage = true;
-			alm.posts_per_page = 1;
-
-			if (alm.addons.nextpage_urls === undefined) {
-				alm.addons.nextpage_urls = 'true';
-			}
-			if (alm.addons.nextpage_scroll === undefined) {
-				alm.addons.nextpage_scroll = 'false:30';
-			}
-			if (alm.addons.nextpage_pageviews === undefined) {
-				alm.addons.nextpage_pageviews = 'true';
-			}
-			if (alm.addons.nextpage_post_id === undefined) {
-				alm.addons.nextpage = false;
-				alm.addons.nextpage_post_id = null;
-			}
-			if (alm.addons.nextpage_startpage === undefined) {
-				alm.addons.nextpage_startpage = 1;
-			}
-			if (alm.addons.nextpage_startpage > 1) {
-				alm.isPaged = true;
-			}
-			alm.addons.nextpage_postTitle = alm.listing.dataset.nextpagePostTitle;
-		} else {
-			alm.addons.nextpage = false;
-		}
-		/* End Nextpage  */
-
-		/* Single Post */
-		if (alm.addons.single_post === 'true') {
-			alm.addons.single_post = true;
-			alm.addons.single_post_permalink = '';
-			alm.addons.single_post_title = '';
-			alm.addons.single_post_slug = '';
-			alm.addons.single_post_cache = false;
-			alm.addons.single_post_title_template = alm.listing.dataset.singlePostTitleTemplate;
-			alm.addons.single_post_siteTitle = alm.listing.dataset.singlePostSiteTitle;
-			alm.addons.single_post_siteTagline = alm.listing.dataset.singlePostSiteTagline;
-			alm.addons.single_post_pageview = alm.listing.dataset.singlePostPageview;
-			alm.addons.single_post_scroll = alm.listing.dataset.singlePostScroll;
-			alm.addons.single_post_scroll_speed = alm.listing.dataset.singlePostScrollSpeed;
-			alm.addons.single_post_scroll_top = alm.listing.dataset.singlePostScrolltop;
-			alm.addons.single_post_controls = alm.listing.dataset.singlePostControls;
-		} else {
-			alm.addons.single_post = false;
-		}
-		if (alm.addons.single_post && alm.addons.single_post_id === undefined) {
-			alm.addons.single_post_id = '';
-			alm.addons.single_post_init_id = '';
-		}
-		/* End Single Post */
-
-		/* Pause */
-		if (alm.pause === undefined || (alm.addons.seo && alm.start_page > 1)) {
-			// SEO only
-			alm.pause = false;
-		}
-		if (alm.addons.preloaded === 'true' && alm.addons.seo && alm.start_page > 0) {
-			// SEO + Preloaded
-			alm.pause = false;
-		}
-		if (alm.addons.filters && alm.addons.filters_startpage > 0) {
-			// Filters
-			alm.pause = false;
-		}
-		if (alm.addons.preloaded === 'true' && alm.addons.paging) {
-			alm.pause = true;
-		}
-
-		/* Repeater and Theme Repeater */
-		alm.repeater = alm.repeater === undefined ? 'default' : alm.repeater;
-		alm.theme_repeater = alm.theme_repeater === undefined ? false : alm.theme_repeater;
-
-		/* Max Pages */
-		alm.max_pages = alm.max_pages === undefined || alm.max_pages === 0 ? 9999 : alm.max_pages;
-
-		/* Scroll Distance */
-		alm.scroll_distance = alm.scroll_distance === undefined ? 100 : alm.scroll_distance;
-		alm.scroll_distance_perc = false;
-		if (alm.scroll_distance.toString().indexOf('%') === -1) {
-			// Standard scroll_distance
-			alm.scroll_distance = parseInt(alm.scroll_distance);
-		} else {
-			// Percentage scroll_distance
-			alm.scroll_distance_perc = true;
-			alm.scroll_distance_orig = parseInt(alm.scroll_distance);
-			alm.scroll_distance = getScrollPercentage(alm);
-		}
-
-		/* Scroll Container */
-		alm.scroll_container = alm.scroll_container === undefined ? '' : alm.scroll_container;
-
-		/* Scroll Direction */
-		alm.scroll_direction = alm.scroll_direction === undefined ? 'vertical' : alm.scroll_direction;
-
-		/* Transition */
-		alm.transition = alm.transition === undefined ? 'fade' : alm.transition;
-
-		/* Transition Container Class */
-		alm.tcc = alm.tcc === undefined ? '' : alm.tcc;
-
-		/* Masonry */
-		if (alm.transition === 'masonry') {
-			alm = almMasonryConfig(alm);
-		}
-
-		/* Scroll */
-		if (alm.listing.dataset.scroll === undefined) {
-			alm.scroll = true;
-		} else if (alm.listing.dataset.scroll === 'false') {
-			alm.scroll = false;
-		} else {
-			alm.scroll = true;
-		}
-
-		/* Transition Container */
-		alm.transition_container = alm.transition_container === undefined || alm.transition_container === 'true' ? true : false;
-
-		/* Button Labels */
-		alm.button_label = alm.button_label === undefined ? 'Load More' : alm.button_label;
-		alm.button_loading_label = alm.button_loading_label === undefined ? false : alm.button_loading_label;
-		alm.button_done_label = alm.button_done_label === undefined ? false : alm.button_done_label;
-
-		/* Paging */
-		if (alm.addons.paging) {
-			alm.main.classList.add('loading'); // add loading class to main container
-		} else {
-			const almChildren = el.childNodes; // Get child nodes of instance [nodeList]
-			if (almChildren) {
-				const almChildArray = Array.prototype.slice.call(almChildren); // Convert nodeList to array
-
-				// Filter array to find the `.alm-btn-wrap` div
-				const btnWrap = almChildArray.filter(function (element) {
-					if (!element.classList) {
-						// If not element (#text node)
-						return false;
-					}
-					return element.classList.contains('alm-btn-wrap');
-				});
-				alm.button = btnWrap ? btnWrap[0].querySelector('.alm-load-more-btn') : container.querySelector('.alm-btn-wrap .alm-load-more-btn');
-			} else {
-				alm.button = container.querySelector('.alm-btn-wrap .alm-load-more-btn');
-			}
-
-			// Reset button state
-			alm.button.disabled = false;
-			alm.button.style.display = '';
-		}
-
-		// Results Text
-		// Render "Showing x of y results" text.
-		// If woocommerce, get the default woocommerce results block
-		if (alm.integration.woocommerce) {
-			alm.resultsText = document.querySelectorAll('.woocommerce-result-count');
-			if (alm.resultsText.length < 1) {
-				alm.resultsText = document.querySelectorAll('.alm-results-text');
-			}
-		} else {
-			alm.resultsText = document.querySelectorAll('.alm-results-text');
-		}
-		if (alm.resultsText) {
-			alm.resultsText.forEach(function (results) {
-				results.setAttribute('aria-live', 'polite');
-				results.setAttribute('aria-atomic', 'true');
-			});
-		} else {
-			alm.resultsText = false;
-		}
-
-		// Table of Contents
-		// Render 1, 2, 3 etc. when pages are loaded
-		alm.tableofcontents = document.querySelector('.alm-toc');
-		if (alm.tableofcontents) {
-			alm.tableofcontents.setAttribute('aria-live', 'polite');
-			alm.tableofcontents.setAttribute('aria-atomic', 'true');
-		} else {
-			alm.tableofcontents = false;
-		}
-
-		/**
-		 * The function to get posts via Ajax.
-		 *
-		 * @since 2.0.0
-		 */
-		alm.AjaxLoadMore.loadPosts = function () {
-			if (alm.disable_ajax) {
-				return;
-			}
-
-			if (typeof almOnChange === 'function') {
-				window.almOnChange(alm);
-			}
-
-			// Set loading attributes.
-			alm.loading = true;
-			showPlaceholder(alm);
-			alm.main.classList.add('alm-loading');
-
-			// Add loading styles to buttons.
-			if (!alm.addons.paging) {
-				if (alm.rel === 'prev') {
-					alm.buttonPrev.classList.add('loading');
-				} else {
-					alm.button.classList.add('loading');
-					if (alm.button_loading_label !== false) {
-						alm.button.innerHTML = alm.button_loading_label;
-					}
-				}
-			}
-
-			alm.AjaxLoadMore.ajax(); // Dispatch http request.
-		};
-
-		/**
-		 * The core Ajax Load More Ajax function.
-		 *
-		 * @param {string} queryType The type of Ajax request (standard/totalposts).
-		 * @since 2.6.0
-		 */
-		alm.AjaxLoadMore.ajax = async function (queryType = 'standard') {
-			// Dispatch Ajax request.
-			if (alm.extensions.restapi) {
-				// Rest API.
-				alm.AjaxLoadMore.restapi(alm);
-			} else {
-				// Standard ALM.
-				const params = getAjaxParams(alm, queryType);
-				const cache = await getCache(alm, Object.assign({}, params));
-				if (cache) {
-					alm.AjaxLoadMore.render(cache);
-				} else {
-					alm.AjaxLoadMore.adminajax(params, queryType);
-				}
-			}
-		};
-
-		/**
-		 * Send request to the admin-ajax.php
-		 *
-		 * @param {Object} params    Query params.
-		 * @param {string} queryType The type of Ajax request (standard/totalposts).
-		 * @since 5.0.0
-		 */
-		alm.AjaxLoadMore.adminajax = async function (params, queryType) {
-			let { ajaxurl } = alm_localize; // Get Ajax URL
-			const { cache_slug = '' } = params; // Deconstruct query params.
-
-			/**
-			 * Single Posts.
-			 * If `single_post_target`, adjust the Ajax URL to the post URL.
-			 */
-			if (alm.addons.single_post && alm.addons.single_post_target) {
-				ajaxurl = `${alm.addons.single_post_permalink}?id=${alm.addons.single_post_id}&alm_page=${parseInt(alm.page) + 1}`;
-				params = '';
-			}
-
-			// WooCommerce || Elementor.
-			if (alm.addons.woocommerce || (alm.addons.elementor && alm.addons.elementor_type === 'posts')) {
-				ajaxurl = getButtonURL(alm, alm.rel);
-				params = '';
-			}
-
-			// Send HTTP request via axios.
-			const data = await lib_axios
-				.get(ajaxurl, { params })
-				.then(function (response) {
-					if (alm.addons.single_post && alm.addons.single_post_target) {
-						// Single Posts
-						return singlePostHTML(alm, response, cache_slug);
-					} else if (alm.addons.woocommerce) {
-						// WooCommerce.
-						return wooGetContent(alm, ajaxurl, response, cache_slug);
-					} else if (alm.addons.elementor) {
-						// Elementor
-						return elementorGetContent(alm, ajaxurl, response, cache_slug);
-					}
-
-					// Standard ALM - Get data from response.
-					return response.data;
-				})
-				.catch(function (error) {
-					// Error
-					alm.AjaxLoadMore.error(error, 'adminajax');
-				});
-
-			switch (queryType) {
-				case 'standard':
-					alm.AjaxLoadMore.render(data);
-					break;
-
-				case 'totalposts':
-				case 'totalpages':
-					if (alm.addons.paging && alm.addons.nextpage && typeof almBuildPagination === 'function') {
-						window.almBuildPagination(data.totalpages, alm);
-						alm.totalpages = data.totalpages;
-					} else {
-						if (alm.addons.paging && typeof almBuildPagination === 'function') {
-							window.almBuildPagination(data.totalposts, alm);
-						}
-					}
-					break;
-			}
-		};
-
-		/**
-		 * Send request to the WP REST API
-		 *
-		 * @param {Object} alm The Ajax Load More object.
-		 * @since 5.0.0
-		 */
-		alm.AjaxLoadMore.restapi = function (alm) {
-			const alm_rest_template = wp.template(alm.extensions.restapi_template_id);
-			const alm_rest_url = `${alm.extensions.restapi_base_url}/${alm.extensions.restapi_namespace}/${alm.extensions.restapi_endpoint}`;
-			const params = getRestAPIParams(alm); // [./helpers/queryParams.js]
-
-			lib_axios
-				.get(alm_rest_url, { params })
-				.then(function (response) {
-					// Success
-					const results = response.data; // Get data from response
-					const { html = null, meta = null } = results;
-					const postcount = meta && meta.postcount ? meta.postcount : 0;
-					const totalposts = meta && meta.totalposts ? meta.totalposts : 0;
-
-					// loop results to get data from each.
-					let data = '';
-					for (let i = 0; i < html.length; i++) {
-						const result = html[i];
-						if (alm.restapi_debug === 'true') {
-							// If debug
-							console.log(result); // eslint-disable-line no-console
-						}
-						data += alm_rest_template(result);
-					}
-
-					// Create results object.
-					const obj = {
-						html: data,
-						meta: {
-							postcount,
-							totalposts,
-						},
-					};
-					alm.AjaxLoadMore.render(obj);
-				})
-				.catch(function (error) {
-					// Error
-					alm.AjaxLoadMore.error(error, 'restapi');
-				});
-		};
-
-		// If pagination enabled, run totalposts query
-		if (alm.addons.paging) {
-			if (alm.addons.nextpage) {
-				alm.AjaxLoadMore.ajax('totalpages'); // Create paging menu and query for total pages
-			} else {
-				alm.AjaxLoadMore.ajax('totalposts'); // Create paging menu and query for total posts
-			}
-		}
-
-		/**
-		 * Display/render results function.
-		 *
-		 * @param {Object} data The results of the Ajax request.
-		 * @since 2.6.0
-		 */
-		alm.AjaxLoadMore.render = function (data) {
-			if (alm.addons.single_post) {
-				alm.AjaxLoadMore.getSinglePost(); // Get single post data for next post.
-			}
-
-			let isPaged = false;
-
-			// Create `.alm-reveal` element
-			let reveal = alm.container_type === 'table' ? document.createElement('tbody') : document.createElement('div');
-			alm.el = reveal;
-			reveal.style.opacity = 0;
-			reveal.style.height = 0;
-			reveal.style.outline = 'none';
-
-			// Pase data.
-			const { html, meta } = data;
-			let total = meta ? parseInt(meta.postcount) : parseInt(alm.posts_per_page);
-
-			// Get current post counts.
-			const totalposts = typeof meta !== 'undefined' ? meta.totalposts : alm.posts_per_page * 5;
-			alm.totalposts = alm.addons.preloaded === 'true' ? totalposts - alm.addons.preloaded_amount : totalposts;
-			alm.postcount = alm.addons.paging ? total : alm.postcount + total;
-
-			if (!meta) {
-				// Display warning if `meta` is missing.
-				console.warn(
-					'Ajax Load More: Unable to access `meta` object in Ajax response. There may be an issue in your Repeater Template or another hook causing interference.'
-				);
-			}
-
-			// Set alm.html as plain text return
-			alm.html = html;
-
-			// First Run Only
-			if (alm.init) {
-				// Set Meta
-				if (meta) {
-					alm.main.dataset.totalPosts = meta.totalposts ? meta.totalposts : 0;
-				}
-				// Paging
-				if (alm.addons.paging && total > 0) {
-					// Add paging containers and content
-					alm.AjaxLoadMore.pagingInit(html, 'alm-reveal');
-				}
-				// ALM Empty
-				if (total === 0) {
-					if (alm.addons.paging) {
-						if (typeof almPagingEmpty === 'function') {
-							window.almPagingEmpty(alm);
-						}
-					}
-					if (typeof almEmpty === 'function') {
-						window.almEmpty(alm);
-					}
-					if (alm.no_results) {
-						setTimeout(function () {
-							noResults(alm.content, alm.no_results);
-						}, alm.speed + 10);
-					}
-				}
-
-				// isPaged
-				if (alm.isPaged) {
-					// Reset the posts_per_page parameter
-					alm.posts_per_page = alm.addons.users ? alm.listing.dataset.usersPerPage : alm.listing.dataset.postsPerPage; // Users
-					alm.posts_per_page = alm.addons.nextpage ? 1 : alm.posts_per_page; // NextPage
-
-					// SEO add-on
-					alm.page = alm.start_page ? alm.start_page - 1 : alm.page; // Set new page #
-
-					// Filters add-on
-					if (alm.addons.filters) {
-						if (alm.addons.filters_startpage > 0) {
-							alm.page = alm.addons.filters_startpage - 1; // Set new page #
-							alm.posts_per_page = alm.listing.dataset.postsPerPage; // Reset `filters-startpage` data after the first run
-						}
-					}
-				}
-			}
-
-			/**
-			 * Set Filter Facets.
-			 */
-			if (alm.addons.filters && alm.facets && data.facets && typeof almFiltersFacets === 'function') {
-				window.almFiltersFacets(data.facets);
-			}
-
-			/**
-			 * Display alm_debug results.
-			 */
-			almDebug(alm);
-
-			/**
-			 * Set localized variables and Results Text.
-			 */
-			(async () => {
-				await setLocalizedVars(alm);
-			})();
-
-			/**
-			 * Render results
-			 */
-			if (total > 0) {
-				// We have results!
-
-				if (!alm.addons.paging) {
-					// Single Posts.
-					if (alm.addons.single_post) {
-						reveal.setAttribute('class', `alm-reveal alm-single-post post-${alm.addons.single_post_id}${alm.tcc ? ` ${alm.tcc}` : ''}`);
-						reveal.dataset.url = alm.addons.single_post_permalink;
-						if (alm.addons.single_post_target) {
-							reveal.dataset.page = parseInt(alm.page) + 1;
-						} else {
-							reveal.dataset.page = alm.page;
-						}
-						reveal.dataset.id = alm.addons.single_post_id;
-						reveal.dataset.title = alm.addons.single_post_title;
-						reveal.innerHTML = alm.html;
-
-						// Single Post Preview
-						if (alm.addons.single_post_preview && alm.addons.single_post_preview_data && typeof almSinglePostCreatePreview === 'function') {
-							const singlePreview = window.almSinglePostCreatePreview(reveal, alm.addons.single_post_id, alm.addons.single_post_preview_data);
-							reveal.replaceChildren(singlePreview ? singlePreview : reveal);
-						}
-					} else {
-						if (!alm.transition_container) {
-							// No transition container
-							alm.el = alm.html;
-							reveal = alm.container_type === 'table' ? helpers_tableWrap(alm.html) : helpers_stripEmptyNodes(almDomParser(alm.html, 'text/html'));
-						} else {
-							// Standard container
-							let pagenum;
-							const querystring = window.location.search;
-							const seo_class = alm.addons.seo ? ' alm-seo' : '';
-							const filters_class = alm.addons.filters ? ' alm-filters' : '';
-							const preloaded_class = alm.is_preloaded ? ' alm-preloaded' : '';
-
-							// Init, SEO and Filter Paged
-							if (alm.init && (alm.start_page > 1 || alm.addons.filters_startpage > 0)) {
-								// loop through items and break into separate .alm-reveal divs for paging
-
-								const data = [];
-								const container_array = [];
-								let posts_per_page = parseInt(alm.posts_per_page);
-								let pages = Math.ceil(total / posts_per_page);
-								isPaged = true;
-
-								// Call to Actions
-								if (alm.addons.cta) {
-									posts_per_page = posts_per_page + 1; // Add 1 to posts_per_page for CTAs
-									pages = Math.ceil(total / posts_per_page); // Update pages let with new posts_per_page
-									total = pages + total; // Get new total w/ CTAs added
-								}
-
-								// Parse returned HTML and strip empty nodes
-								const html = helpers_stripEmptyNodes(almDomParser(alm.html, 'text/html'));
-
-								// Split data into array of individual page
-								for (let i = 0; i < total; i += posts_per_page) {
-									data.push(html.slice(i, posts_per_page + i));
-								}
-
-								// Loop data array to build .alm-reveal containers
-								for (let k = 0; k < data.length; k++) {
-									const p = alm.addons.preloaded === 'true' ? 1 : 0; // Add 1 page if items are preloaded.
-									let alm_reveal = document.createElement('div');
-
-									if (k > 0 || alm.addons.preloaded === 'true') {
-										pagenum = k + 1 + p; // > Paged
-
-										if (alm.addons.seo) {
-											// SEO
-											alm_reveal = createSEOAttributes(alm, alm_reveal, querystring, seo_class, getSEOPageNum(alm.addons.seo_offset, pagenum));
-										}
-
-										if (alm.addons.filters) {
-											// Filters
-											alm_reveal.setAttribute('class', 'alm-reveal' + filters_class + alm.tcc);
-											alm_reveal.dataset.url = alm.canonical_url + buildFilterURL(alm, querystring, pagenum);
-											alm_reveal.dataset.page = pagenum;
-										}
-									} else {
-										// First Page
-										if (alm.addons.seo) {
-											// SEO
-											alm_reveal = createSEOAttributes(alm, alm_reveal, querystring, seo_class + preloaded_class, getSEOPageNum(alm.addons.seo_offset, 1));
-										}
-										if (alm.addons.filters) {
-											// Filters
-											alm_reveal.setAttribute('class', 'alm-reveal' + filters_class + preloaded_class + alm.tcc);
-											alm_reveal.dataset.url = alm.canonical_url + buildFilterURL(alm, querystring, 0);
-											alm_reveal.dataset.page = '1';
-										}
-									}
-
-									// Append children to `.alm-reveal` element
-									almAppendChildren(alm_reveal, data[k]);
-
-									// Run srcSet polyfill
-									srcsetPolyfill(alm_reveal, alm.ua);
-
-									// Push alm_reveal elements into container_array
-									container_array.push(alm_reveal);
-								}
-
-								// Set opacity and height of .alm-listing div to allow for fadein.
-								alm.listing.style.opacity = 0;
-								alm.listing.style.height = 0;
-
-								// Append container_array to `.alm-listing`
-								almAppendChildren(alm.listing, container_array);
-
-								reveal = alm.listing;
-								alm.el = reveal;
-							}
-							// End Init & SEO
-							else {
-								// Preloaded OR SEO (and Paged)
-								if ((alm.addons.seo && alm.page > 0) || alm.addons.preloaded === 'true') {
-									const p2 = alm.addons.preloaded === 'true' ? 1 : 0; // Add 1 page if items are preloaded.
-
-									// SEO [Paged]
-									pagenum = alm.page + 1 + p2;
-
-									if (alm.addons.seo) {
-										// SEO
-										reveal = createSEOAttributes(alm, reveal, querystring, seo_class, getSEOPageNum(alm.addons.seo_offset, pagenum));
-									} else if (alm.addons.filters) {
-										// Filters
-										reveal.setAttribute('class', 'alm-reveal' + filters_class + alm.tcc);
-										reveal.dataset.url = alm.canonical_url + buildFilterURL(alm, querystring, pagenum);
-										reveal.dataset.page = pagenum;
-									} else {
-										// Basic ALM
-										reveal.setAttribute('class', 'alm-reveal' + alm.tcc);
-									}
-								} else if (alm.addons.filters) {
-									// Filters
-									reveal.setAttribute('class', 'alm-reveal' + filters_class + alm.tcc);
-									reveal.dataset.url = alm.canonical_url + buildFilterURL(alm, querystring, parseInt(alm.page) + 1);
-									reveal.dataset.page = parseInt(alm.page) + 1;
-								} else {
-									if (alm.addons.seo) {
-										// SEO [Page 1]
-										reveal = createSEOAttributes(alm, reveal, querystring, seo_class, getSEOPageNum(alm.addons.seo_offset, 1));
-									} else {
-										// Basic ALM
-										reveal.setAttribute('class', 'alm-reveal' + alm.tcc);
-									}
-								}
-
-								reveal.innerHTML = alm.html;
-							}
-						}
-					}
-
-					// WooCommerce Add-on
-					if (alm.addons.woocommerce) {
-						(async function () {
-							await woocommerce(reveal, alm);
-							woocommerceLoaded(alm);
-						})().catch((e) => {
-							console.warn('Ajax Load More: There was an error loading woocommerce products.', e);
-						});
-
-						alm.init = false;
-						return;
-					}
-
-					// Elementor Add-on
-					if (alm.addons.elementor) {
-						(async function () {
-							await elementor(reveal, alm);
-							elementorLoaded(alm);
-						})().catch((e) => {
-							console.warn('Ajax Load More: There was an error loading Elementor items.', e);
-						});
-
-						alm.init = false;
-						return;
-					}
-
-					// Append `reveal` div to ALM Listing container
-					// Do not append when transtion == masonry OR init and !preloaded
-					if (alm.transition !== 'masonry' || (alm.init && alm.addons.preloaded !== 'true')) {
-						if (!isPaged) {
-							if (!alm.transition_container) {
-								// No transition container.
-								if (alm.images_loaded === 'true') {
-									ajax_load_more_imagesLoaded(reveal, function () {
-										almAppendChildren(alm.listing, reveal);
-
-										// Run srcSet polyfill
-										srcsetPolyfill(alm.listing, alm.ua);
-									});
-								} else {
-									almAppendChildren(alm.listing, reveal);
-
-									// Run srcSet polyfill.
-									srcsetPolyfill(alm.listing, alm.ua);
-								}
-							} else {
-								// Standard container.
-								alm.listing.appendChild(reveal);
-							}
-						}
-					}
-
-					/**
-					 * Transitions
-					 */
-
-					// Masonry
-					if (alm.transition === 'masonry') {
-						alm.el = alm.listing;
-
-						// Wrap almMasonry in anonymous async/await function
-						(async function () {
-							await almMasonry(alm, alm.init, alm_is_filtering);
-							alm.masonry.init = false;
-
-							alm.AjaxLoadMore.triggerWindowResize();
-							alm.AjaxLoadMore.transitionEnd();
-
-							if (typeof almComplete === 'function') {
-								window.almComplete(alm);
-							}
-
-							// Lazy load images if necessary.
-							lazyImages(alm);
-						})().catch(() => {
-							console.error('There was an error with ALM Masonry'); //eslint-disable-line no-console
-						});
-					}
-
-					// None
-					else if (alm.transition === 'none' && alm.transition_container) {
-						if (alm.images_loaded === 'true') {
-							ajax_load_more_imagesLoaded(reveal, function () {
-								almFadeIn(reveal, 0);
-								alm.AjaxLoadMore.transitionEnd();
-							});
-						} else {
-							almFadeIn(reveal, 0);
-							alm.AjaxLoadMore.transitionEnd();
-						}
-					}
-
-					// Default (Fade)
-					else {
-						if (alm.images_loaded === 'true') {
-							ajax_load_more_imagesLoaded(reveal, function () {
-								if (alm.transition_container) {
-									almFadeIn(reveal, alm.speed);
-								}
-								alm.AjaxLoadMore.transitionEnd();
-							});
-						} else {
-							if (alm.transition_container) {
-								almFadeIn(reveal, alm.speed);
-							}
-							alm.AjaxLoadMore.transitionEnd();
-						}
-					}
-				} else {
-					// Paging
-					if (!alm.init) {
-						// Paging container.
-						const pagingContent = alm.listing.querySelector('.alm-paging-content');
-
-						if (pagingContent) {
-							almFadeOut(pagingContent, alm.speed);
-							pagingContent.style.outline = 'none';
-							alm.main.classList.remove('alm-loading');
-
-							setTimeout(function () {
-								pagingContent.style.opacity = 0;
-								pagingContent.innerHTML = alm.html;
-
-								ajax_load_more_imagesLoaded(pagingContent, function () {
-									// Delay for effect
-									alm.AjaxLoadMore.triggerAddons(alm);
-									almFadeIn(pagingContent, alm.speed);
-
-									// Remove opacity on element to fix CSS transition
-									setTimeout(function () {
-										pagingContent.style.opacity = '';
-
-										// Insert Script
-										modules_insertScript.init(pagingContent);
-									}, parseInt(alm.speed) + 10);
-
-									// Paging addon
-									if (typeof almOnPagingComplete === 'function') {
-										window.almOnPagingComplete(alm);
-									}
-								});
-							}, parseInt(alm.speed) + 25);
-						}
-					} else {
-						setTimeout(function () {
-							alm.main.classList.remove('alm-loading');
-							alm.AjaxLoadMore.triggerAddons(alm);
-						}, alm.speed);
-					}
-					// End Paging
-				}
-
-				// ALM Loaded, run complete callbacks
-				ajax_load_more_imagesLoaded(reveal, function () {
-					// Nested
-					alm.AjaxLoadMore.nested(reveal);
-
-					// Insert Script
-					modules_insertScript.init(alm.el);
-
-					// Trigger almComplete
-					if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
-						window.almComplete(alm);
-					}
-
-					// Lazy load images if necessary
-					lazyImages(alm);
-
-					// Filters Add-on Complete
-					if (alm_is_filtering && alm.addons.filters) {
-						if (typeof almFiltersAddonComplete === 'function') {
-							// Filters Add-on
-							window.almFiltersAddonComplete(el);
-						}
-					}
-
-					alm_is_filtering = false;
-
-					/**
-					 * ALM Done.
-					 */
-					if (!alm.addons.single_post) {
-						if (alm.addons.nextpage) {
-							// Nextpage.
-							if (alm.postcount + alm.addons.nextpage_startpage >= alm.totalposts) {
-								alm.AjaxLoadMore.triggerDone();
-							}
-						} else {
-							if (alm.postcount >= alm.totalposts) {
-								alm.AjaxLoadMore.triggerDone();
-							}
-						}
-					}
-				});
-				// End ALM Loaded
-
-				// Filters onLoad
-				if (typeof almFiltersOnload === 'function' && alm.init) {
-					window.almFiltersOnload(alm);
-				}
-			} else {
-				/**
-				 * No results from Ajax
-				 */
-
-				alm.AjaxLoadMore.noresults();
-			}
-
-			// Destroy After
-			if (alm.destroy_after !== undefined && alm.destroy_after !== '') {
-				let currentPage = alm.page + 1; // Add 1 because alm.page starts at 0
-				currentPage = alm.addons.preloaded === 'true' ? currentPage++ : currentPage; // Add 1 for preloaded
-				if (parseInt(currentPage) === parseInt(alm.destroy_after)) {
-					// Disable ALM if page = alm.destroy_after value.
-					alm.AjaxLoadMore.destroyed();
-				}
-			}
-
-			/**
-			 * Display Table of Contents
-			 */
-
-			tableOfContents(alm, alm.init);
-
-			/**
-			 * Set Focus for A11y
-			 */
-
-			if (alm.transition !== 'masonry') {
-				modules_setFocus(alm, reveal, total, alm_is_filtering);
-			}
-
-			// Remove filtering class
-			if (alm.main.classList.contains('alm-is-filtering')) {
-				alm.main.classList.remove('alm-is-filtering');
-			}
-
-			// Set init flag
-			alm.init = false;
-		};
-
-		/**
-		 * Function runs when no results are returned.
-		 *
-		 * @since 5.3.1
-		 */
-		alm.AjaxLoadMore.noresults = function () {
-			if (!alm.addons.paging) {
-				// Add .done class, reset btn text
-				setTimeout(function () {
-					alm.button.classList.remove('loading');
-					alm.button.classList.add('done');
-				}, alm.speed);
-				alm.AjaxLoadMore.resetBtnText();
-			}
-
-			// Trigger almComplete
-			if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
-				window.almComplete(alm);
-			}
-
-			// Filters Add-on Complete
-			if (alm_is_filtering && alm.addons.filters) {
-				if (typeof almFiltersAddonComplete === 'function') {
-					// Filters Add-on
-					almFiltersAddonComplete(el);
-				}
-				alm_is_filtering = false;
-			}
-
-			// Masonry, clear `alm-listing` height
-			if (alm.transition === 'masonry') {
-				alm.content.style.height = 'auto';
-			}
-
-			alm.AjaxLoadMore.triggerDone(); // ALM Done
-		};
-
-		/**
-		 * First run for Paging + Preloaded add-ons.
-		 * Moves preloaded content into ajax container.
-		 *
-		 * @param {string} data Results of Ajax request.
-		 * @since 2.11.3
-		 */
-		alm.AjaxLoadMore.pagingPreloadedInit = function (data) {
-			data = data === null ? '' : data; // Check for null data object
-
-			// Add paging containers and content
-			alm.AjaxLoadMore.pagingInit(data, 'alm-reveal');
-
-			if (data === '') {
-				if (typeof almPagingEmpty === 'function') {
-					window.almPagingEmpty(alm);
-				}
-				if (typeof almEmpty === 'function') {
-					window.almEmpty(alm);
-				}
-				if (alm.no_results) {
-					noResults(alm.content, alm.no_results);
-				}
-			}
-		};
-
-		/**
-		 * First run for Paging + Next Page add-ons.
-		 * Moves .alm-nextpage content into ajax container.
-		 *
-		 * @param {string} data Results of Ajax request.
-		 * @since 2.14.0
-		 */
-		alm.AjaxLoadMore.pagingNextpageInit = function (data) {
-			data = data === null ? '' : data; // Check for null data object
-
-			// Add paging containers and content
-			alm.AjaxLoadMore.pagingInit(data, 'alm-reveal alm-nextpage');
-
-			// Set up Nextpage Vars
-			if (typeof almSetNextPageVars === 'function') {
-				window.almSetNextPageVars(alm); // Next Page Add-on
-			}
-		};
-
-		/**
-		 * First run for Paging to create required containers.
-		 *
-		 * @param {string} data    The Ajax response data.
-		 * @param {string} classes The classes to add to the container.
-		 * @since 5.0
-		 */
-		alm.AjaxLoadMore.pagingInit = function (data, classes = 'alm-reveal') {
-			data = data === null ? '' : data; // Check for null data object.
-
-			// Create `alm-reveal` container.
-			const reveal = document.createElement('div');
-			reveal.setAttribute('class', classes);
-
-			// Create `alm-paging-loading` container.
-			const content = document.createElement('div');
-			content.setAttribute('class', 'alm-paging-content' + alm.tcc);
-			content.innerHTML = data;
-			reveal.appendChild(content);
-
-			// Create `alm-paging-content` container.
-			const loader = document.createElement('div');
-			loader.setAttribute('class', 'alm-paging-loading');
-			reveal.appendChild(loader);
-
-			// Add div to container.
-			alm.listing.appendChild(reveal);
-
-			// Get/Set height of .alm-listing div.
-			const styles = window.getComputedStyle(alm.listing);
-			const pTop = parseInt(styles.getPropertyValue('padding-top').replace('px', ''));
-			const pBtm = parseInt(styles.getPropertyValue('padding-bottom').replace('px', ''));
-			const h = reveal.offsetHeight;
-
-			// Set initial `.alm-listing` height.
-			alm.listing.style.height = h + pTop + pBtm + 'px';
-
-			// Insert Script.
-			modules_insertScript.init(reveal);
-
-			// Reset button text.
-			alm.AjaxLoadMore.resetBtnText();
-
-			// Delay reveal of paging to avoid positioning issues.
-			setTimeout(function () {
-				if (typeof almFadePageControls === 'function') {
-					window.almFadePageControls(alm.btnWrap);
-				}
-				if (typeof almOnWindowResize === 'function') {
-					window.almOnWindowResize(alm);
-				}
-				// Remove loading class from main container.
-				alm.main.classList.remove('loading');
-			}, alm.speed);
-		};
-
-		/**
-		 *	Automatically trigger nested ALM instances - requires `.alm-reveal` container.
-		 *
-		 * @param {HTMLElement} reveal The reveal div.
-		 * @since 5.0
-		 */
-		alm.AjaxLoadMore.nested = function (reveal) {
-			if (!reveal || !alm.transition_container) {
-				return false; // Exit if not `transition_container`
-			}
-			const nested = reveal.querySelectorAll('.ajax-load-more-wrap'); // Get all instances
-			if (nested) {
-				nested.forEach(function (element) {
-					window.almInit(element);
-				});
-			}
-		};
-
-		/**
-		 *  Get the Single Posts post ID via ajax.
-		 *
-		 *  @since 2.7.4
-		 */
-		alm.AjaxLoadMore.getSinglePost = async function () {
-			if (alm.fetchingPreviousPost) {
-				return;
-			}
-
-			// Set loading flag.
-			alm.fetchingPreviousPost = true;
-
-			// Create data params.
-			const params = {
-				action: 'alm_get_single',
-				id: alm.addons.single_post_id,
-				initial_id: alm.addons.single_post_init_id,
-				order: alm.addons.single_post_order,
-				taxonomy: alm.addons.single_post_taxonomy,
-				excluded_terms: alm.addons.single_post_excluded_terms,
-				post_type: alm.post_type,
-				init: alm.addons.single_post_init,
-			};
-
-			// Send HTTP request via Axios.
-			const singlePostData = await lib_axios
-				.get(alm_localize.ajaxurl, { params })
-				.then(function (response) {
-					// Get data from response.
-					const { data } = response;
-
-					if (data.has_previous_post) {
-						alm.listing.dataset.singlePostId = data.prev_id; // Update single-post-id on instance
-						alm.addons.single_post_id = data.prev_id;
-						alm.addons.single_post_permalink = data.prev_permalink;
-						alm.addons.single_post_title = data.prev_title;
-						alm.addons.single_post_slug = data.prev_slug;
-						alm.addons.single_post_cache = data.cache;
-					} else {
-						alm.addons.single_post_cache = false;
-						if (!data.has_previous_post) {
-							alm.AjaxLoadMore.triggerDone();
-						}
-					}
-					if (typeof window.almSetSinglePost === 'function') {
-						window.almSetSinglePost(alm, data.current_id, data.permalink, data.title);
-					}
-					alm.fetchingPreviousPost = false;
-					alm.addons.single_post_init = false;
-
-					return data;
-				})
-				.catch(function (error) {
-					// Error
-					alm.AjaxLoadMore.error(error, 'getSinglePost');
-					alm.fetchingPreviousPost = false;
-				});
-
-			// Send the response.
-			return singlePostData;
-		};
-
-		if (alm.addons.single_post_id) {
-			alm.fetchingPreviousPost = false;
-			alm.addons.single_post_init = true;
-		}
-
-		/**
-		 * Triggers various add-on functions (if available) after load complete.
-		 *
-		 * @param {Object} alm The ALM object.
-		 * @since 2.14.0
-		 */
-		alm.AjaxLoadMore.triggerAddons = function (alm) {
-			if (typeof almSetNextPage === 'function' && alm.addons.nextpage) {
-				window.almSetNextPage(alm);
-			}
-			if (typeof almSEO === 'function' && alm.addons.seo) {
-				window.almSEO(alm, false);
-			}
-			if (typeof almWooCommerce === 'function' && alm.addons.woocommerce) {
-				window.almWooCommerce(alm);
-			}
-			if (typeof almElementor === 'function' && alm.addons.elementor) {
-				window.almElementor(alm);
-			}
-		};
-
-		/**
-		 * Fires a set of actions and functions when ALM has no other posts to load.
-		 *
-		 * @since 2.11.3
-		 */
-		alm.AjaxLoadMore.triggerDone = function () {
-			alm.loading = false;
-			alm.finished = true;
-			hidePlaceholder(alm);
-
-			if (!alm.addons.paging) {
-				// Update button text
-				if (alm.button_done_label !== false) {
-					setTimeout(function () {
-						alm.button.innerHTML = alm.button_done_label;
-					}, 75);
-				}
-
-				alm.button.classList.add('done');
-				alm.button.removeAttribute('rel');
-				alm.button.disabled = true;
-			}
-
-			// almDone
-			if (typeof almDone === 'function') {
-				// Delay done until animations complete
-				setTimeout(function () {
-					window.almDone(alm);
-				}, alm.speed + 10);
-			}
-		};
-
-		/**
-		 * Fires a set of actions once ALm Previous hits the first page.
-		 *
-		 * @since 5.5.0
-		 */
-		alm.AjaxLoadMore.triggerDonePrev = function () {
-			alm.loading = false;
-			hidePlaceholder(alm);
-
-			if (!alm.addons.paging) {
-				alm.buttonPrev.classList.add('done');
-				alm.buttonPrev.removeAttribute('rel');
-				alm.buttonPrev.disabled = true;
-			}
-
-			// almDonePrev Callback.
-			if (typeof almDonePrev === 'function') {
-				// Delay done until animations complete
-				setTimeout(function () {
-					window.almDonePrev(alm);
-				}, alm.speed + 10);
-			}
-		};
-
-		/**
-		 * Resets the loading button text after loading has completed.
-		 *
-		 * @since 2.8.4
-		 */
-		alm.AjaxLoadMore.resetBtnText = function () {
-			if (alm.button_loading_label !== false && !alm.addons.paging) {
-				alm.button.innerHTML = alm.button_label;
-			}
-		};
-
-		/**
-		 * Button click handler to load posts.
-		 *
-		 * @param {Object} e The target button element.
-		 * @since 4.2.0
-		 */
-		alm.AjaxLoadMore.click = function (e) {
-			const button = e.target || e.currentTarget;
-			alm.rel = 'next';
-			if (alm.pause === 'true') {
-				alm.pause = false;
-				alm.pause_override = false;
-				alm.AjaxLoadMore.loadPosts();
-			}
-			if (!alm.loading && !alm.finished && !button.classList.contains('done')) {
-				alm.loading = true;
-				alm.page++;
-				alm.AjaxLoadMore.loadPosts();
-			}
-			button.blur(); // Remove button focus
-		};
-
-		/**
-		 * Button click handler for previous load more.
-		 *
-		 * @param {Object} e The target button element.
-		 * @since 5.5.0
-		 */
-		alm.AjaxLoadMore.prevClick = function (e) {
-			const button = e.target || e.currentTarget;
-			e.preventDefault();
-			if (!alm.loading && !button.classList.contains('done')) {
-				alm.loading = true;
-				alm.pagePrev--;
-				alm.rel = 'prev';
-				alm.AjaxLoadMore.loadPosts();
-				button.blur(); // Remove button focus
-			}
-		};
-
-		/**
-		 * Set the Load Previous button to alm object.
-		 *
-		 * @param {Element} button The button element.
-		 * @since 5.5.0
-		 */
-		alm.AjaxLoadMore.setPreviousButton = function (button) {
-			alm.pagePrev = alm.page;
-			alm.buttonPrev = button;
-		};
-
-		/**
-		 * Load More button click event handler.
-		 *
-		 * @since 1.0.0
-		 */
-		if (!alm.addons.paging && !alm.fetchingPreviousPost) {
-			alm.button.onclick = alm.AjaxLoadMore.click;
-		}
-
-		/**
-		 * Window resize functions for Paging, Scroll Distance Percentage etc.
-		 *
-		 * @since 2.1.2
-		 */
-		if (alm.addons.paging || alm.scroll_distance_perc || alm.scroll_direction === 'horizontal') {
-			let resize;
-			alm.window.onresize = function () {
-				clearTimeout(resize);
-				resize = setTimeout(function () {
-					if (alm.addons.paging) {
-						// Paging
-						if (typeof almOnWindowResize === 'function') {
-							window.almOnWindowResize(alm);
-						}
-					}
-					if (alm.scroll_distance_perc) {
-						alm.scroll_distance = getScrollPercentage(alm);
-					}
-					if (alm.scroll_direction === 'horizontal') {
-						alm.AjaxLoadMore.horizontal();
-					}
-				}, alm.speed);
-			};
-		}
-
-		/**
-		 * Check to see if element is visible before loading posts.
-		 *
-		 * @since 2.1.2
-		 */
-		alm.AjaxLoadMore.isVisible = function () {
-			// Check for a width and height to determine visibility
-			alm.visible = alm.main.clientWidth > 0 && alm.main.clientHeight > 0 ? true : false;
-			return alm.visible;
-		};
-
-		/**
-		 * Trigger a window resize browser function.
-		 *
-		 * @since 5.3.1
-		 */
-		alm.AjaxLoadMore.triggerWindowResize = function () {
-			if (typeof Event === 'function') {
-				// modern browsers
-				window.dispatchEvent(new Event('resize'));
-			} else {
-				//This will be executed on old browsers and especially IE
-				const resizeEvent = window.document.createEvent('UIEvents');
-				resizeEvent.initUIEvent('resize', true, false, window, 0);
-				window.dispatchEvent(resizeEvent);
-			}
-		};
-
-		/**
-		 * Load posts as user scrolls the page.
-		 *
-		 * @since 1.0
-		 */
-		alm.AjaxLoadMore.scroll = function () {
-			if (alm.timer) {
-				clearTimeout(alm.timer);
-			}
-
-			alm.timer = setTimeout(function () {
-				if (alm.AjaxLoadMore.isVisible() && !alm.fetchingPreviousPost) {
-					const trigger = alm.trigger.getBoundingClientRect();
-					const btnPos = Math.round(trigger.top - alm.window.innerHeight) + alm.scroll_distance;
-					let scrollTrigger = btnPos <= 0 ? true : false;
-
-					// Scroll Container
-					if (alm.window !== window) {
-						const scrollHeight = alm.main.offsetHeight; // ALM height
-						const scrollWidth = alm.main.offsetWidth; // ALM Width
-						let scrollPosition = '';
-						if (alm.scroll_direction === 'horizontal') {
-							// Left/Right
-							alm.AjaxLoadMore.horizontal();
-							scrollPosition = Math.round(alm.window.scrollLeft + alm.window.offsetWidth - alm.scroll_distance); // How far user has scrolled
-							scrollTrigger = scrollWidth <= scrollPosition ? true : false;
-						} else {
-							// Up/Down
-							scrollPosition = Math.round(alm.window.scrollTop + alm.window.offsetHeight - alm.scroll_distance); // How far user has scrolled
-							scrollTrigger = scrollHeight <= scrollPosition ? true : false;
-						}
-					}
-
-					// If Pause && Pause Override
-					if (
-						!alm.loading &&
-						!alm.finished &&
-						scrollTrigger &&
-						alm.page < alm.max_pages - 1 &&
-						alm.proceed &&
-						alm.pause === 'true' &&
-						alm.pause_override === 'true'
-					) {
-						alm.button.click();
-					}
-
-					// Standard Scroll
-					else {
-						if (!alm.loading && !alm.finished && scrollTrigger && alm.page < alm.max_pages - 1 && alm.proceed && alm.pause !== 'true') {
-							alm.button.click();
-						}
-					}
-				}
-			}, 25);
-		};
-
-		/**
-		 * Add scroll eventlisteners, only when needed.
-		 *
-		 * @since 5.2.0
-		 */
-		alm.AjaxLoadMore.scrollSetup = function () {
-			if (alm.scroll && !alm.addons.paging) {
-				if (alm.scroll_container !== '') {
-					// Scroll Container
-					alm.window = document.querySelector(alm.scroll_container) ? document.querySelector(alm.scroll_container) : alm.window;
-					setTimeout(function () {
-						// Delay to allow for ALM container to resize on load.
-						alm.AjaxLoadMore.horizontal();
-					}, 500);
-				}
-				alm.window.addEventListener('scroll', alm.AjaxLoadMore.scroll); // Scroll
-				alm.window.addEventListener('touchstart', alm.AjaxLoadMore.scroll); // Touch Devices
-				alm.window.addEventListener('wheel', function (e) {
-					// Mousewheel
-					const direction = Math.sign(e.deltaY);
-					if (direction > 0) {
-						alm.AjaxLoadMore.scroll();
-					}
-				});
-				alm.window.addEventListener('keyup', function (e) {
-					// End, Page Down
-					const code = e.key ? e.key : e.code;
-					switch (code) {
-						case 35:
-						case 34:
-							alm.AjaxLoadMore.scroll();
-							break;
-					}
-				});
-			}
-		};
-
-		/**
-		 * Configure horizontal scroll settings.
-		 *
-		 * @since 5.3.6
-		 */
-		alm.AjaxLoadMore.horizontal = function () {
-			if (alm.scroll_direction === 'horizontal') {
-				alm.main.style.width = `${alm.listing.offsetWidth}px`;
-			}
-		};
-
-		/**
-		 * Destroy Ajax Load More functionality.
-		 *
-		 * @since 3.4.2
-		 */
-		alm.AjaxLoadMore.destroyed = function () {
-			alm.disable_ajax = true;
-			if (!alm.addons.paging) {
-				alm.button.style.display = 'none';
-				alm.AjaxLoadMore.triggerDone();
-				if (typeof almDestroyed === 'function') {
-					window.almDestroyed(alm);
-				}
-			}
-		};
-
-		/**
-		 * Set variables after loading transiton completes.
-		 *
-		 * @since 3.5
-		 */
-		alm.AjaxLoadMore.transitionEnd = function () {
-			setTimeout(function () {
-				alm.AjaxLoadMore.resetBtnText();
-				alm.main.classList.remove('alm-loading');
-				// Loading button
-				if (alm.rel === 'prev') {
-					alm.buttonPrev.classList.remove('loading');
-				} else {
-					alm.button.classList.remove('loading');
-				}
-				alm.AjaxLoadMore.triggerAddons(alm);
-				if (!alm.addons.paging) {
-					setTimeout(function () {
-						alm.loading = false; // Delay to prevent loading to fast
-					}, alm.speed * 3);
-				}
-			}, 50);
-			hidePlaceholder(alm);
-		};
-
-		/**
-		 * Set individual localized variable.
-		 *
-		 * @param {string} name
-		 * @param {string} value
-		 * @since 4.1
-		 */
-		alm.AjaxLoadMore.setLocalizedVar = function (name = '', value = '') {
-			if (alm.localize && name !== '' && value !== '') {
-				alm.localize[name] = value; // Set ALM localize var.
-				window[alm.master_id + '_vars'][name] = value; // Update vars.
-			}
-		};
-
-		/**
-		 * Init Ajax load More functionality and add-ons.
-		 *
-		 * @since 2.0
-		 */
-		alm.AjaxLoadMore.init = async function () {
-			// Preloaded and destroy_after is 1.
-			if (alm.addons.preloaded === 'true' && alm.destroy_after === 1) {
-				alm.AjaxLoadMore.destroyed();
-			}
-
-			if (!alm.addons.paging && !alm.addons.single_post) {
-				if (alm.disable_ajax) {
-					alm.finished = true;
-					alm.button.classList.add('done');
-				} else {
-					// Set button label.
-					alm.button.innerHTML = alm.button_label;
-
-					// If Pause.
-					if (alm.pause === 'true') {
-						alm.loading = false;
-					} else {
-						alm.AjaxLoadMore.loadPosts();
-					}
-				}
-			}
-
-			// Single Post Add-on.
-			if (alm.addons.single_post) {
-				// Add delay for setup and scripts to load.
-				setTimeout(async function () {
-					await alm.AjaxLoadMore.getSinglePost(); // Set next post on load
-
-					// Trigger done if custom query and no posts to render
-					if (alm.addons.single_post_query && alm.addons.single_post_order === '') {
-						alm.AjaxLoadMore.triggerDone();
-					}
-
-					// Set loading flag to false.
-					alm.loading = false;
-
-					// Display Table of Contents
-					tableOfContents(alm, true, true);
-				}, 200);
-			}
-
-			// Preloaded + SEO && !Paging.
-			if (alm.addons.preloaded === 'true' && alm.addons.seo && !alm.addons.paging) {
-				// Add delay for setup and scripts to load.
-				setTimeout(function () {
-					if (typeof almSEO === 'function' && alm.start_page < 1) {
-						window.almSEO(alm, true);
-					}
-				}, 200);
-			}
-
-			// Preloaded && !Paging.
-			if (alm.addons.preloaded === 'true' && !alm.addons.paging) {
-				// Add delay for setup and scripts to load.
-				setTimeout(function () {
-					if (alm.addons.preloaded_total_posts <= parseInt(alm.addons.preloaded_amount)) {
-						alm.AjaxLoadMore.triggerDone();
-					}
-					// almEmpty callback.
-					if (alm.addons.preloaded_total_posts === 0) {
-						if (typeof almEmpty === 'function') {
-							window.almEmpty(alm);
-						}
-						if (alm.no_results) {
-							noResults(alm.content, alm.no_results);
-						}
-					}
-				}, alm.speed);
-			}
-
-			// Preloaded Add-on ONLY.
-			if (alm.addons.preloaded === 'true') {
-				if (alm.resultsText) {
-					almInitResultsText(alm, 'preloaded');
-				}
-
-				// Display Table of Contents.
-				tableOfContents(alm, alm.init, true);
-			}
-
-			// Next Page Add-on.
-			if (alm.addons.nextpage) {
-				// Check that posts remain on load
-				if (alm.listing.querySelector('.alm-nextpage') && !alm.addons.paging) {
-					const nextpage_pages = alm.listing.querySelectorAll('.alm-nextpage'); // All Next Page Items.
-					if (nextpage_pages) {
-						const nextpage_first = nextpage_pages[0];
-						const nextpage_total = nextpage_first.dataset.totalPosts ? parseInt(nextpage_first.dataset.totalPosts) : alm.localize.total_posts;
-
-						// Disable if last page loaded
-						if (nextpage_pages.length === nextpage_total || parseInt(nextpage_first.dataset.id) === nextpage_total) {
-							alm.AjaxLoadMore.triggerDone();
-						}
-					}
-				}
-
-				// Results Text.
-				if (alm.resultsText) {
-					almInitResultsText(alm, 'nextpage');
-				}
-
-				// Display Table of Contents.
-				tableOfContents(alm, alm.init, true);
-			}
-
-			// WooCommerce Add-on.
-			if (alm.addons.woocommerce) {
-				wooInit(alm);
-
-				// Trigger `Done` if `paged is less than `pages`.
-				if (alm.addons.woocommerce_settings.paged >= parseInt(alm.addons.woocommerce_settings.pages)) {
-					alm.AjaxLoadMore.triggerDone();
-				}
-			}
-
-			// Elementor Add-on.
-			if (alm.addons.elementor && alm.addons.elementor_type && alm.addons.elementor_type === 'posts') {
-				elementorInit(alm);
-
-				// Trigger `Done` if `elementor_next_page` is empty
-				if (alm.addons.elementor_next_page === '') {
-					alm.AjaxLoadMore.triggerDone();
-				}
-			}
-
-			// Window Load.
-			alm.window.addEventListener('load', function () {
-				// Masonry & Preloaded.
-				if (alm.transition === 'masonry' && alm.addons.preloaded === 'true') {
-					// Wrap almMasonry in anonymous async/await function
-					(async function () {
-						await almMasonry(alm, true, false);
-						alm.masonry.init = false;
-					})().catch(() => {
-						console.error('There was an error with ALM Masonry');
-					});
-				}
-
-				//  Filters, Facets & Preloaded Facets
-				if (alm.addons.preloaded === 'true' && alm.addons.filters && alm.facets) {
-					if (typeof almFiltersFacets === 'function') {
-						const facets = alm.localize && alm.localize.facets;
-						if (facets) {
-							window.almFiltersFacets(facets);
-						}
-					}
-				}
-
-				// Window Load Callback.
-				if (typeof almOnLoad === 'function') {
-					window.almOnLoad(alm); // eslint-disable-line
-				}
-			});
-		};
-
-		/**
-		 * Handle error messages.
-		 *
-		 * @param {string} error    The error message.
-		 * @param {string} location The location the error occured.
-		 * @since 2.6.0
-		 */
-		alm.AjaxLoadMore.error = function (error, location = null) {
-			alm.loading = false;
-			if (!alm.addons.paging) {
-				alm.button.classList.remove('loading');
-				alm.AjaxLoadMore.resetBtnText();
-			}
-			console.warn('Error: ', error);
-
-			if (error.response) {
-				// The request was made and the server responded with a status code
-				// that falls out of the range of 2xx
-				console.error('Error Msg: ', error.message);
-			} else if (error.request) {
-				// The request was made but no response was received
-				// `error.request` is an instance of XMLHttpRequest in the browser and an instance of ClientRequest in node.js
-				console.error(error.request);
-			} else {
-				// Something happened in setting up the request that triggered an Error
-				console.error('Error Msg: ', error.message);
-			}
-
-			if (location) {
-				console.error('ALM Error started in ' + location);
-			}
-			if (error.config) {
-				console.error('ALM Error Debug: ', error.config);
-			}
-		};
-
-		/**
-		 * Update Current Page.
-		 * Note: Callback function triggered from Paging add-on.
-		 *
-		 * @param {number} current Current page number.
-		 * @param {Object} obj     Optional object (Deprecated).
-		 * @param {Object} alm     The ALM object.
-		 * @since 2.7.0
-		 */
-		window.almUpdateCurrentPage = function (current, obj, alm) {
-			// eslint-disable-line
-			alm.page = current;
-			alm.page = alm.addons.nextpage && !alm.addons.paging ? alm.page - 1 : alm.page; // Next Page add-on
-
-			let data = '';
-			let target = '';
-
-			if (alm.addons.paging_init && alm.addons.preloaded === 'true') {
-				// Paging + Preloaded Firstrun
-				target = alm.listing.querySelector('.alm-reveal') || alm.listing.querySelector('.alm-nextpage');
-				if (target) {
-					data = target.innerHTML; // Get content
-					target.parentNode.removeChild(target); // Remove target
-					alm.addons.preloaded_amount = 0; // Reset preloaded
-					alm.AjaxLoadMore.pagingPreloadedInit(data);
-				}
-				alm.addons.paging_init = false;
-				alm.init = false;
-			} else if (alm.addons.paging_init && alm.addons.nextpage) {
-				// Paging + Next Page on firstrun
-				target = alm.listing.querySelector('.alm-reveal') || alm.listing.querySelector('.alm-nextpage');
-				if (target) {
-					data = target.innerHTML; // Get content
-					target.parentNode.removeChild(target); // Remove target
-					alm.AjaxLoadMore.pagingNextpageInit(data);
-				}
-				alm.addons.paging_init = false;
-				alm.init = false;
-			} else {
-				// Standard Paging
-				alm.AjaxLoadMore.loadPosts();
-			}
-		};
-
-		/**
-		 * Get the parent ALM container.
-		 *
-		 * @return {HTMLElement} The ALM listing container.
-		 * @since 2.7.0
-		 */
-		window.almGetParentContainer = function () {
-			return alm?.listing;
-		};
-
-		/**
-		 * Returns the current ALM obj.
-		 *
-		 * @param {string} obj The ALM object to return.
-		 * @return {Object}    The ALM object.
-		 * @since 2.7.0
-		 */
-		window.almGetObj = function (obj = '') {
-			if (obj) {
-				return alm[obj]; // Return specific param.
-			}
-			return alm; // Return the entire alm object
-		};
-
-		/**
-		 * Trigger ajaxloadmore from any element on page.
-		 *
-		 * @since 2.12.0
-		 */
-		window.almTriggerClick = function () {
-			alm.button.click();
-		};
-
-		// Delay to prevent immediate loading of posts on initial page load via scroll.
-		setTimeout(function () {
-			alm.proceed = true;
-			alm.AjaxLoadMore.scrollSetup();
-		}, 500);
-
-		// Init Ajax Load More
-		alm.AjaxLoadMore.init();
-	};
-
-	// End ajaxloadmore
-
-	/**
-	 * Initiate instance of Ajax load More
-	 *
-	 * @param {HTMLElement} el The ALM element.
-	 * @param {number}      id The ALM instance ID.
-	 * @since 5.0
-	 */
-	window.almInit = function (el, id = 0) {
-		new ajaxloadmore(el, id);
-	};
-
-	/**
-	 * Initiate Ajax load More if div is present on screen
-	 *
-	 * @since 2.1.2
-	 */
-	const alm_instances = document.querySelectorAll('.ajax-load-more-wrap');
-	if (alm_instances.length) {
-		[...alm_instances].forEach((alm, index) => {
-			new ajaxloadmore(alm, index);
-		});
-	}
+  'use strict';
+
+  /**
+   * Initiate Ajax Load More.
+   *
+   * @param {Element} el    The Ajax Load More DOM element/container.
+   * @param {number}  index The current index number of the Ajax Load More instance.
+   */
+  var ajaxloadmore = function ajaxloadmore(el, index) {
+    var _alm_localize, _el$dataset, _alm, _alm2, _alm3, _alm4, _alm5, _alm6, _alm_localize2, _alm7, _alm8, _alm9, _alm10, _alm11, _alm12, _alm13, _alm14, _alm15, _alm16, _alm_localize3, _alm17, _alm18, _alm19, _alm20, _alm21, _alm22;
+    // Move user to top of page to prevent loading of unnessasry posts
+    if (((_alm_localize = alm_localize) === null || _alm_localize === void 0 ? void 0 : _alm_localize.scrolltop) === 'true') {
+      window.scrollTo(0, 0);
+    }
+
+    // Set ALM Variables
+    var alm = this;
+    alm.AjaxLoadMore = {};
+    alm.addons = {};
+    alm.extensions = {};
+    alm.integration = {};
+    alm.window = window;
+    alm.page = 0;
+    alm.postcount = 0;
+    alm.totalposts = 0;
+    alm.proceed = false;
+    alm.disable_ajax = false;
+    alm.init = true;
+    alm.loading = true;
+    alm.finished = false;
+    alm.timer = null;
+    alm.rel = 'next';
+    alm.ua = window.navigator.userAgent ? window.navigator.userAgent : ''; // Browser User Agent
+    alm.vendor = window.navigator.vendor ? window.navigator.vendor : ''; // Browser Vendor
+
+    el.classList.add('alm-' + index); // Add unique classname.
+    el.setAttribute('data-alm-id', index); // Add unique data id.
+
+    // The defined or generated ID for the ALM instance.
+    alm.master_id = el.dataset.id ? "ajax_load_more_".concat(el.dataset.id) : el.id;
+    alm.master_id = alm.master_id.replace(/-/g, '_');
+
+    // Localized <script/> variables.
+    alm.localized_var = "".concat(alm.master_id, "_vars");
+    alm.localize = window[alm.localized_var];
+    if (!alm.localize) {
+      window[alm.localized_var] = {}; // Create empty object if not defined.
+      alm.localize = window[alm.localized_var];
+    }
+
+    // Add ALM object to the global window scope.
+    window[alm.master_id] = alm; // e.g. window.ajax_load_more or window.ajax_load_more_{id}
+
+    // ALM Element Containers
+    alm.main = el; // Top level DOM element
+    alm.listing = el.querySelector('.alm-listing') || el.querySelector('.alm-comments');
+    alm.content = alm.listing;
+    alm.ajax = el.querySelector('.alm-ajax');
+    alm.container_type = alm.listing.dataset.containerType;
+    alm.loading_style = alm.listing.dataset.loadingStyle;
+
+    // Instance Params
+    alm.canonical_url = el.dataset.canonicalUrl;
+    alm.nested = el.dataset.nested ? el.dataset.nested : false;
+    alm.is_search = (el === null || el === void 0 || (_el$dataset = el.dataset) === null || _el$dataset === void 0 ? void 0 : _el$dataset.search) === 'true' ? 'true' : false;
+    alm.search_value = alm.is_search === 'true' ? alm.slug : ''; // Convert to value of slug for appending to seo url.
+    alm.slug = el.dataset.slug;
+    alm.post_id = parseInt(el.dataset.postId);
+    alm.id = el.dataset.id ? el.dataset.id : '';
+
+    // Shortcode Params
+
+    alm.repeater = ((_alm = alm) === null || _alm === void 0 || (_alm = _alm.listing) === null || _alm === void 0 || (_alm = _alm.dataset) === null || _alm === void 0 ? void 0 : _alm.repeater) || 'default';
+    alm.theme_repeater = ((_alm2 = alm) === null || _alm2 === void 0 || (_alm2 = _alm2.listing) === null || _alm2 === void 0 || (_alm2 = _alm2.dataset) === null || _alm2 === void 0 ? void 0 : _alm2.themeRepeater) || false;
+    alm.post_type = ((_alm3 = alm) === null || _alm3 === void 0 || (_alm3 = _alm3.listing) === null || _alm3 === void 0 || (_alm3 = _alm3.dataset) === null || _alm3 === void 0 ? void 0 : _alm3.postType) || 'post';
+    alm.sticky_posts = ((_alm4 = alm) === null || _alm4 === void 0 || (_alm4 = _alm4.listing) === null || _alm4 === void 0 || (_alm4 = _alm4.dataset) === null || _alm4 === void 0 ? void 0 : _alm4.stickyPosts) || false;
+    alm.btnWrap = el.querySelectorAll('.alm-btn-wrap'); // Get all `.alm-button-wrap` divs
+    alm.btnWrap = ajax_load_more_toConsumableArray(alm.btnWrap); // Convert NodeList to array
+    alm.btnWrap[alm.btnWrap.length - 1].style.visibility = 'visible'; // Get last element (used for nesting)
+    alm.trigger = alm.btnWrap[alm.btnWrap.length - 1];
+    alm.button = ((_alm5 = alm) === null || _alm5 === void 0 || (_alm5 = _alm5.trigger) === null || _alm5 === void 0 ? void 0 : _alm5.querySelector('button.alm-load-more-btn')) || null;
+    alm.button_labels = {
+      "default": ((_alm6 = alm) === null || _alm6 === void 0 || (_alm6 = _alm6.listing) === null || _alm6 === void 0 || (_alm6 = _alm6.dataset) === null || _alm6 === void 0 ? void 0 : _alm6.buttonLabel) || ((_alm_localize2 = alm_localize) === null || _alm_localize2 === void 0 ? void 0 : _alm_localize2.button_label),
+      loading: ((_alm7 = alm) === null || _alm7 === void 0 || (_alm7 = _alm7.listing) === null || _alm7 === void 0 || (_alm7 = _alm7.dataset) === null || _alm7 === void 0 ? void 0 : _alm7.buttonLoadingLabel) || null,
+      done: ((_alm8 = alm) === null || _alm8 === void 0 || (_alm8 = _alm8.listing) === null || _alm8 === void 0 || (_alm8 = _alm8.dataset) === null || _alm8 === void 0 ? void 0 : _alm8.buttonDoneLabel) || null
+    };
+    alm.placeholder = alm.main.querySelector('.alm-placeholder') || false;
+    alm.scroll_distance = ((_alm9 = alm) === null || _alm9 === void 0 || (_alm9 = _alm9.listing) === null || _alm9 === void 0 ? void 0 : _alm9.dataset.scrollDistance) || 100;
+    alm.scroll_container = ((_alm10 = alm) === null || _alm10 === void 0 || (_alm10 = _alm10.listing) === null || _alm10 === void 0 ? void 0 : _alm10.dataset.scrollContainer) || null;
+    alm.scroll_direction = ((_alm11 = alm) === null || _alm11 === void 0 || (_alm11 = _alm11.listing) === null || _alm11 === void 0 || (_alm11 = _alm11.dataset) === null || _alm11 === void 0 ? void 0 : _alm11.scrollDirection) || 'vertical';
+    alm.max_pages = (_alm12 = alm) !== null && _alm12 !== void 0 && (_alm12 = _alm12.listing) !== null && _alm12 !== void 0 && (_alm12 = _alm12.dataset) !== null && _alm12 !== void 0 && _alm12.maxPages ? parseInt(alm.listing.dataset.maxPages) : 0;
+    alm.pause_override = ((_alm13 = alm) === null || _alm13 === void 0 || (_alm13 = _alm13.listing) === null || _alm13 === void 0 || (_alm13 = _alm13.dataset) === null || _alm13 === void 0 ? void 0 : _alm13.pauseOverride) || false; // true | false
+    alm.pause = ((_alm14 = alm) === null || _alm14 === void 0 || (_alm14 = _alm14.listing) === null || _alm14 === void 0 || (_alm14 = _alm14.dataset) === null || _alm14 === void 0 ? void 0 : _alm14.pause) || false; // true | false
+    alm.transition = ((_alm15 = alm) === null || _alm15 === void 0 || (_alm15 = _alm15.listing) === null || _alm15 === void 0 || (_alm15 = _alm15.dataset) === null || _alm15 === void 0 ? void 0 : _alm15.transition) || 'fade'; // Transition
+    alm.transition_delay = ((_alm16 = alm) === null || _alm16 === void 0 || (_alm16 = _alm16.listing) === null || _alm16 === void 0 || (_alm16 = _alm16.dataset) === null || _alm16 === void 0 ? void 0 : _alm16.transitionDelay) || 0;
+    alm.speed = (_alm_localize3 = alm_localize) !== null && _alm_localize3 !== void 0 && _alm_localize3.speed ? parseInt(alm_localize.speed) : 250;
+    alm.images_loaded = ((_alm17 = alm) === null || _alm17 === void 0 || (_alm17 = _alm17.listing) === null || _alm17 === void 0 || (_alm17 = _alm17.dataset) === null || _alm17 === void 0 ? void 0 : _alm17.imagesLoaded) === 'true';
+    alm.destroy_after = (_alm18 = alm) !== null && _alm18 !== void 0 && (_alm18 = _alm18.listing) !== null && _alm18 !== void 0 && (_alm18 = _alm18.dataset) !== null && _alm18 !== void 0 && _alm18.destroyAfter ? parseInt(alm.listing.dataset.destroyAfter) : false;
+    alm.lazy_images = ((_alm19 = alm) === null || _alm19 === void 0 || (_alm19 = _alm19.listing.dataset) === null || _alm19 === void 0 ? void 0 : _alm19.lazyImages) === 'true' ? true : false;
+    alm.integration.woocommerce = ((_alm20 = alm) === null || _alm20 === void 0 || (_alm20 = _alm20.listing) === null || _alm20 === void 0 || (_alm20 = _alm20.dataset) === null || _alm20 === void 0 ? void 0 : _alm20.woocommerce) === 'true' ? true : false;
+    alm.scroll = ((_alm21 = alm) === null || _alm21 === void 0 || (_alm21 = _alm21.listing) === null || _alm21 === void 0 || (_alm21 = _alm21.dataset) === null || _alm21 === void 0 ? void 0 : _alm21.scroll) === 'false' ? false : true;
+    alm.orginal_posts_per_page = parseInt(alm.listing.dataset.postsPerPage); // Used for paging add-on
+    alm.posts_per_page = parseInt(alm.listing.dataset.postsPerPage);
+    alm.offset = (_alm22 = alm) !== null && _alm22 !== void 0 && (_alm22 = _alm22.listing) !== null && _alm22 !== void 0 && (_alm22 = _alm22.dataset) !== null && _alm22 !== void 0 && _alm22.offset ? parseInt(alm.listing.dataset.offset) : 0;
+    alm.paged = false;
+
+    // Add-on Shortcode Params
+
+    alm = elementorCreateParams(alm); // Elementor add-on
+    alm = wooCreateParams(alm); // WooCommerce add-on
+    alm = cacheCreateParams(alm); // Cache add-on
+    alm = ctaCreateParams(alm); // CTA add-on
+    alm = nextpageCreateParams(alm); // Nextpage add-on
+    alm = singlepostsCreateParams(alm); // Single Posts add-on
+    alm = commentsCreateParams(alm); // Comments add-on
+    alm = preloadedCreateParams(alm); // Preloaded add-on.
+    alm = pagingCreateParams(alm); // Paging add-on.
+    alm = filtersCreateParams(alm); // Filters add-on.
+    alm = seoCreateParams(alm); // SEO add-on.
+
+    // Extension Shortcode Params
+
+    // Users
+    alm.extensions.users = alm.listing.dataset.users === 'true';
+    if (alm.extensions.users) {
+      // Override paging params for users
+      alm.orginal_posts_per_page = parseInt(alm.listing.dataset.usersPerPage);
+      alm.posts_per_page = parseInt(alm.listing.dataset.usersPerPage);
+    }
+
+    // REST API.
+    alm.extensions.restapi = alm.listing.dataset.restapi === 'true';
+    if (alm.extensions.restapi) {
+      alm.extensions.restapi_base_url = alm.listing.dataset.restapiBaseUrl;
+      alm.extensions.restapi_namespace = alm.listing.dataset.restapiNamespace;
+      alm.extensions.restapi_endpoint = alm.listing.dataset.restapiEndpoint;
+      alm.extensions.restapi_template_id = alm.listing.dataset.restapiTemplateId;
+      alm.extensions.restapi_debug = alm.listing.dataset.restapiDebug;
+      if (alm.extensions.restapi_template_id === '') {
+        alm.extensions.restapi = false;
+      }
+    }
+
+    // ACF.
+    alm.extensions.acf = alm.listing.dataset.acf === 'true' ? true : false;
+    if (alm.extensions.acf) {
+      alm.extensions.acf_field_type = alm.listing.dataset.acfFieldType;
+      alm.extensions.acf_field_name = alm.listing.dataset.acfFieldName;
+      alm.extensions.acf_parent_field_name = alm.listing.dataset.acfParentFieldName;
+      alm.extensions.acf_row_index = alm.listing.dataset.acfRowIndex;
+      alm.extensions.acf_post_id = alm.listing.dataset.acfPostId;
+      // if field type, name or post ID is empty.
+      if (alm.extensions.acf_field_type === undefined || alm.extensions.acf_field_name === undefined || alm.extensions.acf_post_id === undefined) {
+        alm.extensions.acf = false;
+      }
+    }
+
+    // Term Query.
+    alm.extensions.term_query = alm.listing.dataset.termQuery === 'true';
+    if (alm.extensions.term_query) {
+      alm.extensions.term_query_taxonomy = alm.listing.dataset.termQueryTaxonomy;
+      alm.extensions.term_query_hide_empty = alm.listing.dataset.termQueryHideEmpty;
+      alm.extensions.term_query_number = alm.listing.dataset.termQueryNumber;
+    }
+
+    /* Pause */
+    if (alm.pause === undefined || alm.addons.seo && alm.start_page > 1) {
+      // SEO only.
+      alm.pause = false;
+    }
+    if (alm.addons.preloaded && alm.addons.seo && alm.start_page > 0) {
+      // SEO + Preloaded.
+      alm.pause = false;
+    }
+    if (alm.addons.filters && alm.addons.filters_startpage > 0) {
+      // Filters.
+      alm.pause = false;
+    }
+    if (alm.addons.preloaded && alm.addons.paging) {
+      alm.pause = true;
+    }
+
+    /* Max Pages */
+    alm.max_pages = alm.max_pages === undefined || alm.max_pages === 0 ? 9999 : alm.max_pages;
+
+    /* Scroll Distance */
+    alm.scroll_distance = alm.scroll_distance === undefined ? 100 : alm.scroll_distance;
+    alm.scroll_distance_perc = false;
+    if (alm.scroll_distance.toString().indexOf('%') === -1) {
+      // Standard scroll_distance
+      alm.scroll_distance = parseInt(alm.scroll_distance);
+    } else {
+      // Percentage scroll_distance
+      alm.scroll_distance_perc = true;
+      alm.scroll_distance_orig = parseInt(alm.scroll_distance);
+      alm.scroll_distance = getScrollPercentage(alm);
+    }
+
+    /* Masonry */
+    if (alm.transition === 'masonry') {
+      alm = almMasonryConfig(alm);
+    }
+
+    /* Paging */
+    if (alm.addons.paging) {
+      // Add loading class to main container.
+      alm.main.classList.add('alm-loading');
+    } else {
+      var almChildren = el.childNodes; // Get child nodes of instance [nodeList]
+      if (almChildren) {
+        var almChildArray = ajax_load_more_toConsumableArray(almChildren); // Convert nodeList to array
+
+        // Filter array to find the `.alm-btn-wrap` div
+        var btnWrap = almChildArray.filter(function (element) {
+          if (!element.classList) {
+            // If not element (#text node)
+            return false;
+          }
+          return element.classList.contains('alm-btn-wrap');
+        });
+        alm.button = btnWrap ? btnWrap[0].querySelector('.alm-load-more-btn') : container.querySelector('.alm-btn-wrap .alm-load-more-btn');
+      } else {
+        alm.button = container.querySelector('.alm-btn-wrap .alm-load-more-btn');
+      }
+
+      // Reset button state
+      alm.button.disabled = false;
+      alm.button.style.display = '';
+    }
+
+    /**
+     * No Results.
+     * Set template for showing no results HTML.
+     */
+    var alm_no_results = el.querySelector('.alm-no-results');
+    alm.no_results = alm_no_results ? alm_no_results.innerHTML : '';
+
+    /**
+     * Results Text.
+     * Render "Showing x of y results" text.
+     */
+    if (alm.integration.woocommerce) {
+      var _alm23;
+      // If woocommerce, get the default woocommerce results block
+      alm.resultsText = document.querySelectorAll('.woocommerce-result-count');
+      if (((_alm23 = alm) === null || _alm23 === void 0 || (_alm23 = _alm23.resultsText) === null || _alm23 === void 0 ? void 0 : _alm23.length) < 1) {
+        alm.resultsText = document.querySelectorAll('.alm-results-text');
+      }
+    } else {
+      alm.resultsText = document.querySelectorAll('.alm-results-text');
+    }
+    if (alm.resultsText) {
+      alm.resultsText.forEach(function (results) {
+        results.setAttribute('aria-live', 'polite');
+        results.setAttribute('aria-atomic', 'true');
+      });
+    } else {
+      alm.resultsText = false;
+    }
+
+    // Table of Contents: Render 1, 2, 3 etc. when pages are loaded
+    alm.tableofcontents = document.querySelector('.alm-toc') || false;
+    if (alm.tableofcontents) {
+      alm.tableofcontents.setAttribute('aria-live', 'polite');
+      alm.tableofcontents.setAttribute('aria-atomic', 'true');
+    }
+
+    /**
+     * The function to get posts via Ajax/HTTP request.
+     *
+     * @since 2.0.0
+     */
+    alm.AjaxLoadMore.loadPosts = function () {
+      if (alm.disable_ajax) {
+        return;
+      }
+      if (typeof almOnChange === 'function') {
+        window.almOnChange(alm);
+      }
+
+      // Set loading attributes.
+      alm.loading = true;
+      alm.main.classList.add('alm-loading');
+      placeholder('show', alm);
+
+      // Add loading styles to buttons.
+      if (!alm.addons.paging) {
+        if (alm.rel === 'prev') {
+          alm.buttonPrev.classList.add('loading');
+        } else {
+          alm.button.classList.add('loading');
+          if (alm.button_labels.loading) {
+            alm.button.innerHTML = alm.button_labels.loading;
+          }
+        }
+      }
+
+      // Dispatch Ajax request.
+      alm.AjaxLoadMore.ajax();
+    };
+
+    /**
+     * The core Ajax Load More Ajax function.
+     *
+     * @param {string} type The type of Ajax request [standard|totalposts|totalpages].
+     * @since 2.6.0
+     */
+    alm.AjaxLoadMore.ajax = /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee() {
+      var type,
+        _alm24,
+        params,
+        cache,
+        _args = arguments;
+      return ajax_load_more_regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            type = _args.length > 0 && _args[0] !== undefined ? _args[0] : 'standard';
+            if (!alm.extensions.restapi) {
+              _context.next = 5;
+              break;
+            }
+            alm.AjaxLoadMore.restapi(alm);
+            _context.next = 14;
+            break;
+          case 5:
+            // Standard ALM.
+            params = getAjaxParams(alm, type); // Cache.
+            if (!((_alm24 = alm) !== null && _alm24 !== void 0 && (_alm24 = _alm24.addons) !== null && _alm24 !== void 0 && _alm24.cache && !['totalposts', 'totalpages'].includes(type))) {
+              _context.next = 13;
+              break;
+            }
+            _context.next = 9;
+            return getCache(alm, Object.assign({}, params));
+          case 9:
+            cache = _context.sent;
+            if (cache) {
+              alm.AjaxLoadMore.render(cache);
+            } else {
+              alm.AjaxLoadMore.adminajax(params, type);
+            }
+            _context.next = 14;
+            break;
+          case 13:
+            alm.AjaxLoadMore.adminajax(params, type);
+          case 14:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+
+    /**
+     * Send request to the admin-ajax.php
+     *
+     * @param {Object} params Query params.
+     * @param {string} type   The type of Ajax request [standard|totalposts|totalpages].
+     * @since 5.0.0
+     */
+    alm.AjaxLoadMore.adminajax = /*#__PURE__*/function () {
+      var _ref2 = ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee2(params, type) {
+        var _alm_localize4, ajaxurl, _params, _params$cache_slug, cache_slug, data;
+        return ajax_load_more_regeneratorRuntime().wrap(function _callee2$(_context2) {
+          while (1) switch (_context2.prev = _context2.next) {
+            case 0:
+              _alm_localize4 = alm_localize, ajaxurl = _alm_localize4.ajaxurl; // Get Ajax URL
+              _params = params, _params$cache_slug = _params.cache_slug, cache_slug = _params$cache_slug === void 0 ? '' : _params$cache_slug; // Deconstruct query params.
+              /**
+               * Single Posts.
+               * If `single_post_target`, adjust the Ajax URL to the post URL.
+               */
+              if (alm.addons.single_post && alm.addons.single_post_target) {
+                ajaxurl = "".concat(alm.addons.single_post_permalink, "?id=").concat(alm.addons.single_post_id, "&alm_page=").concat(parseInt(alm.page) + 1);
+                params = '';
+              }
+
+              // WooCommerce || Elementor.
+              if (alm.addons.woocommerce || alm.addons.elementor && alm.addons.elementor_type === 'posts') {
+                ajaxurl = getButtonURL(alm, alm.rel);
+                params = '';
+              }
+
+              // Send HTTP request via axios.
+              _context2.next = 6;
+              return lib_axios.get(ajaxurl, {
+                params: params
+              }).then(function (response) {
+                if (alm.addons.single_post && alm.addons.single_post_target) {
+                  // Single Posts
+                  return singlepostsHTML(alm, response, cache_slug);
+                } else if (alm.addons.woocommerce) {
+                  // WooCommerce.
+                  return wooGetContent(alm, ajaxurl, response, cache_slug);
+                } else if (alm.addons.elementor) {
+                  // Elementor
+                  return elementorGetContent(alm, ajaxurl, response, cache_slug);
+                }
+
+                // Standard ALM - Get data from response.
+                return response.data;
+              })["catch"](function (error) {
+                // Error
+                alm.AjaxLoadMore.error(error, 'adminajax');
+              });
+            case 6:
+              data = _context2.sent;
+              _context2.t0 = type;
+              _context2.next = _context2.t0 === 'standard' ? 10 : _context2.t0 === 'totalposts' ? 12 : _context2.t0 === 'totalpages' ? 12 : 14;
+              break;
+            case 10:
+              alm.AjaxLoadMore.render(data);
+              return _context2.abrupt("break", 14);
+            case 12:
+              if (alm.addons.paging && alm.addons.nextpage && typeof almBuildPagination === 'function') {
+                window.almBuildPagination(data.totalpages, alm);
+                alm.totalpages = data.totalpages;
+              } else {
+                if (alm.addons.paging && typeof almBuildPagination === 'function') {
+                  window.almBuildPagination(data.totalposts, alm);
+                }
+              }
+              return _context2.abrupt("break", 14);
+            case 14:
+            case "end":
+              return _context2.stop();
+          }
+        }, _callee2);
+      }));
+      return function (_x, _x2) {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+
+    /**
+     * Send request to the WP REST API
+     *
+     * @param {Object} alm The Ajax Load More object.
+     * @since 5.0.0
+     */
+    alm.AjaxLoadMore.restapi = function (alm) {
+      var _alm_localize5 = alm_localize,
+        rest_api_url = _alm_localize5.rest_api_url; // Get Rest API URL
+      var _alm$extensions = alm.extensions,
+        restapi_base_url = _alm$extensions.restapi_base_url,
+        restapi_namespace = _alm$extensions.restapi_namespace,
+        restapi_endpoint = _alm$extensions.restapi_endpoint,
+        restapi_template_id = _alm$extensions.restapi_template_id;
+      var alm_rest_template = wp.template(restapi_template_id);
+      var alm_rest_url = "".concat(rest_api_url).concat(restapi_base_url, "/").concat(restapi_namespace, "/").concat(restapi_endpoint);
+      var params = getRestAPIParams(alm);
+      lib_axios.get(alm_rest_url, {
+        params: params
+      }).then(function (response) {
+        // Success
+        var results = response.data; // Get data from response
+        var _results$html = results.html,
+          items = _results$html === void 0 ? null : _results$html,
+          _results$meta = results.meta,
+          meta = _results$meta === void 0 ? null : _results$meta;
+        var postcount = meta && meta.postcount ? meta.postcount : 0;
+        var totalposts = meta && meta.totalposts ? meta.totalposts : 0;
+
+        // loop results to get data from each.
+        var data = '';
+        for (var i = 0; i < items.length; i++) {
+          var result = items[i];
+          data += alm_rest_template(result);
+        }
+
+        // Rest API debug.
+        if (alm.extensions.restapi_debug === 'true') {
+          console.log('ALM RestAPI Debug:', items); // eslint-disable-line no-console
+        }
+
+        // Create results object.
+        var obj = {
+          html: data,
+          meta: {
+            postcount: postcount,
+            totalposts: totalposts
+          }
+        };
+        alm.AjaxLoadMore.render(obj);
+      })["catch"](function (error) {
+        // Error
+        alm.AjaxLoadMore.error(error, 'restapi');
+      });
+    };
+
+    /**
+     * Display/render results function.
+     *
+     * @param {Object} data The results of the Ajax request.
+     * @since 2.6.0
+     */
+    alm.AjaxLoadMore.render = /*#__PURE__*/function () {
+      var _ref3 = ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee8(data) {
+        var _alm29;
+        var html, meta, total, totalposts, nodes, temp, paging_container, currentPage;
+        return ajax_load_more_regeneratorRuntime().wrap(function _callee8$(_context8) {
+          while (1) switch (_context8.prev = _context8.next) {
+            case 0:
+              if (alm.addons.single_post) {
+                alm.AjaxLoadMore.getSinglePost(); // Fetch  single post data for next post.
+              }
+
+              // Parse incoming data.
+              html = data.html, meta = data.meta;
+              total = meta ? parseInt(meta.postcount) : parseInt(alm.posts_per_page); // Get current post counts.
+              totalposts = typeof meta !== 'undefined' ? meta.totalposts : alm.posts_per_page * 5;
+              alm.totalposts = totalposts;
+              alm.postcount = alm.addons.paging ? total : alm.postcount + total;
+
+              // Set alm.html as plain text return.
+              alm.html = alm.container_type === 'table' ? html : html;
+              if (!meta) {
+                // Display warning if `meta` is missing from response.
+                console.warn('Ajax Load More: Unable to access `meta` object in Ajax response. There may be an issue in your Repeater Template or another theme/plugin hook causing interference with the Ajax request.');
+              }
+
+              // ALM Init: First run only.
+              if (alm.init) {
+                if (meta) {
+                  alm.main.dataset.totalPosts = meta.totalposts ? meta.totalposts : 0;
+                }
+
+                // No Results / ALM Empty.
+                if (total === 0) {
+                  if (alm.addons.paging && typeof almPagingEmpty === 'function') {
+                    window.almPagingEmpty(alm);
+                  }
+                  if (typeof almEmpty === 'function') {
+                    window.almEmpty(alm);
+                  }
+                  if (alm.no_results) {
+                    noResults(alm.content, alm.no_results);
+                  }
+                }
+
+                // Paging Add-on.
+                if (alm.addons.paging) {
+                  // Dispatch call to build pagination.
+                  if (typeof almBuildPagination === 'function') {
+                    window.almBuildPagination(totalposts, alm, false);
+                  }
+                  if (total > 0) {
+                    // Reset container opacity.
+                    alm.addons.paging_container.style.opacity = 0;
+
+                    // Inject content.
+                    //alm.addons.paging_container.innerHTML = alm.html;
+
+                    // Start paging functionaity.
+                    alm.AjaxLoadMore.pagingInit();
+                  }
+                }
+
+                // SEO Offset.
+                if (alm.addons.seo && alm.addons.seo_offset && !alm.addons.paging) {
+                  createSEOOffset(alm);
+                }
+
+                /**
+                 * SEO & Filters add-on.
+                 * Handle isPaged results.
+                 */
+                if (alm.paged) {
+                  // Reset the posts_per_page value.
+                  if (alm.addons.seo || alm.addons.filters || alm.extensions.users) {
+                    // Reset posts per page value.
+                    alm.posts_per_page = alm.orginal_posts_per_page;
+                  }
+
+                  // SEO add-on.
+                  if (alm.addons.seo) {
+                    alm.page = alm.start_page ? alm.start_page - 1 : alm.page; // Set new page number.
+                  }
+
+                  // Filters add-on.
+                  if (alm.addons.filters && alm.addons.filters_startpage > 0) {
+                    alm.page = alm.addons.filters_startpage - 1; // Set new page number.
+                  }
+                }
+                // Filters onLoad
+                if (typeof almFiltersOnload === 'function') {
+                  window.almFiltersOnload(alm);
+                }
+              }
+              // End ALM Init.
+
+              /**
+               * Set Filter Facets.
+               */
+              if (alm.addons.filters && alm.facets && data.facets && typeof almFiltersFacets === 'function') {
+                window.almFiltersFacets(data.facets);
+              }
+
+              /**
+               * Display alm_debug results.
+               */
+              almDebug(alm);
+
+              /**
+               * Set localized variables and Results Text.
+               */
+              ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee3() {
+                return ajax_load_more_regeneratorRuntime().wrap(function _callee3$(_context3) {
+                  while (1) switch (_context3.prev = _context3.next) {
+                    case 0:
+                      _context3.next = 2;
+                      return setLocalizedVars(alm);
+                    case 2:
+                    case "end":
+                      return _context3.stop();
+                  }
+                }, _callee3);
+              }))();
+
+              // Get all returned data as an array of DOM nodes.
+              nodes = alm.container_type === 'table' ? tableParser(alm.html) : domParser(alm.html);
+              alm.last_loaded = nodes;
+
+              // Render results.
+              if (!(total > 0)) {
+                _context8.next = 52;
+                break;
+              }
+              if (!(alm.addons.woocommerce || alm.addons.elementor)) {
+                _context8.next = 21;
+                break;
+              }
+              temp = document.createElement('div');
+              temp.innerHTML = html;
+              ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee4() {
+                return ajax_load_more_regeneratorRuntime().wrap(function _callee4$(_context4) {
+                  while (1) switch (_context4.prev = _context4.next) {
+                    case 0:
+                      if (!alm.addons.woocommerce) {
+                        _context4.next = 4;
+                        break;
+                      }
+                      _context4.next = 3;
+                      return woocommerce(temp, alm);
+                    case 3:
+                      woocommerceLoaded(alm);
+                    case 4:
+                      if (!alm.addons.elementor) {
+                        _context4.next = 8;
+                        break;
+                      }
+                      _context4.next = 7;
+                      return elementor(temp, alm);
+                    case 7:
+                      elementorLoaded(alm);
+                    case 8:
+                    case "end":
+                      return _context4.stop();
+                  }
+                }, _callee4);
+              }))()["catch"](function (e) {
+                if (alm.addons.woocommerce) {
+                  console.warn('Ajax Load More: There was an error loading woocommerce products.', e);
+                }
+                if (alm.addons.elementor) {
+                  console.warn('Ajax Load More: There was an error loading elementor items.', e);
+                }
+              });
+              alm.init = false;
+              return _context8.abrupt("return");
+            case 21:
+              if (alm.addons.paging) {
+                _context8.next = 36;
+                break;
+              }
+              /**
+               * Infinite Scroll Results.
+               */
+              nodes = formatHTML(alm, nodes);
+              _context8.t0 = alm.transition;
+              _context8.next = _context8.t0 === 'masonry' ? 26 : 30;
+              break;
+            case 26:
+              _context8.next = 28;
+              return displayResults(alm, nodes);
+            case 28:
+              // Wrap almMasonry in anonymous async/await function
+              ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee5() {
+                return ajax_load_more_regeneratorRuntime().wrap(function _callee5$(_context5) {
+                  while (1) switch (_context5.prev = _context5.next) {
+                    case 0:
+                      _context5.next = 2;
+                      return almMasonry(alm, alm.init, alm_is_filtering);
+                    case 2:
+                      alm.masonry.init = false;
+                      triggerWindowResize();
+
+                      // Callback: ALM Complete
+                      if (typeof almComplete === 'function') {
+                        window.almComplete(alm);
+                      }
+                    case 5:
+                    case "end":
+                      return _context5.stop();
+                  }
+                }, _callee5);
+              }))()["catch"](function () {
+                console.error('There was an error with ALM Masonry'); //eslint-disable-line no-console
+              });
+              return _context8.abrupt("break", 33);
+            case 30:
+              _context8.next = 32;
+              return displayResults(alm, nodes);
+            case 32:
+              return _context8.abrupt("break", 33);
+            case 33:
+              // Infinite Scroll -> Images Loaded: Run complete callbacks and checks.
+              ajax_load_more_imagesLoaded(alm.listing, function () {
+                alm.AjaxLoadMore.nested(); // Nested ALM.
+
+                if (alm_is_filtering && alm.addons.filters) {
+                  if (typeof almFiltersAddonComplete === 'function') {
+                    window.almFiltersAddonComplete(el); // Callback: Filters Add-on Complete
+                  }
+                }
+
+                if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
+                  window.almComplete(alm); // Callback: ALM Complete
+                }
+
+                // Trigger <script /> tags in templates.
+                modules_insertScript.init(alm.last_loaded);
+
+                // ALM Done.
+                if (!alm.addons.single_post) {
+                  if (alm.addons.nextpage) {
+                    var _alm25, _alm26;
+                    // Nextpage.
+                    if (((_alm25 = alm) === null || _alm25 === void 0 || (_alm25 = _alm25.localize) === null || _alm25 === void 0 ? void 0 : _alm25.post_count) + (alm.addons.nextpage_startpage - 1) >= ((_alm26 = alm) === null || _alm26 === void 0 || (_alm26 = _alm26.localize) === null || _alm26 === void 0 ? void 0 : _alm26.total_posts)) {
+                      alm.AjaxLoadMore.triggerDone();
+                    }
+                  } else {
+                    var _alm27, _alm28;
+                    if (((_alm27 = alm) === null || _alm27 === void 0 || (_alm27 = _alm27.localize) === null || _alm27 === void 0 ? void 0 : _alm27.post_count) >= ((_alm28 = alm) === null || _alm28 === void 0 || (_alm28 = _alm28.localize) === null || _alm28 === void 0 ? void 0 : _alm28.total_posts)) {
+                      alm.AjaxLoadMore.triggerDone();
+                    }
+                  }
+                }
+                alm_is_filtering = false;
+              });
+              /**
+               * End: Infinite Scroll Results.
+               */
+              _context8.next = 50;
+              break;
+            case 36:
+              /**
+               * Paging.
+               */
+              paging_container = alm.addons.paging_container;
+              if (!alm.init) {
+                _context8.next = 44;
+                break;
+              }
+              if (!paging_container) {
+                _context8.next = 42;
+                break;
+              }
+              _context8.next = 41;
+              return displayPagingResults(alm, nodes);
+            case 41:
+              // Inject content.
+
+              // Paging -> Images Loaded: Run complete callbacks and checks.
+              ajax_load_more_imagesLoaded(paging_container, /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee6() {
+                return ajax_load_more_regeneratorRuntime().wrap(function _callee6$(_context6) {
+                  while (1) switch (_context6.prev = _context6.next) {
+                    case 0:
+                      pagingComplete(alm, alm_is_filtering, true);
+                      alm_is_filtering = false;
+                    case 2:
+                    case "end":
+                      return _context6.stop();
+                  }
+                }, _callee6);
+              })));
+            case 42:
+              _context8.next = 50;
+              break;
+            case 44:
+              if (!paging_container) {
+                _context8.next = 50;
+                break;
+              }
+              _context8.next = 47;
+              return almFadeOut(paging_container, 250);
+            case 47:
+              _context8.next = 49;
+              return displayPagingResults(alm, nodes);
+            case 49:
+              // Inject content.
+
+              // Paging -> Images Loaded: Run complete callbacks and checks.
+              ajax_load_more_imagesLoaded(paging_container, /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee7() {
+                return ajax_load_more_regeneratorRuntime().wrap(function _callee7$(_context7) {
+                  while (1) switch (_context7.prev = _context7.next) {
+                    case 0:
+                      _context7.next = 2;
+                      return almFadeIn(paging_container, 250);
+                    case 2:
+                      paging_container.style.opacity = '';
+                      pagingComplete(alm, alm_is_filtering);
+                      alm_is_filtering = false;
+                    case 5:
+                    case "end":
+                      return _context7.stop();
+                  }
+                }, _callee7);
+              })));
+            case 50:
+              _context8.next = 54;
+              break;
+            case 52:
+              /**
+               * No results from Ajax.
+               */
+              alm.AjaxLoadMore.noresults();
+              alm.AjaxLoadMore.transitionEnd();
+            case 54:
+              /**
+               * Destroy After
+               */
+              if (alm.destroy_after) {
+                currentPage = alm.page + 1; // Add 1 because alm.page starts at 0
+                currentPage = alm.addons.preloaded ? currentPage++ : currentPage; // Add 1 for preloaded
+                if (parseInt(currentPage) === parseInt(alm.destroy_after)) {
+                  alm.AjaxLoadMore.destroyed(); // Disable ALM if page = alm.destroy_after value.
+                }
+              }
+
+              /**
+               * Display Table of Contents
+               */
+              tableOfContents(alm, alm.init);
+
+              /**
+               * Set Focus for accessibility.
+               */
+              if ((_alm29 = alm) !== null && _alm29 !== void 0 && (_alm29 = _alm29.last_loaded) !== null && _alm29 !== void 0 && _alm29.length) {
+                setFocus(alm, alm.last_loaded[0], total, alm_is_filtering);
+              }
+              alm.main.classList.remove('alm-is-filtering'); // Remove filtering class.
+
+              if (alm.init) {
+                alm.main.classList.add('alm-is-loaded'); // Add loaded class to main container.
+              }
+
+              alm.init = false; // Set init flag.
+            case 60:
+            case "end":
+              return _context8.stop();
+          }
+        }, _callee8);
+      }));
+      return function (_x3) {
+        return _ref3.apply(this, arguments);
+      };
+    }();
+
+    /**
+     * Function runs when no results are returned.
+     *
+     * @since 5.3.1
+     */
+    alm.AjaxLoadMore.noresults = function () {
+      if (!alm.addons.paging) {
+        var _alm30, _alm31;
+        // Add .done class, reset btn text
+        (_alm30 = alm) === null || _alm30 === void 0 || (_alm30 = _alm30.button) === null || _alm30 === void 0 || (_alm30 = _alm30.classList) === null || _alm30 === void 0 || _alm30.remove('loading');
+        (_alm31 = alm) === null || _alm31 === void 0 || (_alm31 = _alm31.button) === null || _alm31 === void 0 || (_alm31 = _alm31.classList) === null || _alm31 === void 0 || _alm31.add('done');
+        alm.AjaxLoadMore.resetBtnText();
+      }
+
+      // Callback: ALM Complete
+      if (typeof almComplete === 'function' && alm.transition !== 'masonry') {
+        window.almComplete(alm);
+      }
+
+      // Filters Add-on Complete
+      if (alm_is_filtering && alm.addons.filters) {
+        if (typeof almFiltersAddonComplete === 'function') {
+          window.almFiltersAddonComplete(el);
+        }
+        alm_is_filtering = false;
+      }
+
+      // Masonry, clear `alm-listing` height.
+      if (alm.transition === 'masonry') {
+        alm.content.style.height = 'auto';
+      }
+
+      // ALM Done
+      alm.AjaxLoadMore.triggerDone();
+    };
+
+    /**
+     * Init Paging + Preloaded add-ons.
+     *
+     * @param {string} html Results of Ajax request.
+     * @since 2.11.3
+     */
+    alm.AjaxLoadMore.pagingPreloadedInit = function () {
+      var html = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      alm.AjaxLoadMore.pagingInit(); // Set up paging functionality.
+
+      if (!html) {
+        if (typeof almPagingEmpty === 'function') {
+          window.almPagingEmpty(alm);
+        }
+        if (typeof almEmpty === 'function') {
+          window.almEmpty(alm);
+        }
+        if (alm.no_results) {
+          noResults(alm.content, alm.no_results);
+        }
+      }
+    };
+
+    /**
+     * Init Paging + Next Page add-ons.
+     *
+     * @since 2.14.0
+     */
+    alm.AjaxLoadMore.pagingNextpageInit = function () {
+      alm.AjaxLoadMore.pagingInit(); // Set up paging functionality.
+
+      if (typeof almSetNextPageVars === 'function') {
+        window.almSetNextPageVars(alm); // Set up Nextpage Vars.
+      }
+    };
+
+    /**
+     * Paging add-on first to create required containers.
+     *
+     * @since 5.0
+     */
+    alm.AjaxLoadMore.pagingInit = function () {
+      var paging_container = alm.addons.paging_container; // Get content container.
+
+      if (paging_container) {
+        almFadeIn(paging_container, 150); // Fade in paging container.
+
+        // Delay reveal of paging content.
+        setTimeout(function () {
+          alm.main.classList.remove('alm-loading'); // Remove `alm-loading` class
+        }, 150);
+
+        // Delay initial pagination display to avoid positioning issues.
+        setTimeout(function () {
+          paging_container.style.removeProperty('opacity'); // Remove initial opacity prop.
+
+          if (typeof almFadePageControls === 'function') {
+            window.almFadePageControls(alm.btnWrap); // Fade in paging controls.
+          }
+
+          if (typeof almPagingSetHeight === 'function') {
+            window.almPagingSetHeight(paging_container); // Fade in container height.
+          }
+        }, 275);
+      }
+    };
+
+    /**
+     *	Automatically trigger nested ALM instances.
+     *
+     * @since 5.0
+     */
+    alm.AjaxLoadMore.nested = function () {
+      var nested = alm.listing.querySelectorAll('.ajax-load-more-wrap:not(.alm-is-loaded)'); // Get all new instances
+      if (nested) {
+        ajax_load_more_toConsumableArray(nested).forEach(function (element) {
+          window.almInit(element);
+        });
+      }
+    };
+
+    /**
+     *  Get the Single Posts post ID via ajax.
+     *
+     *  @since 2.7.4
+     */
+    alm.AjaxLoadMore.getSinglePost = /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee9() {
+      var params, singlePostData;
+      return ajax_load_more_regeneratorRuntime().wrap(function _callee9$(_context9) {
+        while (1) switch (_context9.prev = _context9.next) {
+          case 0:
+            if (!alm.fetchingPreviousPost) {
+              _context9.next = 2;
+              break;
+            }
+            return _context9.abrupt("return");
+          case 2:
+            alm.fetchingPreviousPost = true; // Set loading flag.
+
+            // Create data params.
+            params = {
+              action: 'alm_get_single',
+              id: alm.addons.single_post_id,
+              initial_id: alm.addons.single_post_init_id,
+              order: alm.addons.single_post_order,
+              taxonomy: alm.addons.single_post_taxonomy,
+              excluded_terms: alm.addons.single_post_excluded_terms,
+              post_type: alm.post_type,
+              init: alm.addons.single_post_init
+            }; // Send HTTP request via Axios.
+            _context9.next = 6;
+            return lib_axios.get(alm_localize.ajaxurl, {
+              params: params
+            }).then(function (response) {
+              // Get data from response.
+              var data = response.data;
+              if (data.has_previous_post) {
+                alm.listing.dataset.singlePostId = data.prev_id; // Update single-post-id on instance
+                alm.addons.single_post_id = data.prev_id;
+                alm.addons.single_post_permalink = data.prev_permalink;
+                alm.addons.single_post_title = data.prev_title;
+                alm.addons.single_post_slug = data.prev_slug;
+                alm.addons.single_post_cache = data.cache;
+              } else {
+                alm.addons.single_post_cache = false;
+                if (!data.has_previous_post) {
+                  alm.AjaxLoadMore.triggerDone();
+                }
+              }
+              if (typeof window.almSetSinglePost === 'function') {
+                window.almSetSinglePost(alm, data.current_id, data.permalink, data.title);
+              }
+              alm.fetchingPreviousPost = false;
+              alm.addons.single_post_init = false;
+              return data;
+            })["catch"](function (error) {
+              // Error
+              alm.AjaxLoadMore.error(error, 'getSinglePost');
+              alm.fetchingPreviousPost = false;
+            });
+          case 6:
+            singlePostData = _context9.sent;
+            return _context9.abrupt("return", singlePostData);
+          case 8:
+          case "end":
+            return _context9.stop();
+        }
+      }, _callee9);
+    }));
+    if (alm.addons.single_post_id) {
+      alm.fetchingPreviousPost = false;
+      alm.addons.single_post_init = true;
+    }
+
+    /**
+     * Triggers various add-on functions after load complete.
+     *
+     * @param {Object} alm The ALM object.
+     * @since 2.14.0
+     */
+    alm.AjaxLoadMore.triggerAddons = function (alm) {
+      if (typeof almSetNextPage === 'function' && alm.addons.nextpage) {
+        window.almSetNextPage(alm);
+      }
+      if (typeof almSEO === 'function' && alm.addons.seo) {
+        window.almSEO(alm, false);
+      }
+      if (typeof almWooCommerce === 'function' && alm.addons.woocommerce) {
+        window.almWooCommerce(alm);
+      }
+      if (typeof almElementor === 'function' && alm.addons.elementor) {
+        window.almElementor(alm);
+      }
+    };
+
+    /**
+     * Fires a set of actions and functions when ALM has no other posts to load.
+     *
+     * @since 2.11.3
+     */
+    alm.AjaxLoadMore.triggerDone = function () {
+      alm.loading = false;
+      alm.finished = true;
+      placeholder('hide', alm);
+      if (!alm.addons.paging) {
+        if (alm.button_labels.done) {
+          setTimeout(function () {
+            alm.button.innerHTML = alm.button_labels.done;
+          }, 75);
+        }
+        alm.button.classList.add('done');
+        alm.button.removeAttribute('rel');
+        alm.button.disabled = true;
+      }
+
+      // almDone
+      if (typeof almDone === 'function') {
+        // Delay done until animations complete
+        setTimeout(function () {
+          window.almDone(alm);
+        }, alm.speed + 10);
+      }
+    };
+
+    /**
+     * Fires a set of actions once ALm Previous hits the first page.
+     *
+     * @since 5.5.0
+     */
+    alm.AjaxLoadMore.triggerDonePrev = function () {
+      alm.loading = false;
+      placeholder('hide', alm);
+      if (!alm.addons.paging) {
+        alm.buttonPrev.classList.add('done');
+        alm.buttonPrev.removeAttribute('rel');
+        alm.buttonPrev.disabled = true;
+      }
+
+      // almDonePrev Callback.
+      if (typeof almDonePrev === 'function') {
+        // Delay done until animations complete
+        setTimeout(function () {
+          window.almDonePrev(alm);
+        }, alm.speed + 10);
+      }
+    };
+
+    /**
+     * Resets the loading button text after loading has completed.
+     *
+     * @since 2.8.4
+     */
+    alm.AjaxLoadMore.resetBtnText = function () {
+      if (alm.button && alm.button_labels.loading) {
+        alm.button.innerHTML = alm.button_labels["default"];
+      }
+    };
+
+    /**
+     * Button click handler to load posts.
+     *
+     * @param {Object} e The target button element.
+     * @since 4.2.0
+     */
+    alm.AjaxLoadMore.click = function (e) {
+      var button = e.currentTarget || e.target;
+      alm.rel = 'next';
+      if (alm.pause === 'true') {
+        alm.pause = false;
+        alm.pause_override = false;
+        alm.AjaxLoadMore.loadPosts();
+      }
+      if (!alm.loading && !alm.finished && !button.classList.contains('done')) {
+        alm.loading = true;
+        alm.page++;
+        alm.AjaxLoadMore.loadPosts();
+      }
+      button.blur(); // Remove button focus
+    };
+
+    /**
+     * Button click handler for previous load more.
+     *
+     * @param {Object} e The target button element.
+     * @since 5.5.0
+     */
+    alm.AjaxLoadMore.prevClick = function (e) {
+      var button = e.currentTarget || e.target;
+      e.preventDefault();
+      if (!alm.loading && !button.classList.contains('done')) {
+        alm.loading = true;
+        alm.pagePrev--;
+        alm.rel = 'prev';
+        alm.AjaxLoadMore.loadPosts();
+        button.blur(); // Remove button focus
+      }
+    };
+
+    /**
+     * Set the Load Previous button to alm object.
+     *
+     * @param {Element} button The button element.
+     * @since 5.5.0
+     */
+    alm.AjaxLoadMore.setPreviousButton = function (button) {
+      alm.pagePrev = alm.page;
+      alm.buttonPrev = button;
+    };
+
+    /**
+     * Load More button click event handler.
+     *
+     * @since 1.0.0
+     */
+    if (!alm.addons.paging && !alm.fetchingPreviousPost) {
+      alm.button.onclick = alm.AjaxLoadMore.click;
+    }
+
+    /**
+     * Window resize functions for Paging, Scroll Distance Percentage etc.
+     *
+     * @since 2.1.2
+     */
+    if (alm.addons.paging || alm.scroll_distance_perc || alm.scroll_direction === 'horizontal') {
+      var resize;
+      alm.window.onresize = function () {
+        clearTimeout(resize);
+        resize = setTimeout(function () {
+          if (alm.addons.paging) {
+            // Paging
+            if (typeof almOnWindowResize === 'function') {
+              window.almOnWindowResize(alm);
+            }
+          }
+          if (alm.scroll_distance_perc) {
+            alm.scroll_distance = getScrollPercentage(alm);
+          }
+          if (alm.scroll_direction === 'horizontal') {
+            alm.AjaxLoadMore.horizontal();
+          }
+        }, alm.speed);
+      };
+    }
+
+    /**
+     * Check to see if element is visible before loading posts.
+     *
+     * @since 2.1.2
+     */
+    alm.AjaxLoadMore.isVisible = function () {
+      // Check for a width and height to determine visibility
+      alm.visible = alm.main.clientWidth > 0 && alm.main.clientHeight > 0 ? true : false;
+      return alm.visible;
+    };
+
+    /**
+     * Load posts as user scrolls the page.
+     *
+     * @since 1.0
+     */
+    alm.AjaxLoadMore.scroll = function () {
+      if (alm.timer) {
+        clearTimeout(alm.timer);
+      }
+      alm.timer = setTimeout(function () {
+        if (alm.AjaxLoadMore.isVisible() && !alm.fetchingPreviousPost) {
+          var trigger = alm.trigger.getBoundingClientRect();
+          var btnPos = Math.round(trigger.top - alm.window.innerHeight) + alm.scroll_distance;
+          var scrollTrigger = btnPos <= 0 ? true : false;
+
+          // Scroll Container
+          if (alm.window !== window) {
+            var scrollHeight = alm.main.offsetHeight; // ALM height
+            var scrollWidth = alm.main.offsetWidth; // ALM Width
+            var scrollPosition = '';
+            if (alm.scroll_direction === 'horizontal') {
+              // Left/Right
+              alm.AjaxLoadMore.horizontal();
+              scrollPosition = Math.round(alm.window.scrollLeft + alm.window.offsetWidth - alm.scroll_distance); // How far user has scrolled
+              scrollTrigger = scrollWidth <= scrollPosition ? true : false;
+            } else {
+              // Up/Down
+              scrollPosition = Math.round(alm.window.scrollTop + alm.window.offsetHeight - alm.scroll_distance); // How far user has scrolled
+              scrollTrigger = scrollHeight <= scrollPosition ? true : false;
+            }
+          }
+
+          // If Pause && Pause Override
+          if (!alm.loading && !alm.finished && scrollTrigger && alm.page < alm.max_pages - 1 && alm.proceed && alm.pause === 'true' && alm.pause_override === 'true') {
+            alm.button.click();
+          }
+
+          // Standard Scroll
+          else {
+            if (!alm.loading && !alm.finished && scrollTrigger && alm.page < alm.max_pages - 1 && alm.proceed && alm.pause !== 'true') {
+              alm.button.click();
+            }
+          }
+        }
+      }, 25);
+    };
+
+    /**
+     * Add scroll eventlisteners, only when needed.
+     *
+     * @since 5.2.0
+     */
+    alm.AjaxLoadMore.scrollSetup = function () {
+      if (alm.scroll && !alm.addons.paging) {
+        if (alm.scroll_container) {
+          // Scroll Container
+          alm.window = document.querySelector(alm.scroll_container) ? document.querySelector(alm.scroll_container) : alm.window;
+          setTimeout(function () {
+            // Delay to allow for ALM container to resize on load.
+            alm.AjaxLoadMore.horizontal();
+          }, 500);
+        }
+        alm.window.addEventListener('scroll', alm.AjaxLoadMore.scroll); // Scroll
+        alm.window.addEventListener('touchstart', alm.AjaxLoadMore.scroll); // Touch Devices
+        alm.window.addEventListener('wheel', function (e) {
+          // Mousewheel
+          var direction = Math.sign(e.deltaY);
+          if (direction > 0) {
+            alm.AjaxLoadMore.scroll();
+          }
+        });
+        alm.window.addEventListener('keyup', function (e) {
+          var key = e.key;
+          switch (key) {
+            case 'End':
+            case 'PageDown':
+              alm.AjaxLoadMore.scroll();
+              break;
+          }
+        });
+      }
+    };
+
+    /**
+     * Configure horizontal scroll settings.
+     *
+     * @since 5.3.6
+     */
+    alm.AjaxLoadMore.horizontal = function () {
+      if (alm.scroll_direction === 'horizontal') {
+        alm.main.style.width = "".concat(alm.listing.offsetWidth, "px");
+      }
+    };
+
+    /**
+     * Destroy Ajax Load More functionality.
+     *
+     * @since 3.4.2
+     */
+    alm.AjaxLoadMore.destroyed = function () {
+      alm.disable_ajax = true;
+      if (!alm.addons.paging) {
+        alm.button.style.display = 'none';
+        alm.AjaxLoadMore.triggerDone();
+        if (typeof almDestroyed === 'function') {
+          window.almDestroyed(alm);
+        }
+      }
+    };
+
+    /**
+     * Set variables after loading transition completes.
+     *
+     * @since 3.5
+     */
+    alm.AjaxLoadMore.transitionEnd = function () {
+      setTimeout(function () {
+        alm.AjaxLoadMore.resetBtnText();
+        alm.main.classList.remove('alm-loading');
+
+        // Loading buttons.
+        if (alm.rel === 'prev') {
+          var _alm32;
+          (_alm32 = alm) === null || _alm32 === void 0 || (_alm32 = _alm32.buttonPrev) === null || _alm32 === void 0 || (_alm32 = _alm32.classList) === null || _alm32 === void 0 || _alm32.remove('loading');
+        } else {
+          var _alm33;
+          (_alm33 = alm) === null || _alm33 === void 0 || (_alm33 = _alm33.button) === null || _alm33 === void 0 || (_alm33 = _alm33.classList) === null || _alm33 === void 0 || _alm33.remove('loading');
+        }
+        alm.AjaxLoadMore.triggerAddons(alm);
+        if (!alm.addons.paging) {
+          setTimeout(function () {
+            alm.loading = false; // Delay to prevent loading to fast
+          }, alm.speed * 2);
+        }
+      }, 25);
+
+      // Hide loading placeholder.
+      placeholder('hide', alm);
+    };
+
+    /**
+     * Set individual localized variable.
+     *
+     * @param {string} name
+     * @param {string} value
+     * @since 4.1
+     */
+    alm.AjaxLoadMore.setLocalizedVar = function () {
+      var _alm34;
+      var name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+      if ((_alm34 = alm) !== null && _alm34 !== void 0 && _alm34.localize && name !== '' && value !== '') {
+        alm.localize[name] = value; // Set ALM localize var.
+        window[alm.localized_var][name] = value; // Update vars.
+      }
+    };
+
+    /**
+     * Init Ajax load More functionality and add-ons.
+     *
+     * @since 2.0
+     */
+    alm.AjaxLoadMore.init = /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee12() {
+      var nextpage_pages, _alm35, nextpage_first, nextpage_total;
+      return ajax_load_more_regeneratorRuntime().wrap(function _callee12$(_context12) {
+        while (1) switch (_context12.prev = _context12.next) {
+          case 0:
+            // Preloaded and Destroy After is 1.
+            if (alm.addons.preloaded && alm.destroy_after === 1) {
+              alm.AjaxLoadMore.destroyed();
+            }
+
+            // Paging Add-on.
+            if (alm.addons.paging) {
+              if (alm.addons.preloaded) {
+                // Preloaded.
+                alm.AjaxLoadMore.ajax('totalposts');
+              } else if (alm.addons.nextpage) {
+                // Next Page.
+                alm.AjaxLoadMore.ajax('totalpages');
+              } else {
+                // Standard.
+                alm.AjaxLoadMore.loadPosts();
+              }
+            }
+
+            // Not Paging & not Single Post.
+            if (!alm.addons.paging && !alm.addons.single_post) {
+              if (alm.disable_ajax) {
+                alm.finished = true;
+                alm.button.classList.add('done');
+              } else {
+                // Set button label.
+                alm.button.innerHTML = alm.button_labels["default"];
+
+                // Check pause.
+                if (alm.pause === 'true') {
+                  alm.loading = false;
+                } else {
+                  alm.AjaxLoadMore.loadPosts();
+                }
+              }
+            }
+
+            // Single Post Add-on.
+            if (alm.addons.single_post) {
+              // Add delay for setup and scripts to load.
+              setTimeout( /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee10() {
+                return ajax_load_more_regeneratorRuntime().wrap(function _callee10$(_context10) {
+                  while (1) switch (_context10.prev = _context10.next) {
+                    case 0:
+                      _context10.next = 2;
+                      return alm.AjaxLoadMore.getSinglePost();
+                    case 2:
+                      // Set next post on load
+
+                      // Trigger done if custom query and no posts to render
+                      if (alm.addons.single_post_query && alm.addons.single_post_order === '') {
+                        alm.AjaxLoadMore.triggerDone();
+                      }
+                      alm.loading = false;
+                      tableOfContents(alm, true, true);
+                    case 5:
+                    case "end":
+                      return _context10.stop();
+                  }
+                }, _callee10);
+              })), 250);
+            }
+
+            // Preloaded + SEO && !Paging.
+            if (alm.addons.preloaded && alm.addons.seo && !alm.addons.paging) {
+              // Add delay for setup and scripts to load.
+              setTimeout(function () {
+                if (typeof almSEO === 'function' && alm.start_page < 1) {
+                  window.almSEO(alm, true);
+                }
+              }, 200);
+            }
+
+            // Preloaded && !Paging.
+            if (alm.addons.preloaded && !alm.addons.paging) {
+              // Add delay for setup and scripts to load.
+              setTimeout(function () {
+                if (alm.addons.preloaded_total_posts <= alm.addons.preloaded_amount) {
+                  alm.AjaxLoadMore.triggerDone();
+                }
+                // almEmpty callback.
+                if (alm.addons.preloaded_total_posts === 0) {
+                  if (typeof almEmpty === 'function') {
+                    window.almEmpty(alm);
+                  }
+                  if (alm.no_results) {
+                    noResults(alm.content, alm.no_results);
+                  }
+                }
+              }, alm.speed);
+            }
+
+            // Preloaded Add-on ONLY.
+            if (alm.addons.preloaded) {
+              if (alm.resultsText) {
+                almInitResultsText(alm, 'preloaded');
+              }
+              tableOfContents(alm, alm.init, true);
+            }
+
+            // Next Page Add-on.
+            if (alm.addons.nextpage) {
+              // Check that posts remain on load
+              if (alm.listing.querySelector('.alm-nextpage') && !alm.addons.paging) {
+                nextpage_pages = alm.listing.querySelectorAll('.alm-nextpage'); // All Next Page Items.
+                if (nextpage_pages) {
+                  nextpage_first = nextpage_pages[0];
+                  nextpage_total = nextpage_first.dataset.totalPosts ? parseInt(nextpage_first.dataset.totalPosts) : (_alm35 = alm) === null || _alm35 === void 0 || (_alm35 = _alm35.localize) === null || _alm35 === void 0 ? void 0 : _alm35.total_posts; // Disable if last page loaded
+                  if (nextpage_pages.length === nextpage_total || parseInt(nextpage_first.dataset.page) === nextpage_total) {
+                    alm.AjaxLoadMore.triggerDone();
+                  }
+                }
+              }
+              if (alm.resultsText) {
+                almInitResultsText(alm, 'nextpage');
+              }
+              tableOfContents(alm, alm.init, true);
+            }
+
+            // WooCommerce Add-on.
+            if (alm.addons.woocommerce) {
+              wooInit(alm);
+              if (alm.addons.woocommerce_settings.paged >= parseInt(alm.addons.woocommerce_settings.pages)) {
+                alm.AjaxLoadMore.triggerDone(); // Done if `paged is less than `pages`.
+              }
+            }
+
+            // Elementor Add-on.
+            if (alm.addons.elementor && alm.addons.elementor_type && alm.addons.elementor_type === 'posts') {
+              elementorInit(alm);
+              if (!alm.addons.elementor_next_page) {
+                alm.AjaxLoadMore.triggerDone(); // Done if `elementor_next_page` is false.
+              }
+            }
+
+            // Window Load.
+            alm.window.addEventListener('load', function () {
+              // Masonry & Preloaded.
+              if (alm.transition === 'masonry' && alm.addons.preloaded) {
+                // Wrap almMasonry in anonymous async/await function
+                ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee11() {
+                  return ajax_load_more_regeneratorRuntime().wrap(function _callee11$(_context11) {
+                    while (1) switch (_context11.prev = _context11.next) {
+                      case 0:
+                        _context11.next = 2;
+                        return almMasonry(alm, true, false);
+                      case 2:
+                        alm.masonry.init = false;
+                      case 3:
+                      case "end":
+                        return _context11.stop();
+                    }
+                  }, _callee11);
+                }))()["catch"](function () {
+                  console.error('There was an error with ALM Masonry');
+                });
+              }
+
+              //  Filters, Facets & Preloaded Facets
+              if (alm.addons.preloaded && alm.addons.filters && alm.facets) {
+                if (typeof almFiltersFacets === 'function') {
+                  var _alm36;
+                  var facets = (_alm36 = alm) === null || _alm36 === void 0 || (_alm36 = _alm36.localize) === null || _alm36 === void 0 ? void 0 : _alm36.facets;
+                  if (facets) {
+                    window.almFiltersFacets(facets);
+                  }
+                }
+              }
+
+              // Window Load Callback.
+              if (typeof almOnLoad === 'function') {
+                window.almOnLoad(alm); // eslint-disable-line
+              }
+            });
+
+            setPreloadedParams(alm); // Set preloaded params.
+          case 12:
+          case "end":
+            return _context12.stop();
+        }
+      }, _callee12);
+    }));
+
+    /**
+     * Handle error messages.
+     *
+     * @param {string} error    The error message.
+     * @param {string} location The location the error occured.
+     * @since 2.6.0
+     */
+    alm.AjaxLoadMore.error = function (error) {
+      var location = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      alm.loading = false;
+      if (!alm.addons.paging) {
+        alm.button.classList.remove('loading');
+        alm.AjaxLoadMore.resetBtnText();
+      }
+      console.warn('Error: ', error);
+      if (error.response) {
+        // The request was made and the server responded with a status code that falls out of the range of 2xx.
+        console.error('Error Msg: ', error.message);
+      } else if (error.request) {
+        // The request was made but no response was received.
+        console.error(error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error.
+        console.error('Error Msg: ', error.message);
+      }
+      if (location) {
+        console.error('ALM Error started in ' + location);
+      }
+      if (error.config) {
+        console.error('ALM Error Debug: ', error.config);
+      }
+    };
+
+    /**
+     * Update Current Page.
+     * Note: Callback function triggered from Paging add-on.
+     *
+     * @param {number} current Current page number.
+     * @param {Object} obj     Optional object (Deprecated).
+     * @param {Object} alm     The ALM object.
+     * @since 2.7.0
+     */
+    window.almUpdateCurrentPage = function (current, obj, alm) {
+      // eslint-disable-line
+      alm.page = current;
+      alm.page = alm.addons.nextpage && !alm.addons.paging ? alm.page - 1 : alm.page; // Next Page add-on
+
+      var target = alm.listing;
+      var data = target === null || target === void 0 ? void 0 : target.innerHTML; // Get content
+
+      if (alm.addons.paging_init && alm.addons.preloaded) {
+        // Paging + Preloaded Firstrun.
+        alm.addons.preloaded_amount = 0; // Reset preloaded_amount param.
+        alm.AjaxLoadMore.pagingPreloadedInit(data);
+        alm.addons.paging_init = false;
+        alm.init = false;
+      } else if (alm.addons.paging_init && alm.addons.nextpage) {
+        // Paging + Next Page on firstrun.
+        alm.AjaxLoadMore.pagingNextpageInit();
+        alm.addons.paging_init = false;
+        alm.init = false;
+      } else {
+        // Standard Paging
+        alm.AjaxLoadMore.loadPosts();
+      }
+    };
+
+    /**
+     * Get the parent ALM container.
+     *
+     * @return {HTMLElement} The ALM listing container.
+     * @since 2.7.0
+     */
+    window.almGetParentContainer = function () {
+      var _alm37;
+      return (_alm37 = alm) === null || _alm37 === void 0 ? void 0 : _alm37.listing;
+    };
+
+    /**
+     * Returns the current ALM obj.
+     *
+     * @param {string} obj The ALM object to return.
+     * @return {Object}    The ALM object.
+     * @since 2.7.0
+     */
+    window.almGetObj = function () {
+      var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      if (obj) {
+        return alm[obj]; // Return specific param.
+      }
+
+      return alm; // Return the entire alm object
+    };
+
+    /**
+     * Trigger ajaxloadmore from any element on page.
+     *
+     * @since 2.12.0
+     */
+    window.almTriggerClick = function () {
+      alm.button.click();
+    };
+
+    // Delay to prevent immediate loading of posts on initial page load via scroll.
+    setTimeout(function () {
+      alm.proceed = true;
+      alm.AjaxLoadMore.scrollSetup();
+    }, 500);
+
+    // Init Ajax Load More
+    alm.AjaxLoadMore.init();
+  };
+
+  // End ajaxloadmore
+
+  /**
+   * Initiate instance of Ajax load More
+   *
+   * @param {HTMLElement} el The ALM element.
+   * @param {number}      id The ALM instance ID.
+   * @since 5.0
+   */
+  window.almInit = function (el) {
+    var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    new ajaxloadmore(el, id);
+  };
+
+  /**
+   * Initiate Ajax load More if div is present on screen
+   *
+   * @since 2.1.2
+   */
+  var alm_instances = document.querySelectorAll('.ajax-load-more-wrap');
+  if (alm_instances.length) {
+    ajax_load_more_toConsumableArray(alm_instances).forEach(function (alm, index) {
+      new ajaxloadmore(alm, index);
+    });
+  }
 })();
 
 /**
@@ -13393,12 +13246,15 @@ let alm_is_filtering = false;
  * @param {Object} data       Query data as an object.
  * @since 5.0
  */
-const filter = function (transition = 'fade', speed = '200', data = '') {
-	if (!transition || !speed || !data) {
-		return false;
-	}
-	alm_is_filtering = true;
-	almFilter(transition, speed, data, 'filter');
+var filter = function filter() {
+  var transition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'fade';
+  var speed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '200';
+  var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+  if (!transition || !speed || !data) {
+    return false;
+  }
+  alm_is_filtering = true;
+  almFilter(transition, speed, data, 'filter');
 };
 
 /**
@@ -13407,32 +13263,44 @@ const filter = function (transition = 'fade', speed = '200', data = '') {
  * @since 5.3.8
  * @param {Object} props The ALM props as an object.
  */
-const ajax_load_more_reset = function (props = {}) {
-	let data = {};
-	alm_is_filtering = true;
-
-	if (props && props.target) {
-		data = {
-			target,
-		};
-	}
-
-	if (props && props.type === 'woocommerce') {
-		// WooCommerce
-		(async function () {
-			const instance = document.querySelector('.ajax-load-more-wrap .alm-listing[data-woo="true"]'); // Get ALM instance
-			const settings = await wooReset(); // Get WooCommerce `settings` via Ajax
-			if (settings) {
-				instance.dataset.wooSettings = settings; // Update data atts
-				almFilter('fade', '100', data, 'filter');
-			}
-		})().catch(() => {
-			console.warn('Ajax Load More: There was an issue resetting the Ajax Load More instance.');
-		});
-	} else {
-		// Standard ALM
-		almFilter('fade', '200', data, 'filter');
-	}
+var ajax_load_more_reset = function reset() {
+  var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var data = {};
+  alm_is_filtering = true;
+  if (props && props.target) {
+    data = {
+      target: target
+    };
+  }
+  if (props && props.type === 'woocommerce') {
+    // WooCommerce
+    ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee13() {
+      var instance, settings;
+      return ajax_load_more_regeneratorRuntime().wrap(function _callee13$(_context13) {
+        while (1) switch (_context13.prev = _context13.next) {
+          case 0:
+            instance = document.querySelector('.ajax-load-more-wrap .alm-listing[data-woo="true"]'); // Get ALM instance
+            _context13.next = 3;
+            return wooReset();
+          case 3:
+            settings = _context13.sent;
+            // Get WooCommerce `settings` via Ajax
+            if (settings) {
+              instance.dataset.wooSettings = settings; // Update data atts
+              almFilter('fade', '100', data, 'filter');
+            }
+          case 5:
+          case "end":
+            return _context13.stop();
+        }
+      }, _callee13);
+    }))()["catch"](function () {
+      console.warn('Ajax Load More: There was an issue resetting the Ajax Load More instance.');
+    });
+  } else {
+    // Standard ALM
+    almFilter('fade', '200', data, 'filter');
+  }
 };
 
 /**
@@ -13443,8 +13311,9 @@ const ajax_load_more_reset = function (props = {}) {
  * @param {string} id An optional Ajax Load More ID.
  * @return {number}   The results from the localized variable.
  */
-const getPostCount = function (id = '') {
-	return getTotals('post_count', id);
+var ajax_load_more_getPostCount = function getPostCount() {
+  var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  return getTotals('post_count', id);
 };
 
 /**
@@ -13454,8 +13323,9 @@ const getPostCount = function (id = '') {
  * @param {string} id An optional Ajax Load More ID.
  * @return {number}   The results from the localized variable.
  */
-const getTotalPosts = function (id = '') {
-	return getTotals('total_posts', id);
+var getTotalPosts = function getTotalPosts() {
+  var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  return getTotals('total_posts', id);
 };
 
 /**
@@ -13466,69 +13336,53 @@ const getTotalPosts = function (id = '') {
  * @param {string} id An optional Ajax Load More ID.
  * @return {number}   The total remaining posts.
  */
-const getTotalRemaining = function (id = '') {
-	return getTotals('remaining', id);
+var getTotalRemaining = function getTotalRemaining() {
+  var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  return getTotals('remaining', id);
 };
 
 /**
- * Track Page Views in Google Analytics.
+ * Track Page Views and Analytics
  *
  * @since 5.0
- * @param {string} path The URL path.
+ * @param {string} type The add-on type that is triggering the analytics.
  */
-const tracking = function (path) {
-	setTimeout(function () {
-		// Delay to allow for state change.
-		path = path.replace(/\/\//g, '/'); // Replace instance of a double backslash.
+var analytics = function analytics() {
+  var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var _window$location = window.location,
+    _window$location$path = _window$location.pathname,
+    pathname = _window$location$path === void 0 ? '' : _window$location$path,
+    _window$location$sear = _window$location.search,
+    search = _window$location$sear === void 0 ? '' : _window$location$sear;
 
-		if (typeof gtag === 'function') {
-			// Gtag GA Tracking
-			gtag('event', 'page_view', {
-				page_title: document.title,
-				page_location: window.location.href,
-				page_path: window.location.pathname,
-			});
-			if (alm_localize.ga_debug) {
-				console.log('Pageview sent to Google Analytics (gtag)'); //eslint-disable-line no-console
-			}
-		}
+  /**
+   * ALM Callback Function (URL Change)
+   *
+   * @see https://connekthq.com/plugins/ajax-load-more/docs/callback-functions/#url-update
+   */
+  if (typeof almUrlUpdate === 'function') {
+    window.almUrlUpdate(pathname + search, type);
+  }
 
-		if (typeof ga === 'function') {
-			// Deprecated GA Tracking
-			ga('set', 'page', path);
-			ga('send', 'pageview');
-			if (alm_localize.ga_debug) {
-				console.log('Pageview sent to Google Analytics (ga)'); //eslint-disable-line no-console
-			}
-		}
-
-		if (typeof __gaTracker === 'function') {
-			// Monster Insights
-			__gaTracker('set', 'page', path);
-			__gaTracker('send', 'pageview');
-			if (alm_localize.ga_debug) {
-				console.log('Pageview sent to Google Analytics (__gaTracker)'); //eslint-disable-line no-console
-			}
-		}
-
-		// Dispatch global Analytics callback
-		if (typeof almAnalytics === 'function') {
-			window.almAnalytics(path);
-		}
-	}, 200);
+  /**
+   * ALM Callback Function
+   */
+  if (typeof almAnalytics === 'function') {
+    window.almAnalytics(pathname + search, type);
+  }
 };
 
 /**
  * Trigger Ajax Load More from other events.
  *
  * @since 5.0
- * @param {Element} el
+ * @param {Element} instance The HTML element.
  */
-const start = function (el) {
-	if (!el) {
-		return false;
-	}
-	window.almInit(el);
+var start = function start(instance) {
+  if (!instance) {
+    return false;
+  }
+  window.almInit(instance);
 };
 
 /**
@@ -13537,14 +13391,14 @@ const start = function (el) {
  * @since 5.0
  * @param {string} position The position to scroll.
  */
-const almScroll = function (position) {
-	if (!position) {
-		return false;
-	}
-	window.scrollTo({
-		top: position,
-		behavior: 'smooth',
-	});
+var almScroll = function almScroll(position) {
+  if (!position) {
+    return false;
+  }
+  window.scrollTo({
+    top: position,
+    behavior: 'smooth'
+  });
 };
 
 /**
@@ -13554,14 +13408,18 @@ const almScroll = function (position) {
  * @param {HTMLElement} el The HTML element.
  * @return {Object}        The top/left coordinates.
  */
-const getOffset = function (el = null) {
-	if (!el) {
-		return false;
-	}
-	const rect = el.getBoundingClientRect();
-	const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
-	const scrollTop = window.scrollY || document.documentElement.scrollTop;
-	return { top: rect.top + scrollTop, left: rect.left + scrollLeft };
+var getOffset = function getOffset() {
+  var el = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+  if (!el) {
+    return false;
+  }
+  var rect = el.getBoundingClientRect();
+  var scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  return {
+    top: rect.top + scrollTop,
+    left: rect.left + scrollLeft
+  };
 };
 
 /**
@@ -13569,27 +13427,44 @@ const getOffset = function (el = null) {
  *
  * @param {string} id The Ajax Load More ID.
  */
-const click = function (id = '') {
-	let alm = document.querySelector('.ajax-load-more-wrap');
-	let button = '';
-	if (!id && alm) {
-		// Default ALM element.
-		button = alm.querySelector('button.alm-load-more-btn');
-		if (button) {
-			button.click();
-		}
-	} else {
-		// Ajax Load More by ID.
-		alm = document.querySelector(`.ajax-load-more-wrap[data-id="${id}"]`);
-		if (alm) {
-			button = alm.querySelector('button.alm-load-more-btn');
-			if (button) {
-				button.click();
-			}
-		}
-	}
+var click = function click() {
+  var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var alm = document.querySelector('.ajax-load-more-wrap');
+  var button = '';
+  if (!id && alm) {
+    // Default ALM element.
+    button = alm.querySelector('button.alm-load-more-btn');
+    if (button) {
+      button.click();
+    }
+  } else {
+    // Ajax Load More by ID.
+    alm = document.querySelector(".ajax-load-more-wrap[data-id=\"".concat(id, "\"]"));
+    if (alm) {
+      button = alm.querySelector('button.alm-load-more-btn');
+      if (button) {
+        button.click();
+      }
+    }
+  }
 };
 
+/**
+ * Load ALM inside the WP Block Editor.
+ *
+ * @since 7.1.0
+ * @param {Element} instance The HTML element.
+ */
+var wpblock = function wpblock(instance) {
+  var listing = instance.querySelector('.alm-listing');
+  if (!listing || instance.dataset.blockLoaded === 'true') {
+    return; // Exit if does not exist or block already loaded.
+  }
+
+  instance.dataset.blockLoaded = 'true';
+  listing.dataset.scroll = 'false'; // Remove scroll.
+  start(instance);
+};
 }();
 ajaxloadmore = __webpack_exports__;
 /******/ })()

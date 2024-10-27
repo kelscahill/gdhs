@@ -92,7 +92,7 @@
     top: 0;
     bottom: 0;
     margin: auto 0;
-    width: calc(50% - 40px);
+    width: calc(50% - 52px);
     position: absolute;
   }
 
@@ -104,12 +104,18 @@
     right: 0;
   }
 
+  &-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: rem(8);
+  }
+
   a {
     display: block;
     width: rem(40);
     height: rem(40);
     border: 1px solid $gray;
-    margin: 0 auto;
     text-align: center;
 
     .u-icon {

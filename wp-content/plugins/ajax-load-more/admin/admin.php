@@ -109,7 +109,7 @@ function alm_admin_menu() {
 	$alm_page = add_menu_page(
 		'Ajax Load More',
 		'Ajax Load More',
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more',
 		'alm_settings_page',
 		alm_admin_menu_icon_svg()
@@ -120,7 +120,7 @@ function alm_admin_menu() {
 		'ajax-load-more',
 		__( 'Settings', 'ajax-load-more' ),
 		__( 'Settings', 'ajax-load-more' ),
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more',
 		'alm_settings_page'
 	);
@@ -136,7 +136,7 @@ function alm_admin_menu() {
 		'ajax-load-more',
 		__( 'Templates', 'ajax-load-more' ),
 		__( 'Templates', 'ajax-load-more' ),
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more-repeaters',
 		'alm_repeater_page'
 	);
@@ -152,7 +152,7 @@ function alm_admin_menu() {
 		'ajax-load-more',
 		__( 'Shortcode Builder', 'ajax-load-more' ),
 		__( 'Shortcode Builder', 'ajax-load-more' ),
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more-shortcode-builder',
 		'alm_shortcode_builder_page'
 	);
@@ -168,7 +168,7 @@ function alm_admin_menu() {
 		'ajax-load-more',
 		__( 'Filters', 'ajax-load-more' ),
 		$before_link . __( 'Filters', 'ajax-load-more' ) . $after_link,
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more-filters',
 		'alm_filters_page'
 	);
@@ -185,7 +185,7 @@ function alm_admin_menu() {
 			'ajax-load-more',
 			__( 'Cache', 'ajax-load-more' ),
 			__( 'Cache', 'ajax-load-more' ),
-			'edit_theme_options',
+			apply_filters( 'alm_user_role', 'edit_theme_options' ),
 			'ajax-load-more-cache',
 			'alm_cache_page'
 		);
@@ -205,7 +205,7 @@ function alm_admin_menu() {
 			'ajax-load-more',
 			__( 'WooCommerce', 'ajax-load-more' ),
 			__( 'WooCommerce', 'ajax-load-more' ),
-			'edit_theme_options',
+			apply_filters( 'alm_user_role', 'edit_theme_options' ),
 			'ajax-load-more-woocommerce',
 			'alm_woocommerce_page'
 		);
@@ -225,7 +225,7 @@ function alm_admin_menu() {
 			'ajax-load-more',
 			__( 'Add-ons', 'ajax-load-more' ),
 			$before_link . __( 'Add-ons', 'ajax-load-more' ) . $after_link,
-			'edit_theme_options',
+			apply_filters( 'alm_user_role', 'edit_theme_options' ),
 			'ajax-load-more-add-ons',
 			'alm_add_ons_page'
 		);
@@ -245,7 +245,7 @@ function alm_admin_menu() {
 		'ajax-load-more',
 		__( 'Extensions', 'ajax-load-more' ),
 		$alm_extensions_page_before . __( 'Extensions', 'ajax-load-more' ) . $alm_extensions_page_after,
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more-extensions',
 		'alm_extensions_page'
 	);
@@ -262,7 +262,7 @@ function alm_admin_menu() {
 			'ajax-load-more',
 			__( 'Pro', 'ajax-load-more' ),
 			$before_link . '<span class="dashicons dashicons-plus-alt" ' . $style_link_icon . '></span> ' . __( 'Pro', 'ajax-load-more' ) . $after_link,
-			'edit_theme_options',
+			apply_filters( 'alm_user_role', 'edit_theme_options' ),
 			'ajax-load-more-pro',
 			'alm_pro_page'
 		);
@@ -277,7 +277,7 @@ function alm_admin_menu() {
 			'ajax-load-more',
 			__( 'Pro', 'ajax-load-more' ),
 			$before_link . '<span class="dashicons dashicons-plus-alt" ' . $style_link_icon . '></span> ' . __( 'Go Pro', 'ajax-load-more' ) . $after_link,
-			'edit_theme_options',
+			apply_filters( 'alm_user_role', 'edit_theme_options' ),
 			'ajax-load-more-go-pro',
 			'alm_go_pro_page'
 		);
@@ -294,7 +294,7 @@ function alm_admin_menu() {
 		'ajax-load-more',
 		$license_title,
 		$before_link . $license_title . $after_link,
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more-licenses',
 		'alm_licenses_page'
 	);
@@ -310,7 +310,7 @@ function alm_admin_menu() {
 		'ajax-load-more',
 		__( 'Help', 'ajax-load-more' ),
 		__( 'Help', 'ajax-load-more' ),
-		'edit_theme_options',
+		apply_filters( 'alm_user_role', 'edit_theme_options' ),
 		'ajax-load-more-help',
 		'alm_help_page'
 	);
@@ -527,7 +527,7 @@ function alm_enqueue_admin_scripts() {
 
 	// CodeMirror Syntax Highlighting if on Repater Template page.
 	$screen = get_current_screen();
-	if ( in_array( $screen->id, array( 'ajax-load-more_page_ajax-load-more-repeaters' ), true ) ) {
+	if ( in_array( $screen->id, [ 'ajax-load-more_page_ajax-load-more-repeaters' ], true ) ) {
 		// CodeMirror CSS.
 		wp_enqueue_style( 'alm-codemirror-css', ALM_ADMIN_URL . 'codemirror/lib/codemirror.css', '', ALM_VERSION );
 
@@ -599,12 +599,13 @@ function alm_get_tax_terms() {
 	$taxonomy = isset( $form_data['taxonomy'] ) ? esc_attr( $form_data['taxonomy'] ) : '';
 	$index    = isset( $form_data['index'] ) ? esc_attr( $form_data['index'] ) : '1';
 	$tax_args = [
+		'taxonomy'   => $taxonomy,
 		'orderby'    => 'name',
 		'order'      => 'ASC',
 		'hide_empty' => false,
 	];
 
-	$terms = get_terms( $taxonomy, $tax_args );
+	$terms = get_terms( $tax_args );
 	$value = '';
 	if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 		$value .= '<ul>';
@@ -644,19 +645,18 @@ function alm_admin_menu_icon_svg( $base64 = true ) {
 /**
  * Filter the WP Admin footer text only on ALM pages
  *
- * @param string $text The existing footer text.
+ * @param string $text The footer display text.
  * @since 2.12.0
  */
 function alm_filter_admin_footer_text( $text ) {
-	$screen = alm_is_admin_screen();
-
-	if ( ! $screen ) {
-		return;
+	if ( ! alm_is_admin_screen() ) {
+		return $text;
 	}
 
-	echo '<strong>Ajax Load More</strong> is made with <span style="color: #e25555;">♥</span> by <a href="https://connekthq.com" target="_blank" style="font-weight: 500;">Connekt</a> | <a href="https://wordpress.org/support/plugin/ajax-load-more/reviews/" target="_blank" style="font-weight: 500;">Leave a Review</a> | <a href="https://connekthq.com/plugins/ajax-load-more/support/" target="_blank" style="font-weight: 500;">Get Support</a>';
+	$text = '<strong>Ajax Load More</strong> is made with <span style="color: #e25555;">♥</span> by <a href="https://connekthq.com" target="_blank" style="font-weight: 500;">Connekt</a> | <a href="https://wordpress.org/support/plugin/ajax-load-more/reviews/" target="_blank" style="font-weight: 500;">Leave a Review</a> | <a href="https://connekthq.com/plugins/ajax-load-more/support/" target="_blank" style="font-weight: 500;">Get Support</a>';
 	if ( ! has_action( 'alm_pro_installed' ) ) {
-		echo ' | <a href="https://connekthq.com/plugins/ajax-load-more/pro/" target="_blank" style="font-weight: 500;">Go Pro</a>';
+		$text .= ' | <a href="https://connekthq.com/plugins/ajax-load-more/pro/" target="_blank" style="font-weight: 500;">Go Pro</a>';
 	}
+	return wp_kses_post( $text );
 }
 add_filter( 'admin_footer_text', 'alm_filter_admin_footer_text' ); // Admin menu text.

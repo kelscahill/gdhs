@@ -2,20 +2,20 @@
 /**
  * Plugin Name: Ajax Load More
  * Plugin URI: https://connekthq.com/plugins/ajax-load-more
- * Description: The ultimate solution to add infinite scroll functionality to your website.
+ * Description: The ultimate solution to add infinite scroll and load more functionality to your website.
  * Text Domain: ajax-load-more
  * Author: Darren Cooney
  * Twitter: @KaptonKaos
  * Author URI: https://connekthq.com
- * Version: 6.1.0.1
+ * Version: 7.1.3
  * License: GPL
  * Copyright: Darren Cooney & Connekt Media
  *
  * @package AjaxLoadMore
  */
 
-define( 'ALM_VERSION', '6.1.0.1' );
-define( 'ALM_RELEASE', 'August 8, 2023' );
+define( 'ALM_VERSION', '7.1.3' );
+define( 'ALM_RELEASE', 'October 1, 2024' );
 define( 'ALM_STORE_URL', 'https://connekthq.com' );
 
 // Plugin installation helpers.
@@ -32,7 +32,7 @@ function alm_install( $network_wide ) {
 	add_option( 'alm_version', ALM_VERSION ); // Add setting to options table.
 	if ( is_multisite() && $network_wide ) {
 		// Get all blogs in the network and activate plugin on each one.
-		$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
+		$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" ); // phpcs:ignore
 		foreach ( $blog_ids as $blog_id ) {
 			switch_to_blog( $blog_id );
 			alm_create_table();
@@ -65,16 +65,19 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 		public function __construct() {
 			$this->alm_define_constants();
 			$this->alm_includes();
+
 			add_action( 'wp_ajax_alm_get_posts', [ &$this, 'alm_query_posts' ] );
 			add_action( 'wp_ajax_nopriv_alm_get_posts', [ &$this, 'alm_query_posts' ] );
 			add_action( 'wp_enqueue_scripts', [ &$this, 'alm_enqueue_scripts' ] );
 			add_action( 'after_setup_theme', [ &$this, 'alm_image_sizes' ] );
+
 			add_filter( 'alm_noscript', [ &$this, 'alm_noscript' ], 10, 6 );
 			add_filter( 'alm_noscript_pagination', [ &$this, 'alm_noscript_pagination' ], 10, 3 );
 			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), [ &$this, 'alm_action_links' ] );
 			add_filter( 'plugin_row_meta', [ &$this, 'alm_plugin_meta_links' ], 10, 2 );
-			add_shortcode( 'ajax_load_more', [ &$this, 'alm_shortcode' ] );
 			add_filter( 'widget_text', 'do_shortcode' );
+
+			add_shortcode( 'ajax_load_more', [ &$this, 'alm_shortcode' ] );
 			load_plugin_textdomain( 'ajax-load-more', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
 		}
 
@@ -85,6 +88,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 		 */
 		public function alm_includes() {
 			require_once ALM_PATH . 'core/functions.php'; // Load Core Functions.
+			require_once ALM_PATH . 'core/classes/class-alm-blocks.php'; // Load Block Class.
 			require_once ALM_PATH . 'core/classes/class-alm-shortcode.php'; // Load Shortcode Class.
 			require_once ALM_PATH . 'core/classes/class-alm-woocommerce.php'; // Load Woocommerce Class.
 			require_once ALM_PATH . 'core/classes/class-alm-enqueue.php'; // Load Enqueue Class.
@@ -97,8 +101,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 				require_once 'admin/admin-functions.php';
 				require_once 'admin/vendor/connekt-plugin-installer/class-connekt-plugin-installer.php';
 				if ( ! class_exists( 'EDD_SL_Plugin_Updater' ) ) {
-					// Only include this EDD helper if other plugins have not.
-					require_once dirname( __FILE__ ) . '/core/libs/EDD_SL_Plugin_Updater.php';
+					require_once __DIR__ . '/core/libs/EDD_SL_Plugin_Updater.php'; // Include EDD helper if other plugins have not.
 				}
 			}
 		}
@@ -121,6 +124,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 			define( 'ALM_CSS_PATH', ALM_PATH . 'build/frontend/ajax-load-more' . $suffix . '.css' );
 			define( 'ALM_CSS_URL', ALM_URL . '/build/frontend/ajax-load-more' . $suffix . '.css' );
+			define( 'ALM_CORE_JS_URL', ALM_URL . '/build/frontend/ajax-load-more' . $suffix . '.js' );
 
 			// Add-on constants.
 			if ( ! defined( 'ALM_CACHE_ITEM_NAME' ) ) {
@@ -158,6 +162,9 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			}
 			if ( ! defined( 'ALM_TABS_ITEM_NAME' ) ) {
 				define( 'ALM_TABS_ITEM_NAME', '54855' );
+			}
+			if ( ! defined( 'ALM_TEMPLATES_ITEM_NAME' ) ) {
+				define( 'ALM_TEMPLATES_ITEM_NAME', '0000' );
 			}
 			if ( ! defined( 'ALM_THEME_REPEATERS_ITEM_NAME' ) ) {
 				define( 'ALM_THEME_REPEATERS_ITEM_NAME', '8860' );
@@ -368,25 +375,46 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			wp_localize_script(
 				'ajax-load-more',
 				'alm_localize',
-				[
-					'version'         => ALM_VERSION,
-					'ajaxurl'         => apply_filters( 'alm_ajaxurl', admin_url( 'admin-ajax.php' ) ),
-					'alm_nonce'       => wp_create_nonce( 'ajax_load_more_nonce' ),
-					'rest_api'        => esc_url_raw( rest_url() ),
-					'rest_nonce'      => wp_create_nonce( 'wp_rest' ),
-					'trailing_slash'  => substr( get_option( 'permalink_structure' ), -1 ) === '/' ? 'true' : 'false', // Trailing slash in permalink structure.
-					'is_front_page'   => is_home() || is_front_page() ? 'true' : 'false',
-					'pluginurl'       => ALM_URL,
-					'speed'           => apply_filters( 'alm_speed', 200 ),
-					'ga_debug'        => apply_filters( 'alm_ga_debug', 'false' ),
-					'results_text'    => apply_filters( 'alm_display_results', __( 'Viewing {post_count} of {total_posts} results.', 'ajax-load-more' ) ),
-					'no_results_text' => apply_filters( 'alm_no_results_text', __( 'No results found.', 'ajax-load-more' ) ),
-					'alm_debug'       => apply_filters( 'alm_debug', false ),
-					'a11y_focus'      => apply_filters( 'alm_a11y_focus', true ),
-					'site_title'      => get_bloginfo( 'name' ),
-					'site_tagline'    => get_bloginfo( 'description' ),
-				]
+				$this->alm_get_localized_defaults()
 			);
+		}
+
+		/**
+		 * Localized JS variables.
+		 *
+		 * @return array
+		 */
+		public static function alm_get_localized_defaults() {
+			return [
+				'pluginurl'          => ALM_URL,
+				'version'            => ALM_VERSION,
+				'adminurl'           => get_admin_url(),
+				'ajaxurl'            => apply_filters( 'alm_ajaxurl', admin_url( 'admin-ajax.php' ) ),
+				'alm_nonce'          => wp_create_nonce( 'ajax_load_more_nonce' ),
+				'rest_api_url'       => apply_filters( 'alm_restapi_url', '' ),
+				'rest_api'           => esc_url_raw( rest_url() ),
+				'rest_nonce'         => wp_create_nonce( 'wp_rest' ),
+				'trailing_slash'     => substr( get_option( 'permalink_structure' ), -1 ) === '/' ? 'true' : 'false', // Trailing slash in permalink structure.
+				'is_front_page'      => is_home() || is_front_page() ? 'true' : 'false',
+				'retain_querystring' => apply_filters( 'alm_retain_querystring', true ),
+				'speed'              => apply_filters( 'alm_speed', 250 ),
+				'results_text'       => apply_filters( 'alm_display_results', __( 'Viewing {post_count} of {total_posts} results.', 'ajax-load-more' ) ),
+				'no_results_text'    => apply_filters( 'alm_no_results_text', __( 'No results found.', 'ajax-load-more' ) ),
+				'alm_debug'          => apply_filters( 'alm_debug', false ),
+				'a11y_focus'         => apply_filters( 'alm_a11y_focus', true ),
+				'site_title'         => get_bloginfo( 'name' ),
+				'site_tagline'       => get_bloginfo( 'description' ),
+				'button_label'       => self::alm_default_button_label(),
+			];
+		}
+
+		/**
+		 * Get default button label.
+		 *
+		 * @since 7.0.0
+		 */
+		public static function alm_default_button_label() {
+			return apply_filters( 'alm_button_label', __( 'Load More', 'ajax-load-more' ) );
 		}
 
 		/**
@@ -425,7 +453,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			$id            = isset( $params['id'] ) ? $params['id'] : '';
 			$post_id       = isset( $params['post_id'] ) ? $params['post_id'] : '';
 			$slug          = isset( $params['slug'] ) ? $params['slug'] : '';
-			$canonical_url = isset( $params['canonical_url'] ) ? esc_url( $params['canonical_url'] ) : esc_url( $_SERVER['HTTP_REFERER'] );
+			$canonical_url = isset( $params['canonical_url'] ) ? esc_attr( $params['canonical_url'] ) : esc_url( $_SERVER['HTTP_REFERER'] ); // phpcs:ignore
 
 			// Ajax Query Type.
 			$query_type = isset( $params['query_type'] ) ? $params['query_type'] : 'standard'; // 'standard' or 'totalposts' - totalposts returns $alm_found_posts.
@@ -604,8 +632,8 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 					while ( $alm_query->have_posts() ) :
 						$alm_query->the_post();
 
-						$alm_loop_count++;
-						$alm_current++; // Current item in loop.
+						++$alm_loop_count;
+						++$alm_current; // Current item in loop.
 						$alm_page = $alm_page_count; // Get page number.
 						$alm_item = ( $alm_page_count * $posts_per_page ) - $posts_per_page + $alm_loop_count;
 
@@ -629,14 +657,6 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 
 					$data = ob_get_clean();
 
-					/**
-					 * Cache Add-on.
-					 * Create the cache file.
-					 */
-					if ( $cache_id && method_exists( 'ALMCache', 'create_cache_file' ) && $do_create_cache ) {
-						ALMCache::create_cache_file( $cache_id, $cache_slug, $canonical_url, $data, $alm_current, $alm_found_posts );
-					}
-
 					$return = [
 						'html' => $data,
 						'meta' => [
@@ -647,8 +667,18 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 					];
 
 					// Get filter facet options.
+					$facets = [];
 					if ( $is_filters && $filters_target && $filters_facets && function_exists( 'alm_filters_get_facets' ) ) {
-						$return['facets'] = alm_filters_get_facets( $args, $filters_target );
+						$facets = alm_filters_get_facets( $args, $filters_target );
+						$return['facets'] = $facets;
+					}
+
+					/**
+					 * Cache Add-on.
+					 * Create the cache file.
+					 */
+					if ( $cache_id && method_exists( 'ALMCache', 'create_cache_file' ) && $do_create_cache ) {
+						ALMCache::create_cache_file( $cache_id, $cache_slug, $canonical_url, $data, $alm_current, $alm_found_posts, $facets );
 					}
 
 					wp_send_json( $return );

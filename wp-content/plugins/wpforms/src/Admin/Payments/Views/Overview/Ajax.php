@@ -29,6 +29,15 @@ class Ajax {
 	private $table_name;
 
 	/**
+	 * Temporary storage for the stat cards.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @var array
+	 */
+	private $stat_cards;
+
+	/**
 	 * Hooks.
 	 *
 	 * @since 1.8.2
@@ -74,13 +83,16 @@ class Ajax {
 		list( $start_date, $end_date, $utc_start_date, $utc_end_date ) = $timespans;
 
 		// Payment table name.
-		$this->table_name = wpforms()->get( 'payment' )->table_name;
+		$this->table_name = wpforms()->obj( 'payment' )->table_name;
+
+		// Get the stat cards.
+		$this->stat_cards = Chart::stat_cards();
 
 		// Get the payments in the given timespan.
 		$results = $this->get_payments_in_timespan( $utc_start_date, $utc_end_date, $report );
 
 		// In case the database's results were empty, leave early.
-		if ( empty( $results ) ) {
+		if ( $report === Chart::ACTIVE_REPORT && empty( $results ) ) {
 			wp_send_json_error( $fallback );
 		}
 
@@ -140,24 +152,20 @@ class Ajax {
 		// Get the database instance.
 		global $wpdb;
 
-		// Additional (optional) where clause query arguments.
-		$where_args = [];
-
 		// SELECT clause to construct the SQL statement.
 		$column_clause = $this->get_stats_column_clause( $report );
 
-		// Determine whether the query has to be considered with a payment type.
-		if ( isset( Chart::stat_cards()[ $report ]['type'] ) ) {
-			$where_args['type'] = Chart::stat_cards()[ $report ]['type'];
-		}
+		// JOIN clause to construct the SQL statement for metadata.
+		$join_by_meta = $this->add_join_by_meta( $report );
 
 		// WHERE clauses for items query statement.
-		$where_clause = $this->get_stats_where_clause( $report, $where_args );
+		$where_clause = $this->get_stats_where_clause( $report );
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT date_created_gmt as day, $column_clause as count FROM $this->table_name WHERE 1=1 $where_clause AND date_created_gmt BETWEEN %s AND %s GROUP BY day ORDER BY day ASC",
+				"SELECT date_created_gmt AS day, $column_clause AS count FROM $this->table_name AS p {$join_by_meta}
+					WHERE 1=1 $where_clause AND date_created_gmt BETWEEN %s AND %s GROUP BY day ORDER BY day ASC",
 				[
 					$utc_start_date->format( Datepicker::DATETIME_FORMAT ),
 					$utc_end_date->format( Datepicker::DATETIME_FORMAT ),
@@ -165,7 +173,7 @@ class Ajax {
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 
 	/**
@@ -195,23 +203,16 @@ class Ajax {
 
 		list( $clause, $query ) = $this->prepare_sql_summary_reports( $utc_start_date, $utc_end_date );
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$group_by = Chart::ACTIVE_REPORT;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$results  = $wpdb->get_row(
 			"SELECT $clause FROM (SELECT $query) AS results GROUP BY $group_by",
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		// Further modifications to the result array.
-		$results['total_sales'] = $this->format_amount( $results['total_sales'] );
-
-		// Format total subscriptions.
-		if ( isset( $results['total_subscription'] ) ) {
-			$results['total_subscription'] = $this->format_amount( $results['total_subscription'] );
-		}
-
-		return $results;
+		return $this->maybe_format_amounts( $results );
 	}
 
 	/**
@@ -228,11 +229,8 @@ class Ajax {
 	 */
 	private function prepare_sql_summary_reports( $start_date, $end_date ) {
 
-		// Get the report stat cards.
-		$reports = Chart::stat_cards();
-
 		// In case there are no report stat cards defined, leave early.
-		if ( empty( $reports ) ) {
+		if ( empty( $this->stat_cards ) ) {
 			return [ '', '' ];
 		}
 
@@ -256,7 +254,7 @@ class Ajax {
 		$currency_decimals = wpforms_get_currency_decimals( $current_currency );
 
 		// Loop through the reports and create the SQL statements.
-		foreach ( $reports as $report => $attributes ) {
+		foreach ( $this->stat_cards as $report => $attributes ) {
 
 			// Skip stat card, if it's not supposed to be displayed or disabled (upsell).
 			if (
@@ -269,20 +267,14 @@ class Ajax {
 			// Determine whether the number of rows has to be counted.
 			$has_count = isset( $attributes['has_count'] ) && $attributes['has_count'];
 
-			// Additional (optional) where clause query arguments.
-			$where_args = [];
-
 			// SELECT clause to construct the SQL statement.
 			$column_clause = $this->get_stats_column_clause( $report, $has_count );
 
-			// Update WHERE clauses for specific items in the query statement.
-			if ( isset( $attributes['type'] ) ) {
-				// If the report is a subscription report, use the subscription WHERE clause.
-				$where_args['type'] = $attributes['type'];
-			}
+			// JOIN clause to construct the SQL statement for metadata.
+			$join_by_meta = $this->add_join_by_meta( $report );
 
 			// WHERE clauses for items query statement.
-			$where_clause = $this->get_stats_where_clause( $report, $where_args );
+			$where_clause = $this->get_stats_where_clause( $report );
 
 			// Get the current and previous values for the report.
 			$current_value = "TRUNCATE($report,$currency_decimals)";
@@ -296,12 +288,14 @@ class Ajax {
 			$query[] = $wpdb->prepare(
 				"(
 					SELECT $column_clause
-					FROM $this->table_name
+					FROM $this->table_name AS p
+					{$join_by_meta}
 					WHERE 1=1 $where_clause AND date_created_gmt BETWEEN %s AND %s
 				) AS $report,
 				(
 					SELECT $column_clause
-					FROM $this->table_name
+					FROM $this->table_name AS p
+					{$join_by_meta}
 					WHERE 1=1 $where_clause AND date_created_gmt BETWEEN %s AND %s
 				) AS {$report}_prev",
 				[
@@ -323,34 +317,80 @@ class Ajax {
 	/**
 	 * Helper method to build where clause used to construct the SQL statement.
 	 *
-	 * @global wpdb $wpdb Instantiation of the wpdb class.
-	 *
 	 * @since 1.8.2
 	 *
 	 * @param string $report Payment summary stat card name. i.e. "total_payments".
-	 * @param array  $args   Array of arguments to filter the query.
 	 *
 	 * @return string
 	 */
-	private function get_stats_where_clause( $report, $args = [] ) {
-
-		// Get the database instance.
-		global $wpdb;
+	private function get_stats_where_clause( $report ) {
 
 		// Get the default WHERE clause from the Payments database class.
-		$clause = wpforms()->get( 'payment' )->add_secondary_where_conditions( $args );
+		$clause = wpforms()->obj( 'payment' )->add_secondary_where_conditions();
 
-		// If it's a valid type, add it to a WHERE clause.
-		if ( isset( $args['type'] ) && ValueValidator::is_valid( $args['type'], 'type' ) ) {
-			$clause .= $wpdb->prepare( ' AND type = %s', $args['type'] );
+		// If the report doesn't have any additional funnel arguments, leave early.
+		if ( ! isset( $this->stat_cards[ $report ]['funnel'] ) ) {
+			return $clause;
 		}
 
-		// If the coupon stats are being viewed, then add it to a WHERE clause.
-		if ( $report === 'total_coupons' ) {
-			$table_name = wpforms()->get( 'payment_meta' )->table_name;
+		// Get the where arguments for the report.
+		$where_args = (array) $this->stat_cards[ $report ]['funnel'];
 
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
-			$clause .= $wpdb->prepare( ' AND id IN ( SELECT payment_id FROM %1$s WHERE meta_key = "coupon_id" )', $table_name );
+		// If the where arguments are empty, leave early.
+		if ( empty( $where_args ) ) {
+			return $clause;
+		}
+
+		return $this->prepare_sql_where_clause( $where_args, $clause );
+	}
+
+	/**
+	 * Prepare SQL where clause for the given funnel arguments.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param array  $where_args Array of where arguments.
+	 * @param string $clause     SQL where clause.
+	 *
+	 * @return string
+	 */
+	private function prepare_sql_where_clause( $where_args, $clause ) {
+
+		$allowed_funnels = [ 'in', 'not_in' ];
+
+		$filtered_where_args = array_filter(
+			$where_args,
+			static function ( $key ) use ( $allowed_funnels ) {
+
+				return in_array( $key, $allowed_funnels, true );
+			},
+			ARRAY_FILTER_USE_KEY
+		);
+
+		// Leave early if the filtered where arguments are empty.
+		if ( empty( $filtered_where_args ) ) {
+			return $clause;
+		}
+
+		// Loop through the where arguments and add them to the clause.
+		foreach ( $filtered_where_args as $operator => $columns ) {
+			foreach ( $columns as $column => $values ) {
+				if ( ! is_array( $values ) ) {
+					continue;
+				}
+
+				// Skip if the value is not valid.
+				$valid_values = array_filter(
+					$values,
+					static function ( $item ) use ( $column ) {
+
+						return ValueValidator::is_valid( $item, $column );
+					}
+				);
+
+				$placeholders = wpforms_wpdb_prepare_in( $valid_values );
+				$clause      .= $operator === 'in' ? " AND {$column} IN ({$placeholders})" : " AND {$column} NOT IN ({$placeholders})";
+			}
 		}
 
 		return $clause;
@@ -372,6 +412,11 @@ class Ajax {
 		// Count the number of rows as fast as possible.
 		$default = 'COUNT(*)';
 
+		// If the report has a meta key, then count the number of unique rows for the meta table.
+		if ( isset( $this->stat_cards[ $report ]['meta_key'] ) ) {
+			$default = 'COUNT(pm.id)';
+		}
+
 		/**
 		 * Filters the column clauses for the stat cards.
 		 *
@@ -382,10 +427,12 @@ class Ajax {
 		$clauses = (array) apply_filters(
 			'wpforms_admin_payments_views_overview_ajax_stats_column_clauses',
 			[
-				'total_payments'     => "FORMAT({$default},0)",
-				'total_sales'        => 'IFNULL(SUM(total_amount),0)',
-				'total_subscription' => 'IFNULL(SUM(total_amount),0)',
-				'total_coupons'      => "FORMAT({$default},0)",
+				'total_payments'             => "FORMAT({$default},0)",
+				'total_sales'                => 'IFNULL(SUM(total_amount),0)',
+				'total_refunded'             => 'IFNULL(SUM(pm.meta_value),0)',
+				'total_subscription'         => 'IFNULL(SUM(total_amount),0)',
+				'total_renewal_subscription' => 'IFNULL(SUM(total_amount),0)',
+				'total_coupons'              => "FORMAT({$default},0)",
 			]
 		);
 
@@ -397,6 +444,35 @@ class Ajax {
 		}
 
 		return $clause;
+	}
+
+	/**
+	 * Add join by meta table.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param string $report Stats card chart type (name). i.e. "total_payments".
+	 *
+	 * @return string
+	 */
+	private function add_join_by_meta( $report ) {
+
+		// Leave early if the meta key is empty.
+		if ( ! isset( $this->stat_cards[ $report ]['meta_key'] ) ) {
+			return '';
+		}
+
+		// Retrieve the global database instance.
+		global $wpdb;
+
+		// Retrieve the meta table name.
+		$meta_table_name = wpforms()->obj( 'payment_meta' )->table_name;
+
+		return $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"LEFT JOIN {$meta_table_name} AS pm ON p.id = pm.payment_id AND pm.meta_key = %s",
+			$this->stat_cards[ $report ]['meta_key']
+		);
 	}
 
 	/**
@@ -419,36 +495,53 @@ class Ajax {
 	}
 
 	/**
-	 * Format the amount for the stat card.
+	 * Maybe format the amounts for the given stat cards.
 	 *
-	 * @since 1.8.2
+	 * @since 1.8.4
 	 *
-	 * @param string $input The input to be formatted.
+	 * @param array $results Query results.
 	 *
-	 * @return string
+	 * @return array
 	 */
-	private function format_amount( $input ) {
+	private function maybe_format_amounts( $results ) {
 
 		// If the input is empty, leave early.
-		if ( empty( $input ) ) {
-			return '';
+		if ( empty( $results ) ) {
+			return [];
 		}
 
-		// Format the given amount and split the input by space.
-		$amount    = wpforms_format_amount( $input, true );
-		$input_arr = (array) explode( ' ', $input );
+		foreach ( $results as $key => $value ) {
+			// If the given stat card doesn't have a button class, leave early.
+			// If the given stat card doesn't have a button class of "is-amount," leave early.
+			if ( ! isset( $this->stat_cards[ $key ]['button_classes'] ) || ! in_array( 'is-amount', $this->stat_cards[ $key ]['button_classes'], true ) ) {
+				continue;
+			}
 
-		// If the input is an array with more than one element,
-		// format the amount with the concatenation of count in parentheses.
-		// Example: 2185.52000000 (79).
-		if ( isset( $input_arr[1] ) ) {
-			return sprintf(
+			// Split the input by space to look for the count.
+			$input_arr = (array) explode( ' ', $value );
+
+			// If the given stat card doesn't have a count, leave early.
+			if ( empty( $this->stat_cards[ $key ]['has_count'] ) || ! isset( $input_arr[1] ) ) {
+				// Format the given amount and split the input by space.
+				$results[ $key ] = wpforms_format_amount( $value, true );
+
+				continue;
+			}
+
+			// The fields are stored as a `decimal` in the DB, and appears here as the string.
+			// But all strings values, passed to wpforms_format_amount() are sanitized.
+			// There is no need to sanitize it, as it is already a regular numeric string.
+			$amount = wpforms_format_amount( (float) ( $input_arr[0] ?? $value ), true );
+
+			// Format the amount with the concatenation of count in parentheses.
+			// Example: 2185.52000000 (79).
+			$results[ $key ] = sprintf(
 				'%s <span>%s</span>',
 				esc_html( $amount ),
 				esc_html( $input_arr[1] ) // 1: Would be count of the records.
 			);
 		}
 
-		return $amount;
+		return $results;
 	}
 }

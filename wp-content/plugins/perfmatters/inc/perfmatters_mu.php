@@ -3,7 +3,7 @@
 Plugin Name: Perfmatters MU
 Plugin URI: https://perfmatters.io/
 Description: Perfmatters is a lightweight performance plugin developed to speed up your WordPress site.
-Version: 2.0.5
+Version: 2.0.2
 Author: forgemedia
 Author URI: https://forgemedia.io/
 License: GPLv2 or later
@@ -533,9 +533,9 @@ function perfmatters_url_to_postid($url) {
                 * custom query_var set ie query_var => 'acme_books'.
                 *************************************************************************/
 
-                if(isset($post_types)) {
+                if(isset($post_types)){
 
-                    foreach($rewrite as $key => $value) {
+                    foreach ($rewrite as $key => $value) {
 
                         if(!is_string($value)) {
                             continue;
@@ -543,30 +543,27 @@ function perfmatters_url_to_postid($url) {
 
                         if(preg_match('/\?([^&]+)=([^&]+)/i', $value, $matched)) {
 
-                            if(isset($matched[1]) && !in_array($matched[1], $post_types) && array_key_exists($matched[1], $query_vars)) {
+                            if(isset($matched[1]) && !in_array($matched[1], $post_types)) {
 
-                                $post_types[] = $matched[1];
-
-                                $args = array(
-                                    'name'      => $query_vars[$matched[1]],
-                                    'post_type' => $matched[1],
-                                    'showposts' => 1,
-                                );
-
-                                if($post = get_posts($args)) {
-                                    return $post[0]->ID;
+                                if(array_key_exists($matched[1], $query_vars)) {
+                                    $arg_name = $query_vars[$matched[1]];
                                 }
-                            }
-                            elseif(isset($matched[1]) && in_array($matched[1], $post_types) && !empty($query_vars['name'])) {
+                                elseif(!empty($query_vars['name'])) {
+                                    $arg_name = $query_vars['name'];
+                                }
 
-                                $args = array(
-                                    'name'      => $query_vars['name'],
-                                    'post_type' => $matched[1],
-                                    'showposts' => 1,
-                                );
+                                if(!empty($arg_name)) {
+                                    $post_types[] = $matched[1];
 
-                                if($post = get_posts($args)) {
-                                    return $post[0]->ID;
+                                    $args = array(
+                                            'name'      => $arg_name,
+                                            'post_type' => $matched[1],
+                                            'showposts' => 1,
+                                        );
+
+                                    if ( $post = get_posts( $args ) ) {
+                                        return $post[0]->ID;
+                                    }
                                 }
                             }
                         }

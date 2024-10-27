@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Register menu elements and do other global tasks.
  *
@@ -32,7 +36,7 @@ class WPForms_Admin_Menu {
 	public function register_menus() {
 
 		$manage_cap = wpforms_get_capability_manage_options();
-		$access     = wpforms()->get( 'access' );
+		$access     = wpforms()->obj( 'access' );
 
 		if ( ! method_exists( $access, 'get_menu_cap' ) ) {
 			return;
@@ -102,7 +106,7 @@ class WPForms_Admin_Menu {
 			'wpforms-overview',
 			esc_html__( 'WPForms Templates', 'wpforms-lite' ),
 			esc_html__( 'Form Templates', 'wpforms-lite' ),
-			$access->get_menu_cap( 'create_forms' ),
+			$access->get_menu_cap( 'edit_forms' ),
 			'wpforms-templates',
 			[ $this, 'admin_page' ]
 		);
@@ -142,7 +146,7 @@ class WPForms_Admin_Menu {
 			'wpforms-overview',
 			esc_html__( 'WPForms Addons', 'wpforms-lite' ),
 			'<span style="color:#f18500">' . esc_html__( 'Addons', 'wpforms-lite' ) . '</span>',
-			$manage_cap,
+			$access->get_menu_cap( 'edit_forms' ),
 			'wpforms-addons',
 			[ $this, 'admin_page' ]
 		);
@@ -283,7 +287,7 @@ class WPForms_Admin_Menu {
 
 		global $submenu;
 
-		// Bail if plugin menu is not registered.
+		// Bail if a plugin menu is not registered.
 		if ( ! isset( $submenu['wpforms-overview'] ) ) {
 			return;
 		}
@@ -293,7 +297,7 @@ class WPForms_Admin_Menu {
 				$submenu['wpforms-overview'],
 				static function( $item ) {
 
-					return strpos( $item[2], 'https://wpforms.com/lite-upgrade' ) !== false;
+					return strpos( urldecode( $item[2] ), 'wpforms.com/lite-upgrade' ) !== false;
 				}
 			)
 		);
@@ -350,29 +354,23 @@ class WPForms_Admin_Menu {
 	 */
 	public function settings_link( $links, $plugin_file, $plugin_data, $context ) {
 
-		$custom['pro'] = sprintf(
+		$custom['wpforms-pro'] = sprintf(
 			'<a href="%1$s" aria-label="%2$s" target="_blank" rel="noopener noreferrer"
 				style="color: #00a32a; font-weight: 700;"
 				onmouseover="this.style.color=\'#008a20\';"
 				onmouseout="this.style.color=\'#00a32a\';"
 				>%3$s</a>',
 			esc_url(
-				add_query_arg(
-					[
-						'utm_content'  => 'Get+WPForms+Pro',
-						'utm_campaign' => 'liteplugin',
-						'utm_medium'   => 'all-plugins',
-						'utm_source'   => 'WordPress',
-						'utm_locale'   => wpforms_sanitize_key( get_locale() ),
-					],
-					'https://wpforms.com/lite-upgrade/'
+				wpforms_admin_upgrade_link(
+					'all-plugins',
+					'Get WPForms Pro'
 				)
 			),
 			esc_attr__( 'Upgrade to WPForms Pro', 'wpforms-lite' ),
 			esc_html__( 'Get WPForms Pro', 'wpforms-lite' )
 		);
 
-		$custom['settings'] = sprintf(
+		$custom['wpforms-settings'] = sprintf(
 			'<a href="%s" aria-label="%s">%s</a>',
 			esc_url(
 				add_query_arg(
@@ -384,7 +382,7 @@ class WPForms_Admin_Menu {
 			esc_html__( 'Settings', 'wpforms-lite' )
 		);
 
-		$custom['docs'] = sprintf(
+		$custom['wpforms-docs'] = sprintf(
 			'<a href="%1$s" aria-label="%2$s" target="_blank" rel="noopener noreferrer">%3$s</a>',
 			esc_url(
 				add_query_arg(
@@ -423,7 +421,7 @@ class WPForms_Admin_Menu {
 	 */
 	public function admin_menu_styles() {
 
-		$styles = '#adminmenu .wpforms-menu-new { color: #f18500; vertical-align: super; font-size: 9px; font-weight: 600; padding-left: 2px; }';
+		$styles = '#adminmenu .wpforms-menu-new { display: inline-block; color: #f18500; vertical-align: super; font-size: 9px; font-weight: 600; padding-inline-start: 2px; }';
 
 		if ( ! wpforms()->is_pro() ) {
 			$styles .= 'a.wpforms-sidebar-upgrade-pro { background-color: #00a32a !important; color: #fff !important; font-weight: 600 !important; }';

@@ -18,7 +18,10 @@
       </div>
     </div>
     <div class="c-footer__social">
-      <a href="https://www.facebook.com/peggybancrofthall/" target="_blank"><span class="u-icon u-icon--s u-path-fill--white u-link--white">@include('patterns.icons.o-icon--facebook')<span></a>
+      <div class="c-footer__social-icons">
+        <a href="https://www.facebook.com/peggybancrofthall/" target="_blank"><span class="u-icon u-icon--s u-path-fill--white u-link--white">@include('patterns.icons.o-icon--facebook')<span></a>
+        <a href="https://www.youtube.com/@greene-dreherhistoricalsoc7326" target="_blank"><span class="u-icon u-icon--s u-path-fill--white u-link--white">@include('patterns.icons.o-icon--youtube')<span></a>
+      </div>
     </div>
     <div class="c-footer__copyright">
       @if (get_field('footer_annual_report', 'option'))

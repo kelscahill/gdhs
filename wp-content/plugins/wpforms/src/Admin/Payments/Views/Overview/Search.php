@@ -113,6 +113,7 @@ class Search {
 
 		add_filter( 'wpforms_db_payments_queries_count_all_query_before_where', [ $this, 'add_search_where_conditions' ], 10, 2 );
 		add_filter( 'wpforms_db_payments_payment_get_payments_query_before_where', [ $this, 'add_search_where_conditions' ], 10, 2 );
+		add_filter( 'wpforms_admin_payments_views_overview_filters_renewals_by_subscription_id_query_before_where', [ $this, 'add_search_where_conditions' ], 10, 2 );
 	}
 
 	/**
@@ -190,7 +191,7 @@ class Search {
 			return $this->select_from_any( $operator, $word, $n );
 		}
 
-		$payment_table = wpforms()->get( 'payment' )->table_name;
+		$payment_table = wpforms()->obj( 'payment' )->table_name;
 
 		$query = "SELECT id FROM {$payment_table} 
 					WHERE {$payment_table}.{$column} {$operator} {$word}";
@@ -295,8 +296,8 @@ class Search {
 
 		global $wpdb;
 
-		$payment_table = wpforms()->get( 'payment' )->table_name;
-		$meta_table    = wpforms()->get( 'payment_meta' )->table_name;
+		$payment_table = wpforms()->obj( 'payment' )->table_name;
+		$meta_table    = wpforms()->obj( 'payment_meta' )->table_name;
 		$meta_key      = $wpdb->prepare( '%s', $meta_key );
 
 		$query = "SELECT id FROM $payment_table
@@ -322,26 +323,22 @@ class Search {
 	 */
 	private function select_from_any( $operator, $word, $n ) {
 
-		$payment_table = wpforms()->get( 'payment' )->table_name;
-		$meta_table    = wpforms()->get( 'payment_meta' )->table_name;
+		$payment_table = wpforms()->obj( 'payment' )->table_name;
+		$meta_table    = wpforms()->obj( 'payment_meta' )->table_name;
 
 		$query = sprintf(
 			"SELECT id FROM {$payment_table}
-					WHERE {$payment_table}.%s {$operator} {$word}
-					UNION
-					SELECT id FROM {$payment_table}
-					WHERE {$payment_table}.%s {$operator} {$word}
-					UNION
-					SELECT id FROM {$payment_table}
-					WHERE {$payment_table}.%s {$operator} {$word}
-					UNION
-					SELECT id FROM {$payment_table}
-					WHERE id IN (
+				WHERE (
+					{$payment_table}.%s {$operator} {$word}
+					OR {$payment_table}.%s {$operator} {$word}
+					OR {$payment_table}.%s {$operator} {$word}
+					OR id IN (
 						SELECT DISTINCT payment_id
 						FROM {$meta_table}
 						WHERE meta_value {$operator} {$word}
-						AND meta_key IN ( '%s', '%s' ) 
-					)",
+						AND meta_key IN ( '%s', '%s' )
+					)
+				)",
 			self::TITLE,
 			self::TRANSACTION_ID,
 			self::SUBSCRIPTION_ID,
@@ -364,6 +361,18 @@ class Search {
 	 */
 	private function wrap_in_inner_join( $query, $n ) {
 
-		return sprintf( 'INNER JOIN ( %s ) AS p%2$d ON p.id = p%d.id', $query, $n );
+		/**
+		 * Filter to modify the inner join query.
+		 *
+		 * @since 1.8.4
+		 *
+		 * @param string $query Partial query.
+		 * @param int    $n     The number of the JOIN clause.
+		 */
+		return apply_filters(
+			'wpforms_admin_payments_views_overview_search_inner_join_query',
+			sprintf( 'INNER JOIN ( %1$s ) AS p%2$d ON p.id = p%2$d.id', $query, $n ),
+			$n
+		);
 	}
 }

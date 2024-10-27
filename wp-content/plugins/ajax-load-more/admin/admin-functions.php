@@ -29,7 +29,7 @@ function alm_is_admin_screen() {
  */
 function alm_has_addon_shortcodes() {
 	$installed = false;
-	$actions   = array(
+	$actions   = [
 		'alm_cache_installed',
 		'alm_cta_installed',
 		'alm_filters_installed',
@@ -41,7 +41,7 @@ function alm_has_addon_shortcodes() {
 		'alm_seo_installed',
 		'alm_single_post_installed',
 		'alm_users_installed',
-	);
+	];
 
 	// Loop actions to determine if add-on/extension is installed.
 	foreach ( $actions as $action ) {
@@ -65,11 +65,11 @@ function alm_has_addon_shortcodes() {
  */
 function alm_has_extension_shortcodes() {
 	$installed = false;
-	$actions   = array(
+	$actions   = [
 		'alm_acf_installed',
 		'alm_rest_api_installed',
 		'alm_terms_installed',
-	);
+	];
 
 	// Loop actions to determine if add-on/extension is installed.
 	foreach ( $actions as $action ) {
@@ -90,7 +90,7 @@ function alm_has_extension_shortcodes() {
  * @depreacted 3.3.0
  */
 function alm_has_addon() {
-	if ( has_action( 'alm_cta_installed' ) || has_action( 'alm_comments_installed' ) || has_action( 'alm_unlimited_installed' ) || has_action( 'alm_layouts_installed' ) || has_action( 'alm_nextpage_installed' ) || has_action( 'alm_preload_installed' ) || has_action( 'alm_paging_installed' ) || has_action( 'alm_prev_post_installed' ) || has_action( 'alm_single_post_installed' ) || has_action( 'alm_rest_api_installed' ) || has_action( 'alm_seo_installed' ) || has_action( 'alm_tabs_installed' ) || has_action( 'alm_theme_repeaters_installed' ) || has_action( 'alm_users_installed' ) ) {
+	if ( has_action( 'alm_cta_installed' ) || has_action( 'alm_comments_installed' ) || has_action( 'alm_unlimited_installed' ) || has_action( 'alm_layouts_installed' ) || has_action( 'alm_nextpage_installed' ) || has_action( 'alm_preload_installed' ) || has_action( 'alm_paging_installed' ) || has_action( 'alm_prev_post_installed' ) || has_action( 'alm_single_post_installed' ) || has_action( 'alm_rest_api_installed' ) || has_action( 'alm_seo_installed' ) || has_action( 'alm_theme_repeaters_installed' ) || has_action( 'alm_users_installed' ) ) {
 		return true;
 	} else {
 		return false;

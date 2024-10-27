@@ -100,9 +100,9 @@ class Search {
 	 */
 	public function update_count( $count, $args ) {
 
-		_deprecated_function( __METHOD__, '1.7.5 of the WPForms plugin', "wpforms()->get( 'forms_views' )->update_count()" );
+		_deprecated_function( __METHOD__, '1.7.5 of the WPForms plugin', "wpforms()->obj( 'forms_views' )->update_count()" );
 
-		return wpforms()->get( 'forms_views' )->update_count();
+		return wpforms()->obj( 'forms_views' )->update_count();
 	}
 
 	/**
@@ -116,8 +116,12 @@ class Search {
 	 */
 	public function get_forms_args( $args ) {
 
-		$args['search']['term']         = $this->term;
-		$args['search']['term_escaped'] = $this->term_escaped;
+		if ( is_numeric( $this->term ) ) {
+			$args['post__in'] = [ absint( $this->term ) ];
+		} else {
+			$args['search']['term']         = $this->term;
+			$args['search']['term_escaped'] = $this->term_escaped;
+		}
 
 		return $args;
 	}
@@ -164,6 +168,10 @@ class Search {
 	 * @return string
 	 */
 	public function search_by_term_where( $where, $wp_query ) {
+
+		if ( is_numeric( $this->term ) ) {
+			return $where;
+		}
 
 		global $wpdb;
 
@@ -231,7 +239,7 @@ class Search {
 			return;
 		}
 
-		$views = wpforms()->get( 'forms_views' );
+		$views = wpforms()->obj( 'forms_views' );
 		$count = $views->get_count();
 		$view  = $views->get_current_view();
 

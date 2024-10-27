@@ -14,7 +14,7 @@
 function alm_license_activation() {
 	$form_data = filter_input_array( INPUT_GET );
 
-	if ( ! current_user_can( 'edit_theme_options' ) || ! isset( $form_data['nonce'] ) ) {
+	if ( ! current_user_can( apply_filters( 'alm_user_role', 'edit_theme_options' ) ) || ! isset( $form_data['nonce'] ) ) {
 		// Bail early if missing WP capabilities or nonce.
 		wp_die( esc_attr__( 'You don\'t belong here.', 'ajax-load-more' ) );
 		return;
@@ -42,25 +42,23 @@ function alm_license_activation() {
 	}
 
 	// Create the params for the request.
-	$api_params = array(
+	$api_params = [
 		'edd_action'  => $action,
 		'license'     => $license,
 		'item_id'     => $item_id, // the ID of our product in EDD.
 		'url'         => home_url(),
 		'environment' => function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production',
-	);
+	];
 
 	// Call API.
 	$response = wp_remote_post(
 		ALM_STORE_URL,
-		array(
+		[
 			'method'    => 'POST',
 			'body'      => $api_params,
 			'timeout'   => 30,
-			'sslverify' => false,
-			// phpcs:ignore
-			// 'blocking'  => true
-		)
+			'sslverify' => apply_filters( 'alm_licensing_sslverify', false ),
+		]
 	);
 
 	// Make sure the response came back okay.
@@ -141,7 +139,7 @@ function alm_admin_notice_errors() {
 			// Check license status.
 			$license_status = alm_license_check( $addon['item_id'], get_option( $key ), $status );
 			if ( ! isset( $status ) || empty( $status ) || $license_status !== 'valid' ) {
-				$count++;
+				++$count;
 			}
 		}
 	}
@@ -174,19 +172,19 @@ function alm_license_check( $item_id = null, $license = null, $status = null ) {
 		return get_transient( "alm_{$item_id}_{$license}" );
 
 	} else {
-		$api_params = array(
+		$api_params = [
 			'edd_action' => 'check_license',
 			'license'    => $license,
 			'item_id'    => $item_id,
 			'url'        => home_url(),
-		);
+		];
 		$response   = wp_remote_post(
 			ALM_STORE_URL,
-			array(
+			[
 				'body'      => $api_params,
 				'timeout'   => 15,
 				'sslverify' => false,
-			)
+			]
 		);
 		if ( is_wp_error( $response ) ) {
 			return false;

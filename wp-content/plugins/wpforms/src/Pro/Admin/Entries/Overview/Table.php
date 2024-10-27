@@ -2,14 +2,21 @@
 
 namespace WPForms\Pro\Admin\Entries\Overview;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! class_exists( 'WP_List_Table', false ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
+// phpcs:ignore WPForms.PHP.UseStatement.UnusedUseStatement
+use wpdb;
 use WPForms\Admin\Helpers\Datepicker;
 use WP_List_Table;
 use WP_Post;
 use WPForms\Pro\AntiSpam\SpamEntry;
+use WPForms_Entries_List;
 use WPForms_Entry_Handler;
 
 /**
@@ -21,8 +28,7 @@ use WPForms_Entry_Handler;
 class Table extends WP_List_Table {
 
 	/**
-	 * Array of start and end dates
-	 * along with number of days in between.
+	 * Array of start and end dates along with the number of days in between.
 	 *
 	 * Responsible for generating "Last X Days".
 	 *
@@ -53,7 +59,7 @@ class Table extends WP_List_Table {
 
 	/**
 	 * An array of entire SQL result set cached for further data sorting and modifications.
-	 * The array contains form ids associated with number of entries count.
+	 * The array contains form ids associated with the number of entries count.
 	 *
 	 * @since 1.8.2
 	 *
@@ -66,10 +72,9 @@ class Table extends WP_List_Table {
 	 * the chart could display the queried form entries
 	 * according to the chosen or specified time period.
 	 *
-	 * The result of the initial database query will also
-	 * be used in the "Graph" column in order to avoid
-	 * running the database query more than once when
-	 * the "timespan" (Last X Days) column is present.
+	 * The result of the initial database query will also be used in the "Graph" column
+	 * to avoid running the database query more than once
+	 * when the "timespan" (Last X Days) column is present.
 	 *
 	 * @since 1.8.2
 	 *
@@ -99,7 +104,7 @@ class Table extends WP_List_Table {
 			]
 		);
 
-		$this->entry_handler = wpforms()->get( 'entry' );
+		$this->entry_handler = wpforms()->obj( 'entry' );
 	}
 
 	/**
@@ -116,7 +121,7 @@ class Table extends WP_List_Table {
 	}
 
 	/**
-	 * Determines whether current query has forms to loop over.
+	 * Determines whether a current query has forms to loop over.
 	 *
 	 * @since 1.8.2
 	 *
@@ -129,9 +134,10 @@ class Table extends WP_List_Table {
 		}
 
 		// Check to see if at least one form with respect to user access control has been published.
-		$one_published_form = wpforms()->get( 'form' )->get(
+		$one_published_form = wpforms()->obj( 'form' )->get(
 			'',
 			[
+				'post_type'              => wpforms()->obj( 'form' )::POST_TYPES,
 				'fields'                 => 'ids',
 				'post_status'            => 'publish',
 				'numberposts'            => 1,
@@ -164,11 +170,13 @@ class Table extends WP_List_Table {
 	public function get_columns() {
 
 		return [
-			'name'     => __( 'Form Name', 'wpforms' ),
-			'created'  => __( 'Created', 'wpforms' ),
-			'all_time' => __( 'All Time', 'wpforms' ),
-			'timespan' => isset( $this->timespan[3] ) ? esc_html( $this->timespan[3] ) : '', // 4th item in the array is always a label.
-			'graph'    => __( 'Graph', 'wpforms' ),
+			'name'       => __( 'Form Name', 'wpforms' ),
+			'created'    => __( 'Created', 'wpforms' ),
+			'last_entry' => __( 'Last Entry', 'wpforms' ),
+			'all_time'   => __( 'All Time', 'wpforms' ),
+			'timespan'   => isset( $this->timespan[3] ) ? esc_html( $this->timespan[3] ) : '',
+			// The 4th item in the array is always a label.
+			'graph'      => __( 'Graph', 'wpforms' ),
 		];
 	}
 
@@ -185,7 +193,13 @@ class Table extends WP_List_Table {
 
 		$name = ! empty( $form->post_title ) ? $form->post_title : $form->post_name;
 
-		return $this->get_form_entries_url( $form, $name );
+		$link = $this->get_form_entries_url( $form, $name );
+
+		if ( wpforms_is_form_template( $form ) ) {
+			$link .= _post_states( $form, false );
+		}
+
+		return $link;
 	}
 
 	/**
@@ -200,6 +214,46 @@ class Table extends WP_List_Table {
 	public function column_created( $form ) {
 
 		return get_the_date( get_option( 'date_format' ), $form );
+	}
+
+	/**
+	 * Return "Last Entry" column.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param WP_Post $form Form object.
+	 *
+	 * @return string
+	 * @noinspection HtmlUnknownTarget
+	 */
+	public function column_last_entry( $form ) {
+
+		$last_entry = wpforms()->obj( 'entry' )->get_last( $form->ID, '', 'date' );
+
+		if ( ! $last_entry ) {
+			return self::PLACEHOLDER;
+		}
+
+		$entry_url = add_query_arg(
+			[
+				'page'     => 'wpforms-entries',
+				'view'     => 'details',
+				'entry_id' => $last_entry->entry_id,
+			],
+			admin_url( 'admin.php' )
+		);
+
+		$label = wpforms_date_format( $last_entry->date, get_option( 'date_format' ) );
+
+		if ( wpforms_current_user_can( 'edit_entry_single', $last_entry->entry_id ) ) {
+			return sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( $entry_url ),
+				$label
+			);
+		}
+
+		return $label;
 	}
 
 	/**
@@ -301,7 +355,7 @@ class Table extends WP_List_Table {
 	}
 
 	/**
-	 * Set _column_headers property for table list.
+	 * Set _column_headers property for a table list.
 	 *
 	 * @since 1.8.2
 	 */
@@ -356,10 +410,11 @@ class Table extends WP_List_Table {
 	protected function get_sortable_columns() {
 
 		return [
-			'name'     => [ 'title', false ],
-			'created'  => [ 'date', false ],
-			'all_time' => [ 'entries', false ],
-			'timespan' => [ 'timespan', false ],
+			'name'       => [ 'title', false ],
+			'created'    => [ 'date', false ],
+			'last_entry' => [ 'entry', false ],
+			'all_time'   => [ 'entries', false ],
+			'timespan'   => [ 'timespan', false ],
 		];
 	}
 
@@ -441,10 +496,11 @@ class Table extends WP_List_Table {
 			return [];
 		}
 
-		return wpforms()->get( 'form' )->get(
+		return wpforms()->obj( 'form' )->get(
 			'',
 			[
 				'orderby'                => 'post__in',
+				'post_type'              => wpforms()->obj( 'form' )::POST_TYPES,
 				'post__in'               => $form_ids,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
@@ -476,26 +532,35 @@ class Table extends WP_List_Table {
 			$exclude = $this->sort_by_entries_in_timespan( $order );
 		}
 
-		$form_ids = (array) wpforms()->get( 'form' )->get(
+		// Sort by the last entry.
+		if ( $orderby === 'entry' ) {
+			$exclude = $this->sort_by_last_entry( $order );
+		}
+
+		$form_handler = wpforms()->obj( 'form' );
+		$post_type    = wpforms()->obj( 'entries_overview' )->overview_show_form_templates() ? $form_handler::POST_TYPES : [ 'wpforms' ];
+
+		$form_ids = (array) $form_handler->get(
 			'',
 			[
+				'post_type'              => $post_type,
 				'fields'                 => 'ids',
 				'order'                  => $order,
 				'orderby'                => $orderby,
-				'exclude'                => $exclude,
+				'exclude'                => $exclude, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
 			]
 		);
 
-		// Form ids from the entries table should be combined with the main query.
+		// Form ids from the entries' table should be combined with the main query.
 		$form_ids = $order === 'ASC' ? array_merge( $form_ids, $exclude ) : array_merge( $exclude, $form_ids );
 
-		return wpforms()->get( 'access' )->filter_forms_by_current_user_capability( $form_ids, 'view_entries_form_single' );
+		return wpforms()->obj( 'access' )->filter_forms_by_current_user_capability( $form_ids, 'view_entries_form_single' );
 	}
 
 	/**
-	 * Retrieves an array of sorted forms based on number of entries.
+	 * Retrieves an array of sorted forms based on the number of entries.
 	 *
 	 * @global wpdb $wpdb Instantiation of the wpdb class.
 	 *
@@ -509,23 +574,58 @@ class Table extends WP_List_Table {
 
 		global $wpdb;
 
-		$spam_status = SpamEntry::ENTRY_STATUS;
+		$spam_status  = SpamEntry::ENTRY_STATUS;
+		$trash_status = 'trash';
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$form_ids = $wpdb->get_col(
 			"SELECT DISTINCT form_id, COUNT(entry_id) as count
 			FROM {$this->entry_handler->table_name}
-			WHERE status != '{$spam_status}'
+			WHERE status NOT IN ( '{$spam_status}', '{$trash_status}' )
 			GROUP BY form_id
 			ORDER BY count {$order}"
 		);
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		return $this->filter_published_form_ids( $form_ids );
 	}
 
 	/**
-	 * Retrieves an array of sorted forms based on number of entries.
+	 * Retrieves an array of sorted forms based on the last entry.
+	 *
+	 * @global wpdb $wpdb Instantiation of the wpdb class.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param string $order Designates ascending or descending order of forms. Default 'DESC'.
+	 *
+	 * @return array
+	 */
+	private function sort_by_last_entry( $order = 'DESC' ) {
+
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$form_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT form_id
+				FROM {$this->entry_handler->table_name}
+				WHERE status NOT IN ( %s, %s )
+				GROUP BY form_id
+				ORDER BY MAX(date) {$order}",
+				[
+					SpamEntry::ENTRY_STATUS,
+					WPForms_Entries_List::TRASH_ENTRY_STATUS,
+				]
+			)
+		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		return $this->filter_published_form_ids( $form_ids );
+	}
+
+	/**
+	 * Retrieves an array of sorted forms based on the number of entries.
 	 *
 	 * @global wpdb $wpdb Instantiation of the wpdb class.
 	 *
@@ -541,24 +641,25 @@ class Table extends WP_List_Table {
 
 		list( $start_date, $end_date ) = $this->timespan_mysql;
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$form_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT form_id, COUNT(entry_id) as count
 				FROM {$this->entry_handler->table_name}
 				WHERE date >= %s
 				AND date <= %s
-				AND status != %s
+				AND status NOT IN ( %s, %s )
 				GROUP BY form_id
 				ORDER BY count {$order}",
 				[
 					$start_date->format( Datepicker::DATETIME_FORMAT ),
 					$end_date->format( Datepicker::DATETIME_FORMAT ),
 					SpamEntry::ENTRY_STATUS,
+					'trash',
 				]
 			)
 		);
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		return $this->filter_published_form_ids( $form_ids );
 	}
@@ -580,7 +681,7 @@ class Table extends WP_List_Table {
 
 		list( $start_date, $end_date ) = $this->timespan_mysql;
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$total_entries = (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(entry_id) as count
@@ -588,16 +689,17 @@ class Table extends WP_List_Table {
 				WHERE form_id = %d
 				AND date >= %s
 				AND date <= %s
-				AND status != %s",
+				AND status NOT IN ( %s, %s )",
 				[
 					$form->ID,
 					$start_date->format( Datepicker::DATETIME_FORMAT ),
 					$end_date->format( Datepicker::DATETIME_FORMAT ),
 					SpamEntry::ENTRY_STATUS,
+					'trash',
 				]
 			)
 		);
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$this->form_has_entries_timespan = $total_entries > 0;
 
@@ -607,8 +709,6 @@ class Table extends WP_List_Table {
 	/**
 	 * Retrieves an entire SQL result set from the entries table database (i.e., all applicable rows).
 	 * Executes a SQL query and returns the entire SQL result.
-	 *
-	 * @global wpdb $wpdb Instantiation of the wpdb class.
 	 *
 	 * @since 1.8.2
 	 *
@@ -623,17 +723,16 @@ class Table extends WP_List_Table {
 			return [];
 		}
 
-		global $wpdb;
-
-		$form_ids_in = wpforms_wpdb_prepare_in( $form_ids, '%d' );
-		$spam_status = SpamEntry::ENTRY_STATUS;
+		$form_ids_in  = wpforms_wpdb_prepare_in( $form_ids, '%d' );
+		$spam_status  = SpamEntry::ENTRY_STATUS;
+		$trash_status = 'trash';
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return (array) $wpdb->get_results(
+		return (array) $this->entry_handler->get_results(
 			"SELECT DISTINCT form_id, COUNT(entry_id) as count
 			FROM {$this->entry_handler->table_name}
 			WHERE form_id IN ({$form_ids_in})
-			AND status != '{$spam_status}'
+			AND status NOT IN ( '{$spam_status}', '{$trash_status}' )
 			GROUP BY form_id",
 			OBJECT_K
 		);
@@ -658,8 +757,8 @@ class Table extends WP_List_Table {
 
 		$form_ids = array_filter(
 			$form_ids,
-			static function( $form_id ) {
-
+			static function ( $form_id ) {
+				// phpcs:ignore WPForms.Formatting.EmptyLineBeforeReturn.AddEmptyLineBeforeReturnStatement
 				return get_post_status( $form_id ) === 'publish';
 			}
 		);
@@ -677,10 +776,11 @@ class Table extends WP_List_Table {
 	 * @param array   $query_string If provided, merge user defined arguments into defaults query parameters.
 	 *
 	 * @return string
+	 * @noinspection HtmlUnknownTarget
 	 */
 	private function get_form_entries_url( $form, $text = self::PLACEHOLDER, $query_string = [] ) {
 
-		// When display text is not provided, leave early.
+		// When a display text is not provided, leave early.
 		if ( $text === self::PLACEHOLDER ) {
 			return $text;
 		}

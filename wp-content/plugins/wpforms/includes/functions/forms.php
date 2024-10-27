@@ -16,7 +16,7 @@
  */
 function wpforms_display( $form_id = false, $title = false, $desc = false ) {
 
-	$frontend = wpforms()->get( 'frontend' );
+	$frontend = wpforms()->obj( 'frontend' );
 
 	if ( empty( $frontend ) ) {
 		return;
@@ -173,6 +173,8 @@ function wpforms_setting( $key, $default = false, $option = 'wpforms_settings' )
  */
 function wpforms_update_settings( $settings ) {
 
+	$old_settings = (array) get_option( 'wpforms_settings', [] );
+
 	/**
 	 * Allows plugin settings to be modified before persisting in the database.
 	 *
@@ -190,11 +192,13 @@ function wpforms_update_settings( $settings ) {
 	 * The `$updated` parameter allows to check whether the update was actually successful.
 	 *
 	 * @since 1.6.1
+	 * @since 1.8.4 The `$old_settings` parameter was added.
 	 *
-	 * @param array  $settings An array of plugin settings.
-	 * @param bool   $updated  Whether an option was updated or not.
+	 * @param array $settings     An array of plugin settings.
+	 * @param bool  $updated      Whether an option was updated or not.
+	 * @param array $old_settings An old array of plugin settings.
 	 */
-	do_action( 'wpforms_settings_updated', $settings, $updated );
+	do_action( 'wpforms_settings_updated', $settings, $updated, $old_settings );
 
 	return $updated;
 }
@@ -303,14 +307,14 @@ function wpforms_has_field_setting( $setting, $form, $multiple = false ) {
  * Retrieve actual fields from a form.
  *
  * Non-posting elements such as section divider, page break, and HTML are
- * automatically excluded. Optionally a white list can be provided.
+ * automatically excluded. Optionally, a whitelist can be provided.
  *
  * @since 1.0.0
  *
  * @param mixed $form      Form data.
  * @param array $allowlist A list of allowed fields.
  *
- * @return mixed boolean or array
+ * @return mixed boolean false or array
  */
 function wpforms_get_form_fields( $form = false, $allowlist = [] ) {
 
@@ -318,15 +322,14 @@ function wpforms_get_form_fields( $form = false, $allowlist = [] ) {
 	if ( is_object( $form ) ) {
 		$form = wpforms_decode( $form->post_content );
 	} elseif ( is_numeric( $form ) ) {
-		$form = wpforms()->get( 'form' )->get(
-			$form,
+		$form = wpforms()->obj( 'form' )->get(
+			absint( $form ),
 			[
 				'content_only' => true,
 			]
 		);
 	}
 
-	// White list of field types to allow.
 	$allowed_form_fields = [
 		'address',
 		'checkbox',
@@ -356,6 +359,13 @@ function wpforms_get_form_fields( $form = false, $allowlist = [] ) {
 		'url',
 	];
 
+	/**
+	 * Filter the list of allowed form fields.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $allowed_form_fields List of allowed form fields.
+	 */
 	$allowed_form_fields = apply_filters( 'wpforms_get_form_fields_allowed', $allowed_form_fields );
 
 	if ( ! is_array( $form ) || empty( $form['fields'] ) ) {
@@ -367,6 +377,17 @@ function wpforms_get_form_fields( $form = false, $allowlist = [] ) {
 	$form_fields = $form['fields'];
 
 	foreach ( $form_fields as $id => $form_field ) {
+		// Remove repeater field and its children.
+		if ( $form_field['type'] === 'repeater' ) {
+			foreach ( (array) $form_field['columns'] as $column ) {
+				$column_fields = $column['fields'] ?? [];
+
+				foreach ( $column_fields as $field_id ) {
+					unset( $form_fields[ $field_id ] );
+				}
+			}
+		}
+
 		if ( ! in_array( $form_field['type'], $allowlist, true ) ) {
 			unset( $form_fields[ $id ] );
 		}
@@ -467,15 +488,17 @@ function wpforms_get_captcha_settings() {
  * Process smart tags.
  *
  * @since 1.7.1
+ * @since 1.8.7 Added `$context` parameter.
  *
  * @param string $content   Content.
  * @param array  $form_data Form data.
  * @param array  $fields    List of fields.
  * @param string $entry_id  Entry ID.
+ * @param string $context   Context.
  *
  * @return string
  */
-function wpforms_process_smart_tags( $content, $form_data, $fields = [], $entry_id = '' ) {
+function wpforms_process_smart_tags( $content, $form_data, $fields = [], $entry_id = '', $context = '' ) {
 
 	// Skip it if variables have invalid format.
 	if ( ! is_string( $content ) || ! is_array( $form_data ) || ! is_array( $fields ) ) {
@@ -486,13 +509,62 @@ function wpforms_process_smart_tags( $content, $form_data, $fields = [], $entry_
 	 * Process smart tags.
 	 *
 	 * @since 1.4.0
+	 * @since 1.8.7 Added $context parameter.
 	 *
 	 * @param string $content   Content.
 	 * @param array  $form_data Form data.
 	 * @param array  $fields    List of fields.
 	 * @param string $entry_id  Entry ID.
+	 * @param string $context   Context.
 	 *
 	 * @return string
 	 */
-	return apply_filters( 'wpforms_process_smart_tags',  $content, $form_data, $fields, $entry_id );
+	return apply_filters( 'wpforms_process_smart_tags',  $content, $form_data, $fields, $entry_id, $context );
+}
+
+/**
+ * Check if form data slashing enabled.
+ *
+ * @since 1.9.0
+ *
+ * @return bool
+ */
+function wpforms_is_form_data_slashing_enabled() {
+
+	static $enabled = null;
+
+	if ( $enabled !== null ) {
+		return $enabled;
+	}
+
+	/**
+	 * Filter to enable form data slashing.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param bool $enabled Form data slashing enabled.
+	 */
+	$enabled = (bool) apply_filters( 'wpforms_enable_form_data_slashing', $enabled );
+	$enabled = defined( 'WPFORMS_ENABLE_FORM_DATA_SLASHING' ) ? WPFORMS_ENABLE_FORM_DATA_SLASHING : $enabled;
+
+	return $enabled;
+}
+
+/**
+ * Check is frontend JS should be loaded in the header.
+ *
+ * @since 1.9.0
+ *
+ * @return bool
+ */
+function wpforms_is_frontend_js_header_force_load(): bool {
+
+	/**
+	 * Allow loading JS in header on various pages.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param bool $force_load Force loading JS in header, default `false`.
+	 */
+	return (bool) apply_filters( 'wpforms_frontend_js_header_force_load', false );
 }

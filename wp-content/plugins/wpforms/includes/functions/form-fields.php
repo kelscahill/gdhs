@@ -413,3 +413,216 @@ function wpforms_get_pagebreak_details( $form = false ) {
 
 	return false;
 }
+
+/**
+ * Return available builder fields.
+ *
+ * @since 1.8.5
+ *
+ * @param string $group Group name.
+ *
+ * @return array
+ */
+function wpforms_get_builder_fields( $group = '' ) {
+
+	$fields = [
+		'standard' => [
+			'group_name' => esc_html__( 'Standard Fields', 'wpforms-lite' ),
+			'fields'     => [],
+		],
+		'fancy'    => [
+			'group_name' => esc_html__( 'Fancy Fields', 'wpforms-lite' ),
+			'fields'     => [],
+		],
+		'payment'  => [
+			'group_name' => esc_html__( 'Payment Fields', 'wpforms-lite' ),
+			'fields'     => [],
+		],
+	];
+
+	/**
+	 * Allows developers to modify content of the the Add Field tab.
+	 *
+	 * With this filter developers can add their own fields or even fields groups.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param array $fields {
+	 *     Fields data multidimensional array.
+	 *
+	 *     @param array $standard Standard fields group.
+	 *         @param string $group_name Group name.
+	 *         @param array  $fields     Fields array.
+	 *
+	 *     @param array $fancy    Fancy fields group.
+	 *         @param string $group_name Group name.
+	 *         @param array  $fields     Fields array.
+	 *
+	 *     @param array $payment  Payment fields group.
+	 *         @param string $group_name Group name.
+	 *         @param array  $fields     Fields array.
+	 * }
+	 */
+	$fields = apply_filters( 'wpforms_builder_fields_buttons', $fields ); // phpcs:ignore WPForms.Comments.ParamTagHooks.InvalidParamTagsQuantity
+
+	// If a group is not specified, return all fields.
+	if ( empty( $group ) ) {
+		return $fields;
+	}
+
+	// If a group is specified, return only fields from that group.
+	if ( isset( $fields[ $group ] ) ) {
+		return $fields[ $group ]['fields'];
+	}
+
+	return [];
+}
+
+/**
+ * Get payments fields.
+ *
+ * @since 1.8.5
+ *
+ * @return array
+ */
+function wpforms_get_payments_fields() {
+
+	// Some fields are added dynamically only when the corresponding payment add-on is active.
+	// However, we need to be aware of all possible payment fields, even if they are not currently available.
+	return [
+		'payment-single',
+		'payment-multiple',
+		'payment-checkbox',
+		'payment-select',
+		'payment-total',
+		'payment-coupon',
+		'credit-card', // Legacy Credit Card field.
+		'authorize_net',
+		'paypal-commerce',
+		'square',
+		'stripe-credit-card',
+	];
+}
+
+/**
+ * Validate field ID for repeater field.
+ *
+ * @since 1.8.9
+ *
+ * @param mixed $field_id Field ID.
+ *
+ * @return int|string
+ */
+function wpforms_validate_field_id( $field_id ) {
+
+	return (
+		wpforms_is_repeater_child_field( $field_id ) ?
+			preg_replace( '/[^0-9_]/', '', $field_id ) :
+			absint( $field_id )
+	);
+}
+
+/**
+ * Check if field ID is a repeater field.
+ *
+ * @since 1.8.9
+ *
+ * @param int|string|array $field Field.
+ *
+ * @return bool
+ */
+function wpforms_is_repeater_child_field( $field ): bool {
+
+	$field_id = (string) ( is_array( $field ) ? $field['id'] : $field );
+
+	$pattern = '/^(\d+_\d+)(_\d+)*$/';
+
+	return preg_match( $pattern, $field_id ) === 1;
+}
+
+/**
+ * Get repeater field IDs.
+ *
+ * @since 1.8.9
+ *
+ * @param int|string|array $field Field ID.
+ *
+ * @return int[]
+ */
+function wpforms_get_repeater_field_ids( $field ): array {
+
+	$field_id     = (string) ( is_array( $field ) ? $field['id'] : $field );
+	$field_id_arr = explode( '_', $field_id );
+	$original_id  = (int) $field_id_arr[0];
+	$index_id     = (int) ( $field_id_arr[1] ?? 0 );
+
+	return compact( 'original_id', 'index_id' );
+}
+
+/**
+ * Get the correct value for field with raw value available.
+ *
+ * @since 1.8.9
+ *
+ * @param array $field     Entry field.
+ * @param array $form_data Form data and settings.
+ *
+ * @return string
+ */
+function wpforms_get_choices_value( array $field, array $form_data ): string {
+
+	$show_values = ! empty( $form_data['fields'][ $field['id'] ]['show_values'] );
+	$is_dynamic  = ! empty( $field['dynamic'] );
+	$value       = $field['value'];
+
+	if ( ! wpforms_is_empty_string( $field['value_raw'] ?? '' ) && $show_values && ! $is_dynamic ) {
+		$value = $field['value_raw'];
+	}
+
+	if ( $is_dynamic ) {
+		$value = $field['value_raw'] ?? ( $field['value'] ?? '' );
+	}
+
+	return $value;
+}
+
+/**
+ * Determine if the field was repeated.
+ *
+ * @since 1.8.9
+ *
+ * @param int   $field_id Field ID.
+ * @param array $fields   List of fields.
+ *
+ * @return bool
+ */
+function wpforms_is_repeated_field( int $field_id, array $fields ): bool {
+
+	$prefix = $field_id . '_';
+
+	foreach ( $fields as $key => $field ) {
+		if ( strpos( $key, $prefix ) === 0 ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Get field types where user can select more than one item.
+ *
+ * Note: this list does not include File Upload field, even thought it is a multi-field.
+ *
+ * @since 1.9.0
+ *
+ * @return array
+ */
+function wpforms_get_multi_fields(): array {
+
+	return [
+		'checkbox',
+		'select',
+		'payment-checkbox',
+	];
+}

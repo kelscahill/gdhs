@@ -1,10 +1,11 @@
 <?php
 
-namespace WPForms\Migrations;
+// phpcs:disable Generic.Commenting.DocComment.MissingShort
+/** @noinspection PhpIllegalPsrClassPathInspection */
+/** @noinspection AutoloadingIssuesInspection */
+// phpcs:enable Generic.Commenting.DocComment.MissingShort
 
-use WPForms\Tasks\Meta;
-use WPForms\Db\Payments\Payment;
-use WPForms\Db\Payments\Meta as PaymentMeta;
+namespace WPForms\Migrations;
 
 /**
  * Class Migrations handles Lite plugin upgrade routines.
@@ -41,17 +42,9 @@ class Migrations extends Base {
 		'Upgrade177',
 		'Upgrade182',
 		'Upgrade183',
-	];
-
-	/**
-	 * Custom table handler classes.
-	 *
-	 * @since 1.7.6
-	 * @since 1.8.2 Registered payment tables.
-	 */
-	const CUSTOM_TABLE_HANDLER_CLASSES = [
-		Meta::class,
-		Payment::class,
-		PaymentMeta::class,
+		'Upgrade184',
+		'Upgrade186',
+		'Upgrade187',
+		'Upgrade1_9_1',
 	];
 }

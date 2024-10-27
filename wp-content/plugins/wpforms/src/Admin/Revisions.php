@@ -66,24 +66,6 @@ class Revisions {
 	private $viewed;
 
 	/**
-	 * Date format to use in UI.
-	 *
-	 * @since 1.7.3
-	 *
-	 * @var string
-	 */
-	private $date_format = 'M j';
-
-	/**
-	 * Time format to use in UI.
-	 *
-	 * @since 1.7.3
-	 *
-	 * @var string
-	 */
-	private $time_format;
-
-	/**
 	 * Initialize the class if preconditions are met.
 	 *
 	 * @since 1.7.3
@@ -118,8 +100,6 @@ class Revisions {
 			return;
 		}
 
-		$this->time_format = get_option( 'time_format' );
-
 		$this->hooks();
 	}
 
@@ -146,7 +126,7 @@ class Revisions {
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$this->form_id = $id;
-		$form_handler  = wpforms()->get( 'form' );
+		$form_handler  = wpforms()->obj( 'form' );
 
 		if ( ! $form_handler ) {
 			return false;
@@ -205,10 +185,11 @@ class Revisions {
 	public function get_formatted_datetime( $datetime, $part = 'date' ) {
 
 		if ( $part === 'time' ) {
-			return wpforms_datetime_format( $datetime, $this->time_format, true );
+			return wpforms_time_format( $datetime, '', true );
 		}
 
-		return wpforms_datetime_format( $datetime, $this->date_format, true );
+		// M j format needs to keep one-line date.
+		return wpforms_date_format( $datetime, 'M j', true );
 	}
 
 	/**
@@ -398,7 +379,7 @@ class Revisions {
 
 		if ( $restored_id ) {
 			wp_safe_redirect(
-				wpforms()->get( 'revisions' )->get_url(
+				wpforms()->obj( 'revisions' )->get_url(
 					[
 						'form_id' => $restored_id,
 					]

@@ -28,15 +28,18 @@ class EntryDate extends SmartTag {
 			return '';
 		}
 
-		$entry = wpforms()->entry->get( $entry_id );
+		$entry = wpforms()->obj( 'entry' )->get( $entry_id );
 
 		if ( ! $entry || ! property_exists( $entry, 'date' ) ) {
 			return '';
 		}
 
 		$attributes = $this->get_attributes();
-		$format     = ! empty( $attributes['format'] ) ? $attributes['format'] : get_option( 'date_format' );
 
-		return wpforms_datetime_format( $entry->date, $format, true );
+		if ( empty( $attributes['format'] ) ) {
+			return wpforms_date_format( $entry->date, '', true );
+		}
+
+		return wpforms_datetime_format( $entry->date,  $attributes['format'], true );
 	}
 }

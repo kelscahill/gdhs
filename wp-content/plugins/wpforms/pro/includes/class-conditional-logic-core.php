@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Conditional logic core.
  *
@@ -73,7 +77,7 @@ class WPForms_Conditional_Logic_Core {
 		// JavaScript.
 		wp_enqueue_script(
 			'wpforms-builder-conditionals',
-			WPFORMS_PLUGIN_URL . "assets/pro/js/admin/builder-conditional-logic-core{$min}.js",
+			WPFORMS_PLUGIN_URL . "assets/pro/js/admin/builder/conditional-logic-core{$min}.js",
 			[ 'jquery', 'wpforms-utils', 'wpforms-builder' ],
 			WPFORMS_VERSION,
 			false
@@ -218,7 +222,7 @@ class WPForms_Conditional_Logic_Core {
 
 					// Define more data for this field.
 					$fields_instance = $args['instance'];
-					$field_id        = absint( $field['id'] );
+					$field_id        = wpforms_validate_field_id( $field['id'] );
 					$field_name      = "fields[{$field_id}]";
 					$groups_id       = "wpforms-conditional-groups-fields-{$field_id}";
 					$action_selected = ! empty( $field['conditional_type'] ) ? $field['conditional_type'] : '';
@@ -443,12 +447,12 @@ class WPForms_Conditional_Logic_Core {
 															? $form_field['label']
 															: sprintf( /* translators: %d - field ID. */
 																__( 'Field #%d', 'wpforms' ),
-																absint( $form_field['id'] )
+																wpforms_validate_field_id( $form_field['id'] )
 															);
 
 														$selected = selected( $selected, $form_field['id'], false );
 
-														printf( '<option value="%s" %s>%s</option>', absint( $form_field['id'] ), esc_attr( $selected ), esc_html( $field_label ) );
+														printf( '<option value="%s" %s>%s</option>', wpforms_validate_field_id( $form_field['id'] ), esc_attr( $selected ), esc_html( $field_label ) );
 													}
 												}
 
@@ -528,7 +532,7 @@ class WPForms_Conditional_Logic_Core {
 												} else {
 
 													printf(
-														'<select name="%1$s[conditionals][%2$s][%3$s][value]" class="wpforms-conditional-value" %4$d>',
+														'<select name="%1$s[conditionals][%2$s][%3$s][value]" class="wpforms-conditional-value" %4$s>',
 														esc_attr( $field_name ),
 														esc_attr( $group_id ),
 														esc_attr( $rule_id ),
