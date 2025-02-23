@@ -21,6 +21,7 @@ namespace WPForms\Vendor\Stripe\Checkout;
  *
  * @property string $id Unique identifier for the object.
  * @property string $object String representing the object's type. Objects of the same type share the same value.
+ * @property null|\Stripe\StripeObject $adaptive_pricing Settings for price localization with <a href="https://docs.stripe.com/payments/checkout/adaptive-pricing">Adaptive Pricing</a>.
  * @property null|\Stripe\StripeObject $after_expiration When set, provides configuration for actions to take if this Checkout Session expires.
  * @property null|bool $allow_promotion_codes Enables user redeemable promotion codes.
  * @property null|int $amount_subtotal Total of all items before discounts or taxes are applied.
@@ -58,7 +59,7 @@ namespace WPForms\Vendor\Stripe\Checkout;
  * @property string $payment_status The payment status of the Checkout Session, one of <code>paid</code>, <code>unpaid</code>, or <code>no_payment_required</code>. You can use this value to decide when to fulfill your customer's order.
  * @property null|\Stripe\StripeObject $phone_number_collection
  * @property null|string $recovered_from The ID of the original expired Checkout Session that triggered the recovery flow.
- * @property null|string $redirect_on_completion This parameter applies to <code>ui_mode: embedded</code>. Learn more about the <a href="https://stripe.com/docs/payments/checkout/custom-redirect-behavior">redirect behavior</a> of embedded sessions. Defaults to <code>always</code>.
+ * @property null|string $redirect_on_completion This parameter applies to <code>ui_mode: embedded</code>. Learn more about the <a href="https://stripe.com/docs/payments/checkout/custom-success-page?payment-ui=embedded-form">redirect behavior</a> of embedded sessions. Defaults to <code>always</code>.
  * @property null|string $return_url Applies to Checkout Sessions with <code>ui_mode: embedded</code>. The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.
  * @property null|\Stripe\StripeObject $saved_payment_method_options Controls saved payment method settings for the session. Only available in <code>payment</code> and <code>subscription</code> mode.
  * @property null|string|\Stripe\SetupIntent $setup_intent The ID of the SetupIntent for Checkout Sessions in <code>setup</code> mode. You can't confirm or cancel the SetupIntent for a Checkout Session. To cancel, <a href="https://stripe.com/docs/api/checkout/sessions/expire">expire the Checkout Session</a> instead.
@@ -101,6 +102,7 @@ class Session extends \WPForms\Vendor\Stripe\ApiResource
     const SUBMIT_TYPE_BOOK = 'book';
     const SUBMIT_TYPE_DONATE = 'donate';
     const SUBMIT_TYPE_PAY = 'pay';
+    const SUBMIT_TYPE_SUBSCRIBE = 'subscribe';
     const UI_MODE_EMBEDDED = 'embedded';
     const UI_MODE_HOSTED = 'hosted';
     /**

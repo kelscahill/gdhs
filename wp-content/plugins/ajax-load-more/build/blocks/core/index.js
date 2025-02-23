@@ -449,7 +449,7 @@ var external_wp_i18n_namespaceObject = window["wp"]["i18n"];
         shortcode: data
       });
     },
-    help: (0,external_wp_i18n_namespaceObject.__)('Note: Scroll is disabled within the WP block editor.', 'ajax-load-more'),
+    help: (0,external_wp_i18n_namespaceObject.__)('Note: Infinite scroll is disabled within the Block Editor.', 'ajax-load-more'),
     rows: 6
   }), /*#__PURE__*/React.createElement(external_wp_components_namespaceObject.Flex, {
     gap: "5px",

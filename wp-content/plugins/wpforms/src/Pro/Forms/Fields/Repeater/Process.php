@@ -56,6 +56,10 @@ class Process {
 		// Form data: payment entry.
 		add_filter( 'wpforms_admin_payments_views_single_form_data', [ $this, 'add_repeater_child_fields_to_form_data' ], 10, 2 );
 		add_filter( 'wpforms_admin_payments_views_single_form_data', [ $this, 'move_child_fields_to_repeater_field' ], 20 );
+
+		// Form data: before send email on entry view page.
+		add_filter( 'wpforms_entries_single_process_notifications_form_data', [ $this, 'add_repeater_child_fields_to_form_data' ], 10, 2 );
+		add_filter( 'wpforms_entries_single_process_notifications_form_data', [ $this, 'move_child_fields_to_repeater_field' ], 20 );
 	}
 
 	/**
@@ -424,6 +428,28 @@ class Process {
 
 		foreach ( $fields as $field_id => $field ) {
 			$form_data = $this->populate_field_conditional_settings( $form_data, $field_id, 'repeater' );
+		}
+
+		return $form_data;
+	}
+
+	/**
+	 * Populate all the Layout fields' conditional settings to child fields.
+	 * Will be used as a hook, so we should keep it public.
+	 *
+	 * @since 1.9.3
+	 *
+	 * @param array|mixed $form_data Form data.
+	 *
+	 * @return array
+	 */
+	public function populate_layout_conditional_settings( $form_data ): array {
+
+		$form_data = (array) $form_data;
+		$fields    = $form_data['fields'] ?? [];
+
+		foreach ( $fields as $field_id => $field ) {
+			$form_data = $this->populate_field_conditional_settings( $form_data, $field_id, 'layout' );
 		}
 
 		return $form_data;

@@ -7,6 +7,44 @@
   justify-content: space-between;
   align-items: center;
   height: rem(40);
+
+  &--left {
+    display: flex;
+    align-items: center;
+    gap: rem(20);
+  }
+}
+
+.c-utility__social-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: rem(40);
+    height: rem(40);
+    color: $gray;
+
+    .u-icon {
+      svg {
+        width: rem(20);
+        height: rem(20);
+        margin: 0 auto;
+
+        path {
+          fill: currentcolor;
+        }
+      }
+    }
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
 }
 
 .c-utility__search {

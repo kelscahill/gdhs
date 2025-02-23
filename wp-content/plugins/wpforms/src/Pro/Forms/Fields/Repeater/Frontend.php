@@ -173,6 +173,9 @@ class Frontend {
 			return $form_data;
 		}
 
+		// Populate conditional settings to the fields inside the layout fields.
+		$form_data = $process->populate_layout_conditional_settings( $form_data );
+
 		$this->form_data = $process->add_repeater_child_fields_to_form_data( $form_data, $this->populate_entry );
 		$this->form_data = $process->move_child_fields_to_repeater_field( $this->form_data );
 

@@ -91,6 +91,9 @@ WPForms.Admin.Builder.Notifications = WPForms.Admin.Builder.Notifications || ( f
 			choicesJSConfigFileUpload = Object.assign( {}, choicesJSConfig );
 			choicesJSConfigFileUpload.noChoicesText = wpforms_builder.notifications_file_upload.no_choices_text;
 
+			app.setup();
+			app.bindEvents();
+
 			$( app.ready );
 		},
 
@@ -105,8 +108,6 @@ WPForms.Admin.Builder.Notifications = WPForms.Admin.Builder.Notifications || ( f
 				return;
 			}
 
-			app.setup();
-			app.bindEvents();
 			app.maybeSaveFormState();
 		},
 
@@ -708,7 +709,7 @@ WPForms.Admin.Builder.Notifications = WPForms.Admin.Builder.Notifications || ( f
 			getFormFields( allowed, exclude = [] ) {
 				const availableFields = [];
 
-				const fields = wpf.getFields( allowed, true );
+				const fields = wpf.getFields( allowed, true, true );
 
 				if ( ! fields ) {
 					return [];

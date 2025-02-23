@@ -1,6 +1,159 @@
 # Changelog
 All notable changes to this project will be documented in this file and formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.9.3.2] - 2025-01-28
+### Fixed
+- Modern Antispam flagged the entry as spam if the form includes the Entry Preview field and the WPForms Multilingual plugin was installed.
+- GDPR enhancements sub-setting briefly flashed on the WPForms > Settings admin page after refresh.
+- HTML attributes in links disappeared in the Content field after saving.
+
+## [1.9.3.1] - 2025-01-16
+### Changed
+- The Hide Labels option is ignored in notifications.
+
+## [1.9.3] - 2025-01-14
+### IMPORTANT
+- Support for PHP 7.0 has been discontinued. If you are running PHP 7.0, you MUST upgrade PHP before installing WPForms 1.9.3. Failure to do that will disable WPForms core functionality.
+
+### Added
+- Ability to open the Form Builder with a specific section via URL parameter.
+- Compatibility status messages for addons on the Addons page.
+- Support for Block API versions 2 and 3.
+- Support for Page Break field in AI Forms.
+- Support for the Constant Contact API v3.
+- Quick page navigation on the Forms Overview page.
+- Column view support for Layout and Repeater fields in admin pages.
+- Direct access to Tools sections from WPForms top admin menu.
+
+### Changed
+- Updated stripe/stripe-php library to 16.3.0.
+- Updated DOMPurify library to 3.2.3.
+- Enhanced Date/Time field validation for Date Dropdown format.
+- Optimized Order Summary table display on mobile devices.
+- Improved date formatting consistency in payments table.
+- Removed dynamic missing translation fix to improve performance.
+
+### Fixed
+- Layout field label visibility in email notifications with conditional logic.
+- Missing addon name in warning popup for fields with conditional logic.
+- Tooltip text overlap in Choices.js dropdowns with long tags.
+- Default payment choice label visibility in order summary table.
+- Total amount calculation was incorrect on the Entry preview page in some cases.
+- Hidden single item field visibility in Order Summary and Entry preview.
+- Content field positioning when printed in compact display.
+- Entry print button width with non-English languages.
+- Unnecessary CSS variables output on pages without forms.
+- Toggle icon status glitch on the payments settings section.
+- Layout field visibility in email notifications with empty values.
+- Missing field numbers for duplicated Repeater fields in Single Entry view.
+- When deleting a field with Conditional Logic, incorrect field names involved in the Conditional Logic were displayed.
+- Addon download failures due to expired links.
+- Form Builder Marketing panel splash screen display with revisions.
+- Stripe Payment element display in Conversational Forms.
+- RTL support for Layout and Repeater fields.
+- Loading spinner was shown on the Form Builder > Marketing screen when there were no active connections.
+- Submit button text handling with empty values.
+- Non-Latin characters have been stripped from the URL when used in {page_url} and {url_referer} smart tags.
+- Email field unique answer validation in multi-page forms.
+- Field order in Order Summary with Rows Layout.
+- Content and HTML field handling in single entry view.
+- Repeater field order in CSV attachments.
+- Block Editor field compatibility.
+- Warning appeared in the debug.log when non-string data were erroneously sent to translation.
+- Layout and Repeater field appearance in notifications.
+- Custom validation message display for sub-fields.
+- Number Slider default value behavior.
+- Entries were duplicated in some environments.
+- Stripe Credit Card field in Elementor popups.
+- Integration data preservation when addons are disabled.
+- Entry Preview layout with complex fields.
+- Date field compatibility in WPForms Lite.
+- Submit button default label handling.
+- An error was happening when removing “Copy / Paste Style Settings” in Elementor and Block editor.
+- The “Copy / Paste Style Settings” field default value was empty when adding an Elementor WPForms block.
+- Error handler improvements.
+- Fields inside the Layout field were displayed incorrectly based on the conditional logic.
+- When user opened Help in Builder, the default help string was incorrect for Brevo and Kit addons.
+- Some emails were not added to Constant Contact integration.
+- The WPForms Challenge steps were shown in the AI Form Generator panel.
+- PHP 7.1 and 7.2 compatibility.
+
+## [1.9.2.3] - 2024-12-03
+### Changed
+- Creating a custom form theme is now available only to Administrators.
+
+### Fixed
+- Translated form action notices had an "s" letter appended to the form/template translated name.
+- The Minimum time to submit setting consistently blocked form submissions on sites created in WordPress Studio.
+- The '_load_textdomain_just_in_time was called incorrectly' error with child themes.
+- In rare cases, a fatal error could happen on plugin activation.
+- In some cases, selecting entries by date range may cause fatal error.
+- Uncanny Automator could not be activated from the form builder.
+
+## [1.9.2.2] - 2024-11-18
+- Fixed _load_textdomain_just_in_time notice with WordPress 6.7.
+- Some translations were empty with WordPress 6.5+.
+
+## [1.9.2.1] - 2024-11-06
+### Fixed
+- A fatal error occurred on the plugins admin page with some third-party plugins.
+
+## [1.9.2] - 2024-11-05
+### Added
+- Form generation with AI.
+- The Settings section in the WPForms admin bar menu.
+- Toggle allowing to turn specific notifications on or off.
+- Update Stripe payments status after canceling a refund in the Stripe dashboard.
+- Open the URL in the new tab for Confirmations.
+- Repeater fields support for the Entry CSV Attachment settings.
+- New `$row_id` parameter to the `wpforms_pre_update_{$type}` and `wpforms_post_update_{$type}` actions.
+- AI chat warning messages if prohibited code has been removed.
+- Default values for the Spam Protection and Security > Keyword Filter List on the Builder screen.
+
+### Changed
+- Addons not passing the requirements are not deactivated now.
+- Updated jquery.validate library to 1.21.0.
+- Updated stripe/stripe-php library to 16.1.0.
+- Updated DOMPurify library to 3.1.7.
+- Updated woocommerce/action-scheduler library to 3.8.2.
+- Updated Chart.js library to v4.4.4.
+- Smart tags are no longer processed in WordPress builders, such as Gutenberg, Elementor, Divi Builder, etc.
+- Spam entries flagged through the Country & Keyword filters are now stored.
+- Improved handling of duplicate stripe webhooks.
+
+### Fixed
+- Cloned Repeater fields were not visible in form confirmations when Ajax form submission was disabled.
+- The country code was incorrect when the default flag was set in the Smart Phone Field with GDPR.
+- RTL layout of the Repeater field on the front end.
+- RTL layout of the Layout and Repeater fields in the builder.
+- There was unnecessary space in the value of the HTML field on the Entry Print Preview screen.
+- The Smart Phone field entry value was wrong in some cases.
+- There was a potential infinite recursion in error handling.
+- Improved performance on the Templates page in the Form Builder.
+- Field labels were printed in the Order Summary table when the Hide Label option was enabled.
+- The Likert scale field values were not exported if column names contained numbers.
+- The update notice did not appear on the plugins page on WordPress.com.
+- Order summary ignored some payment fields on multi-page forms.
+- Resolved W3C errors and warnings reported for the Fancy fields.
+- In some cases, adding a new account in Form Builder did not load the account data correctly.
+- The currency symbol sometimes moved to the second line when the amount was too long.
+- Table styles were broken in the Rich Text field smart tag.
+- Improved translation handling for addon names and descriptions.
+- Order Summary performance issue on large forms containing numerous payment conditional logic fields.
+- Repeater cloned fields were not added to Resend Notifications.
+- Warning for unsaved changes appeared upon visiting the Marketing tab when no changes were made.
+- Form fields were lost when saving a form with addon fields when the addon was deactivated.
+- Mapped First/Last Name sub-fields were replaced by another after the initial field was deleted.
+- An extra field was displayed when WPForms were embedded using a shortcode in the Footer.
+- Country selector was missed for the preview of the Phone field in the builder.
+- The non-Latin characters were not supported for the AI Choices prompt.
+
+## [1.9.1.6] - 2024-10-28
+### Fixed
+- The Dropdown field placeholder was disabled on the Divi Builder preview screen.
+- When sending a form with an incorrect nonce field, no error was displayed.
+- An extra field was displayed when a form was embedded using a shortcode in the Footer.
+
 ## [1.9.1.5] - 2024-10-23
 ### Fixed
 - Order Summary table ignored some payment fields on multi-page forms.

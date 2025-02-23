@@ -243,23 +243,6 @@
         $('.js-stop-prop').on('click', function(e) {
           e.stopPropagation();
         });
-
-        // Toggle hovered classes
-        if (getWidth() >= 1100) {
-          $('.js-hover').on('mouseenter mouseleave', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleClasses($(this));
-          });
-        }
-
-        $('.js-hover-parent').on('mouseenter mouseleave', function(e) {
-          e.preventDefault();
-          var $this = $(this);
-          $this.toggleClass('this-is-active');
-          $this.parent().toggleClass('this-is-active');
-        });
-
       },
       finalize: function() {
         // JavaScript to be fired on all pages, after page specific JS is fired

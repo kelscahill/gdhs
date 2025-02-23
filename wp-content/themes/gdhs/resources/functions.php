@@ -255,26 +255,27 @@ add_theme_support('editor-text-styles');
 add_theme_support('wp-block-styles');
 
 // Only allow the following blocks in Gutenberg
-add_filter('allowed_block_types', function () {
-  return [
-    'core/heading',
-    'core/image',
-    'core/block',
-    'core/embed',
-    'core/spacer',
-    'core/buttons',
-    'core/list',
-    'core/shortcode',
-    'core/video',
-    'core/html',
-    'core/embed',
-    'core/paragraph',
-    'core/separator',
-    'core/quote',
-    'core/table',
-    'acf/gallery',
-  ];
-});
+// add_filter('allowed_block_types', function () {
+//   return [
+//     'core/heading',
+//     'core/image',
+//     'core/block',
+//     'core/embed',
+//     'core/spacer',
+//     'core/buttons',
+//     'core/list',
+//     'core/shortcode',
+//     'core/video',
+//     'core/html',
+//     'core/embed',
+//     'core/paragraph',
+//     'core/separator',
+//     'core/quote',
+//     'core/table',
+//     'core/text-columns',
+//     'acf/gallery',
+//   ];
+// });
 
 /*
  * ACF Options Page

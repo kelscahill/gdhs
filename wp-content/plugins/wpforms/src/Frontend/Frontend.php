@@ -46,6 +46,15 @@ class Frontend {
 	protected $amp_obj;
 
 	/**
+	 * CSS vars class instance.
+	 *
+	 * @since 1.9.3
+	 *
+	 * @var CSSVars
+	 */
+	protected $css_vars_obj;
+
+	/**
 	 * Store form data to be referenced later.
 	 *
 	 * @since 1.8.1
@@ -102,8 +111,9 @@ class Frontend {
 	 */
 	public function init() {
 
-		$this->forms   = [];
-		$this->amp_obj = wpforms()->obj( 'amp' );
+		$this->forms        = [];
+		$this->amp_obj      = wpforms()->obj( 'amp' );
+		$this->css_vars_obj = wpforms()->obj( 'css_vars' );
 
 		$this->init_render_engine( wpforms_get_render_engine() );
 		$this->hooks();
@@ -424,7 +434,7 @@ class Frontend {
 		 */
 		do_action( 'wpforms_frontend_output_before', $form_data, $form );
 
-		if ( $this->output_success( $form, $form_data ) ) {
+		if ( $this->output_success( $form ) ) {
 			return true;
 		}
 
@@ -482,23 +492,28 @@ class Frontend {
 	 *
 	 * @since 1.8.1
 	 *
-	 * @param WP_Post $form      Form.
-	 * @param array   $form_data Form data.
+	 * @param WP_Post $form Form.
 	 *
 	 * @return bool
 	 */
-	private function output_success( $form, $form_data ): bool {
+	private function output_success( $form ): bool {
 
 		$form_id = absint( $form->ID );
 		$process = wpforms()->obj( 'process' );
-		$errors  = empty( $process->errors[ $form_id ] ) ? [] : $process->errors[ $form_id ];
+
+		if ( ! $process ) {
+			return false;
+		}
+
+		$form_data = $process->form_data;
+		$errors    = empty( $process->errors[ $form_id ] ) ? [] : $process->errors[ $form_id ];
 
 		// Check for return hash.
 		if (
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			! empty( $_GET['wpforms_return'] ) &&
 			$process->valid_hash &&
-			(int) $process->form_data['id'] === $form_id
+			(int) $form_data['id'] === $form_id
 		) {
 			$this->form_container_open( $form_data, $form );
 
@@ -511,7 +526,7 @@ class Frontend {
 			 * @param array $fields    Form fields.
 			 * @param int   $entry_id  Form ID.
 			 */
-			do_action( 'wpforms_frontend_output_success', $process->form_data, $process->fields, $process->entry_id );
+			do_action( 'wpforms_frontend_output_success', $form_data, $process->fields, $process->entry_id );
 
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			wpforms_debug_data( $_POST );
@@ -530,19 +545,13 @@ class Frontend {
 			(int) $_POST['wpforms']['id'] === $form_id
 			// phpcs:enable WordPress.Security.NonceVerification.Missing
 		) {
-			$is_ajax = wp_doing_ajax();
-
 			// There is no need for a container wrapper when a form is submitted through AJAX.
-			if ( ! $is_ajax ) {
-				$this->form_container_open( $form_data, $form );
-			}
+			$this->form_container_open( $form_data, $form );
 
 			/** This action is documented in the same method, several lines above. */
-			do_action( 'wpforms_frontend_output_success', $form_data, false, false );
+			do_action( 'wpforms_frontend_output_success', $form_data, $process->fields, $process->entry_id );
 
-			if ( ! $is_ajax ) {
-				$this->form_container_close( $form_data, $form );
-			}
+			$this->form_container_close( $form_data, $form );
 
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			wpforms_debug_data( $_POST );
@@ -1285,8 +1294,9 @@ class Frontend {
 	 */
 	public function foot( $form_data, $deprecated, $title, $description, $errors ) {
 
-		$form_id  = absint( $form_data['id'] );
-		$settings = $form_data['settings'];
+		$form_id     = absint( $form_data['id'] );
+		$settings    = $form_data['settings'];
+		$submit_text = ! empty( $settings['submit_text'] ) ? $settings['submit_text'] : __( 'Submit', 'wpforms-lite' );
 
 		/**
 		 * Filter the form submit button text.
@@ -1296,7 +1306,7 @@ class Frontend {
 		 * @param string $submit_text Submit button text.
 		 * @param array  $form_data   Form data.
 		 */
-		$submit = apply_filters( 'wpforms_field_submit', $settings['submit_text'], $form_data ); // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
+		$submit = apply_filters( 'wpforms_field_submit', $submit_text, $form_data ); // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
 
 		$attrs      = [
 			'aria-live' => 'assertive',
@@ -1576,13 +1586,21 @@ class Frontend {
 		}
 
 		$style_name = $disable_css === 1 ? 'full' : 'base';
+		$handle     = "wpforms-{$this->render_engine}-{$style_name}";
 
 		wp_enqueue_style(
-			"wpforms-{$this->render_engine}-{$style_name}",
+			$handle,
 			WPFORMS_PLUGIN_URL . "assets/css/frontend/{$this->render_engine}/wpforms-{$style_name}{$min}.css",
 			[],
 			WPFORMS_VERSION
 		);
+
+		// Add CSS variables for the Modern Markup mode for full styles.
+		if ( empty( $this->css_vars_obj ) || $this->render_engine !== 'modern' || $style_name !== 'full' ) {
+			return;
+		}
+
+		wp_add_inline_style( $handle, $this->css_vars_obj->get_root_vars_css() );
 	}
 
 	/**
@@ -1613,7 +1631,7 @@ class Frontend {
 			'wpforms-validation',
 			WPFORMS_PLUGIN_URL . 'assets/lib/jquery.validate.min.js',
 			[ 'jquery' ],
-			'1.20.1',
+			'1.21.0',
 			$in_footer
 		);
 
@@ -1640,7 +1658,7 @@ class Frontend {
 			wp_enqueue_script(
 				'wpforms-mailcheck',
 				WPFORMS_PLUGIN_URL . 'assets/lib/mailcheck.min.js',
-				false,
+				[],
 				'1.1.2',
 				$in_footer
 			);
@@ -1922,7 +1940,8 @@ class Frontend {
 				continue;
 			}
 
-			$strings[ $key ] = html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' );
+			$strings[ $key ] = esc_html( html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' ) );
+
 		}
 
 		return $strings;
@@ -1971,13 +1990,11 @@ class Frontend {
 			return $strings;
 		}
 
-		$css_vars_obj = wpforms()->obj( 'css_vars' );
-
-		if ( empty( $css_vars_obj ) ) {
+		if ( empty( $this->css_vars_obj ) ) {
 			return $strings;
 		}
 
-		$strings['css_vars'] = array_keys( $css_vars_obj->get_vars( ':root' ) );
+		$strings['css_vars'] = array_keys( $this->css_vars_obj->get_vars( ':root' ) );
 
 		return $strings;
 	}

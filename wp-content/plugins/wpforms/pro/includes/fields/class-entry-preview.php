@@ -2,6 +2,7 @@
 
 use WPForms\Pro\Forms\Fields\Repeater\Helpers as RepeaterHelpers;
 use WPForms\Pro\Forms\Fields\Layout\Helpers as LayoutHelpers;
+use WPForms\Pro\Forms\Fields\Helpers as FieldsHelpers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -13,24 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.6.9
  */
 class WPForms_Entry_Preview extends WPForms_Field {
-
-	/**
-	 * HTML class for empty label.
-	 *
-	 * @since 1.9.0
-	 *
-	 * @var string
-	 */
-	const EMPTY_LABEL_CLASS = 'wpforms-entry-preview-label-empty';
-
-	/**
-	 * Layout and repeater subfields removed during the entry preview process.
-	 *
-	 * @since 1.9.0
-	 *
-	 * @var array
-	 */
-	private $subfields = [];
 
 	/**
 	 * Init.
@@ -97,7 +80,6 @@ class WPForms_Entry_Preview extends WPForms_Field {
 			[],
 			WPFORMS_VERSION
 		);
-
 	}
 
 	/**
@@ -124,6 +106,9 @@ class WPForms_Entry_Preview extends WPForms_Field {
 			WPFORMS_VERSION,
 			$this->load_script_in_footer()
 		);
+
+		// Enqueue `wpforms-iframe` script.
+		FieldsHelpers::enqueue_iframe_script();
 	}
 
 	/**
@@ -389,6 +374,8 @@ class WPForms_Entry_Preview extends WPForms_Field {
 			}
 		}
 
+		$entry_preview_fields = $this->filter_conditional_logic( $entry_preview_fields, $form_data );
+
 		/** This filter is documented in wpforms/includes/class-process.php */
 		return apply_filters( 'wpforms_process_filter', $entry_preview_fields, $submitted_fields, $form_data ); // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
 	}
@@ -411,11 +398,13 @@ class WPForms_Entry_Preview extends WPForms_Field {
 			/**
 			 * Apply things for format and sanitize, see WPForms_Field::format().
 			 *
+			 * @since 1.4.0
+			 *
 			 * @param int    $field       Field ID.
 			 * @param string $field_value Submitted field value.
 			 * @param array  $form_data   Form data and settings.
 			 */
-			do_action( "wpforms_process_format_{$field_type}", $field_id, $field_value, $form_data );
+			do_action( "wpforms_process_format_{$field_type}", $field_id, $field_value, $form_data ); // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
 
 			return;
 		}
@@ -429,7 +418,7 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	}
 
 	/**
-	 * Remove invisible fields from the Entry Preview.
+	 * Mark fields hidden by CL as invisible.
 	 *
 	 * @since 1.6.9
 	 *
@@ -442,7 +431,7 @@ class WPForms_Entry_Preview extends WPForms_Field {
 
 		foreach ( $entry_preview_fields as $field_id => $field ) {
 			if ( wpforms_conditional_logic_fields()->field_is_hidden( $form_data, $field_id ) ) {
-				unset( $entry_preview_fields[ $field_id ] );
+				$entry_preview_fields[ $field_id ]['visible'] = false;
 			}
 		}
 
@@ -471,7 +460,12 @@ class WPForms_Entry_Preview extends WPForms_Field {
 			return;
 		}
 
-		$this->print_entry_preview( $type, $fields, $form_data );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$submitted_fields = ! empty( $_POST['wpforms'] ) ? stripslashes_deep( $_POST['wpforms'] ) : [];
+
+		$entry_fields = $this->get_entry_preview_fields( $form_data, $submitted_fields, 0 );
+
+		$this->print_entry_preview( $type, $entry_fields, $form_data );
 	}
 
 	/**
@@ -479,85 +473,28 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	 *
 	 * @since 1.6.9
 	 *
-	 * @param string $type      Entry preview type.
-	 * @param array  $fields    Entry preview fields.
-	 * @param array  $form_data Form data and settings.
+	 * @param string $type         Entry preview type.
+	 * @param array  $entry_fields Entry fields.
+	 * @param array  $form_data    Form data and settings.
 	 */
-	private function print_entry_preview( string $type, array $fields, array $form_data ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
-
-		$fields = $this->filter_conditional_logic( $fields, $form_data );
+	private function print_entry_preview( string $type, array $entry_fields, array $form_data ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		/**
 		 * Modify the fields before the entry preview is printed.
 		 *
 		 * @since 1.8.9
 		 *
-		 * @param array $fields    Entry preview fields.
-		 * @param array $form_data Form data and settings.
+		 * @param array $entry_fields Entry preview fields.
+		 * @param array $form_data    Form data and settings.
 		 *
 		 * @return array
 		 */
-		$fields = apply_filters( 'wpforms_entry_preview_fields', $fields, $form_data );
+		$entry_fields = apply_filters( 'wpforms_entry_preview_fields', $entry_fields, $form_data );
 
-		$ignored_fields = self::get_ignored_fields();
-		$fields_html    = '';
+		$fields_html = '';
 
-		$form_data = $this->remove_subfields( $form_data );
-
-		foreach ( $form_data['fields'] as $field ) {
-			if ( in_array( $field['type'], $ignored_fields, true ) ) {
-				continue;
-			}
-
-			/**
-			 * Hide the field.
-			 *
-			 * @since 1.7.0
-			 *
-			 * @param bool  $hide      Hide the field.
-			 * @param array $field     Field data.
-			 * @param array $form_data Form data.
-			 *
-			 * @return bool
-			 */
-			if ( apply_filters( 'wpforms_pro_fields_entry_preview_print_entry_preview_exclude_field', false, $field, $form_data ) ) { // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
-				continue;
-			}
-
-			if ( $field['type'] === 'repeater' ) {
-				$fields_html .= $this->get_repeater_field( $field, $form_data, $fields );
-			} elseif ( $field['type'] === 'layout' ) {
-				$fields_html .= $this->get_layout_field( $field, $form_data, $fields );
-			} else {
-				$field = $fields[ $field['id'] ] ?? [];
-
-				if ( empty( $field ) ) {
-					continue;
-				}
-
-				$value = $this->get_field_value( $field, $form_data );
-
-				if ( wpforms_is_empty_string( $value ) ) {
-					continue;
-				}
-
-				$field_type_classes = [ 'wpforms-entry-preview-' . $field['type'] ];
-
-				$label = $this->get_field_label( $field, $form_data );
-
-				if ( ! $label ) {
-					$field_type_classes[] = self::EMPTY_LABEL_CLASS;
-				}
-
-				$fields_html .= sprintf(
-					'<div class="wpforms-entry-preview-label %s">%s</div>
-					<div class="wpforms-entry-preview-value %s">%s</div>',
-					wpforms_sanitize_classes( $field_type_classes, true ),
-					esc_html( $this->get_field_label( $field, $form_data ) ),
-					wpforms_sanitize_classes( $field_type_classes, true ),
-					wp_kses_post( $value )
-				);
-			}
+		foreach ( $entry_fields as $field ) {
+			$fields_html .= $this->get_field( $field, $form_data );
 		}
 
 		if ( empty( $fields_html ) ) {
@@ -576,36 +513,28 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	 *
 	 * @since 1.8.9
 	 *
-	 * @param string $type      Entry preview type.
-	 * @param array  $fields    Entry preview fields.
-	 * @param array  $form_data Form data and settings.
+	 * @param string $type         Entry preview type.
+	 * @param array  $entry_fields Entry fields.
+	 * @param array  $form_data    Form data and settings.
 	 */
-	private function print_ajax_entry_preview( string $type, array $fields, array $form_data ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
-
-		$fields = $this->filter_conditional_logic( $fields, $form_data );
+	private function print_ajax_entry_preview( string $type, array $entry_fields, array $form_data ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		/**
 		 * Modify the fields before the entry preview is printed.
 		 *
 		 * @since 1.8.9
 		 *
-		 * @param array $fields    Entry preview fields.
-		 * @param array $form_data Form data and settings.
+		 * @param array $entry_fields Entry preview fields.
+		 * @param array $form_data    Form data and settings.
 		 *
 		 * @return array
 		 */
-		$fields = apply_filters( 'wpforms_entry_preview_fields', $fields, $form_data );
+		$entry_fields = apply_filters( 'wpforms_entry_preview_fields', $entry_fields, $form_data );
 
 		$fields_html = '';
 
-		foreach ( $fields as $field ) {
-			if ( $field['type'] === 'repeater' ) {
-				$fields_html .= $this->get_repeater_field( $field, $form_data, $fields );
-			} elseif ( $field['type'] === 'layout' ) {
-				$fields_html .= $this->get_layout_field( $field, $form_data, $fields );
-			} else {
-				$fields_html .= $this->get_field( $field, $form_data );
-			}
+		foreach ( $entry_fields as $field ) {
+			$fields_html .= $this->get_field( $field, $form_data );
 		}
 
 		if ( empty( $fields_html ) ) {
@@ -631,15 +560,21 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	 */
 	private function get_field( array $field, array $form_data ): string {
 
-		$ignored_fields = self::get_ignored_fields();
-
-		if ( in_array( $field['type'], $ignored_fields, true ) ) {
+		if ( $this->skip_field( $field, $form_data ) ) {
 			return '';
+		}
+
+		if ( $field['type'] === 'repeater' ) {
+			return $this->get_repeater_field( $field, $form_data );
+		}
+
+		if ( $field['type'] === 'layout' ) {
+			return $this->get_layout_field( $field, $form_data );
 		}
 
 		$value = $this->get_field_value( $field, $form_data );
 
-		if ( $field['type'] !== 'repeater' && $field['type'] !== 'layout' && wpforms_is_empty_string( $value ) ) {
+		if ( wpforms_is_empty_string( $value ) ) {
 			return '';
 		}
 
@@ -658,22 +593,66 @@ class WPForms_Entry_Preview extends WPForms_Field {
 			return '';
 		}
 
-		if ( ! empty( $this->subfields ) ) {
-			$form_data['fields'] = $form_data['fields'] + $this->subfields;
+		return sprintf(
+			'<div class="wpforms-entry-preview-label">%1$s</div><div class="wpforms-entry-preview-value">%2$s</div>',
+			esc_html( $this->get_field_label( $field, $form_data ) ),
+			wp_kses_post( $value )
+		);
+	}
+
+	/**
+	 * Check if the field rendering should be skipped.
+	 *
+	 * @since 1.9.3
+	 *
+	 * @param array $field     Field settings.
+	 * @param array $form_data Form data.
+	 *
+	 * @return bool
+	 */
+	private function skip_field( array $field, array $form_data ): bool {
+
+		$ignored_fields = self::get_ignored_fields();
+
+		if ( in_array( $field['type'], $ignored_fields, true ) ) {
+			return true;
 		}
 
-		$label               = $this->get_field_label( $field, $form_data );
-		$field_type_class    = $label ? '' : self::EMPTY_LABEL_CLASS;
-		$label_not_displayed = $label ? '' : 'wpforms-entry-preview-label-not-displayed';
+		if ( $this->is_hidden( $field, $form_data ) ) {
+			return true;
+		}
 
-		return sprintf(
-			'<div class="wpforms-entry-preview-label %1$s %4$s">%2$s</div>
-			<div class="wpforms-entry-preview-value %1$s">%3$s</div>',
-			sanitize_html_class( $field_type_class ),
-			esc_html( $this->get_field_label( $field, $form_data ) ),
-			wp_kses_post( $value ),
-			sanitize_html_class( $label_not_displayed )
-		);
+		return false;
+	}
+
+	/**
+	 * Check if the field is hidden.
+	 *
+	 * @since 1.9.3
+	 *
+	 * @param array $field     Field settings.
+	 * @param array $form_data Form data.
+	 *
+	 * @return bool
+	 */
+	private function is_hidden( array $field, array $form_data ): bool {
+
+		$field_id = $field['id'] ?? null;
+
+		if ( empty( $field_id ) ) {
+			return false;
+		}
+
+		// Hidden by conditional logic.
+		if ( isset( $field['visible'] ) && ! $field['visible'] ) {
+			return true;
+		}
+
+		// Hidden by the field format.
+		$field_data = $form_data['fields'][ $field_id ] ?? [];
+		$format     = $field_data['format'] ?? '';
+
+		return $format === 'hidden';
 	}
 
 	/**
@@ -681,40 +660,73 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	 *
 	 * @since 1.8.9
 	 *
-	 * @param array $field        Field settings.
-	 * @param array $form_data    Form data.
-	 * @param array $entry_fields Entry fields.
+	 * @param array $field     Field settings.
+	 * @param array $form_data Form data.
 	 *
 	 * @return string
 	 */
-	private function get_repeater_field( array $field, array $form_data, array $entry_fields ): string { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function get_repeater_field( array $field, array $form_data ): string { // phpcs:ignore Generic.Metrics.NestingLevel.MaxExceeded, Generic.Metrics.CyclomaticComplexity.TooHigh
 
-		$blocks = RepeaterHelpers::get_blocks( $field, $form_data );
+		$form_data_reduced = RepeaterHelpers::get_previewable_form_data( $form_data, $field );
+		$blocks            = RepeaterHelpers::get_blocks( $field, $form_data_reduced );
 
-		if ( ! $blocks ) {
+		ob_start();
+
+		$display = $field['display'] ?? 'rows';
+
+		?>
+		<div class="wpforms-entry-preview-repeater wpforms-entry-preview-repeater-display-<?php echo esc_attr( $display ); ?>">
+			<?php if ( $display === 'rows' ) : ?>
+				<?php echo $this->get_repeater_divider( $field, $form_data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php endif; ?>
+
+			<?php foreach ( $blocks as $key => $rows ) : ?>
+				<?php
+				if ( $display === 'blocks' ) {
+					$block_number = $key >= 1 ? ' #' . ( $key + 1 ) : '';
+
+					echo $this->get_repeater_divider( $field, $form_data, $block_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+				?>
+				<div class="wpforms-entry-preview-rows <?php echo $key === 0 ? 'wpforms-first-row' : ''; ?>">
+					<?php foreach ( $rows as $row_data ) : ?>
+						<div class="wpforms-entry-preview-row">
+							<?php foreach ( $row_data as $column ) : ?>
+								<div class="wpforms-entry-preview-column wpforms-entry-preview-column-<?php echo esc_attr( $column['width_preset'] ); ?>"><?php echo ! empty( $column['field'] ) ? $this->get_field( $column['field'], $form_data ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+							<?php endforeach; ?>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		<?php
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Prepare repeater divider HTML markup.
+	 *
+	 * @since 1.9.2
+	 *
+	 * @param array  $field        Field data.
+	 * @param array  $form_data    Form data and settings.
+	 * @param string $block_number Block number.
+	 *
+	 * @return string
+	 */
+	private function get_repeater_divider( array $field, array $form_data, string $block_number = '' ): string {
+
+		$label = isset( $field['label'] ) ? $field['label'] . $block_number : '';
+
+		if ( empty( $label ) || $this->is_field_label_hidden( $field, $form_data ) ) {
 			return '';
 		}
 
-		$content = '';
-
-		foreach ( $blocks as $key => $rows ) {
-			$fields_content = '';
-			$block_number   = $key >= 1 ? ' #' . ( $key + 1 ) : '';
-			$label          = $this->is_field_label_hidden( $field, $form_data ) ? '' : $field['label'] . $block_number;
-			$divider        = '<div class="wpforms-entry-preview-label wpforms-entry-preview-label-repeater">' . esc_html( $label ) . '</div><div class="wpforms-entry-preview-value"></div>';
-
-			foreach ( $rows as $row_data ) {
-				foreach ( $row_data as $data ) {
-					$fields_content .= $this->get_subfield( $data['field'], $form_data, $entry_fields );
-				}
-			}
-
-			if ( $fields_content ) {
-				$content .= $divider . $fields_content;
-			}
-		}
-
-		return $content;
+		return sprintf(
+			'<div class="wpforms-entry-preview-label wpforms-entry-preview-label-repeater">%1$s</div>',
+			esc_html( $label )
+		);
 	}
 
 	/**
@@ -722,31 +734,31 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	 *
 	 * @since 1.9.0
 	 *
-	 * @param array $field        Field settings.
-	 * @param array $form_data    Form data.
-	 * @param array $entry_fields Entry fields.
+	 * @param array $field     Field settings.
+	 * @param array $form_data Form data.
 	 *
 	 * @return string
 	 */
-	private function get_layout_field( array $field, array $form_data, array $entry_fields ): string {
+	private function get_layout_field( array $field, array $form_data ): string {
 
 		$fields_content = isset( $form_data['fields'][ $field['id'] ]['display'] ) && $form_data['fields'][ $field['id'] ]['display'] === 'columns'
-			? $this->get_layout_subfields_columns( $field, $form_data, $entry_fields )
-			: $this->get_layout_subfields_rows( $field, $form_data, $entry_fields );
+			? $this->get_layout_subfields_columns( $field, $form_data )
+			: $this->get_layout_subfields_rows( $field, $form_data );
 
 		if ( ! $fields_content ) {
 			return '';
 		}
 
-		$label       = $this->is_field_label_hidden( $field, $form_data ) ? '' : wp_strip_all_tags( $field['label'] );
-		$empty_class = empty( $label ) ? self::EMPTY_LABEL_CLASS . ' wpforms-entry-preview-label-not-displayed' : '';
+		$divider = '';
 
-		$divider = sprintf(
-			'<div class="wpforms-entry-preview-label wpforms-entry-preview-label-layout %1$s">%2$s</div>
-			<div class="wpforms-entry-preview-value %1$s"></div>',
-			wpforms_sanitize_classes( $empty_class ),
-			esc_html( $label )
-		);
+		if ( ! $this->is_field_label_hidden( $field, $form_data ) ) {
+			$label = wp_strip_all_tags( $field['label'] );
+
+			$divider = sprintf(
+				'<div class="wpforms-entry-preview-label wpforms-entry-preview-label-layout">%1$s</div>',
+				esc_html( $label )
+			);
+		}
 
 		return $divider . $fields_content;
 	}
@@ -756,31 +768,40 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	 *
 	 * @since 1.9.1
 	 *
-	 * @param array $field        Field settings.
-	 * @param array $form_data    Form data.
-	 * @param array $entry_fields Entry fields.
+	 * @param array $field     Field settings.
+	 * @param array $form_data Form data.
 	 *
 	 * @return string
 	 */
-	private function get_layout_subfields_columns( array $field, array $form_data, array $entry_fields ): string {
+	private function get_layout_subfields_columns( array $field, array $form_data ): string {
 
 		if ( ! isset( $field['columns'] ) ) {
 			return '';
 		}
 
-		$fields_content = '';
+		ob_start();
 
-		foreach ( $field['columns'] as $column ) {
-			if ( empty( $column['fields'] ) ) {
-				continue;
-			}
+		?>
+		<div class="wpforms-entry-preview-layout  wpforms-entry-preview-layout-display-columns">
+			<div class="wpforms-entry-preview-rows">
+				<div class="wpforms-entry-preview-row">
+					<?php foreach ( $field['columns'] as $column ) : ?>
+						<div class="wpforms-entry-preview-column wpforms-entry-preview-column-<?php echo esc_attr( $column['width_preset'] ); ?>">
+							<?php
+							if ( ! empty( $column['fields'] ) ) {
+								foreach ( $column['fields'] as $child_field ) {
+									echo $this->get_field( $child_field, $form_data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+							}
+							?>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		</div>
+		<?php
 
-			foreach ( $column['fields'] as $child_field ) {
-				$fields_content .= $this->get_subfield( $child_field, $form_data, $entry_fields );
-			}
-		}
-
-		return $fields_content;
+		return ob_get_clean();
 	}
 
 	/**
@@ -788,13 +809,12 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	 *
 	 * @since 1.9.1
 	 *
-	 * @param array $field        Field settings.
-	 * @param array $form_data    Form data.
-	 * @param array $entry_fields Entry fields.
+	 * @param array $field     Field settings.
+	 * @param array $form_data Form data.
 	 *
 	 * @return string
 	 */
-	private function get_layout_subfields_rows( array $field, array $form_data, array $entry_fields ): string {
+	private function get_layout_subfields_rows( array $field, array $form_data ): string {
 
 		$rows = LayoutHelpers::get_row_data( $field );
 
@@ -802,43 +822,29 @@ class WPForms_Entry_Preview extends WPForms_Field {
 			return '';
 		}
 
-		$fields_content = '';
+		ob_start();
 
-		foreach ( $rows as $row ) {
-			foreach ( $row as $column ) {
-				if ( empty( $column['field'] ) ) {
-					continue;
-				}
+		?>
+		<div class="wpforms-entry-preview-layout wpforms-entry-preview-layout-display-rows">
+			<div class="wpforms-entry-preview-rows">
+				<?php foreach ( $rows as $row ) : ?>
+					<div class="wpforms-entry-preview-row">
+						<?php foreach ( $row as $column ) : ?>
+							<div class="wpforms-entry-preview-column wpforms-entry-preview-column-<?php echo esc_attr( $column['width_preset'] ); ?>">
+								<?php
+								if ( ! empty( $column['field'] ) ) {
+									echo $this->get_field( $column['field'], $form_data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								?>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
 
-				$fields_content .= $this->get_subfield( $column['field'], $form_data, $entry_fields );
-			}
-		}
-
-		return $fields_content;
-	}
-
-	/**
-	 * Get layout subfield.
-	 *
-	 * @since 1.9.1
-	 *
-	 * @param int|array $child_field  On the confirmation page the child field is ID, on AJAX request it's array.
-	 * @param array     $form_data    Form data.
-	 * @param array     $entry_fields Entry fields.
-	 *
-	 * @return string
-	 */
-	private function get_subfield( $child_field, array $form_data, array $entry_fields ): string {
-
-		if ( is_array( $child_field ) ) {
-			return $this->get_field( $child_field, $form_data );
-		}
-
-		if ( ! isset( $entry_fields[ $child_field ] ) ) {
-			return '';
-		}
-
-		return $this->get_field( $entry_fields[ $child_field ], $form_data );
+		return ob_get_clean();
 	}
 
 	/**
@@ -1418,25 +1424,6 @@ class WPForms_Entry_Preview extends WPForms_Field {
 	private function is_field_label_hidden( $field, $form_data ): bool {
 
 		return ! empty( $form_data['fields'][ $field['id'] ]['label_hide'] );
-	}
-
-	/**
-	 * Remove subfields from the form data after moving them to repeater or layout field.
-	 *
-	 * @since 1.9.0
-	 *
-	 * @param array $form_data Form data.
-	 *
-	 * @return array
-	 */
-	private function remove_subfields( $form_data ): array {
-
-		$full_form_data  = $form_data;
-		$form_data       = RepeaterHelpers::remove_child_fields_after_moving_to_repeater_field( $form_data );
-		$form_data       = LayoutHelpers::remove_fields_after_moving_to_layout_field( $form_data );
-		$this->subfields = array_diff_key( $full_form_data['fields'], $form_data['fields'] );
-
-		return $form_data;
 	}
 }
 

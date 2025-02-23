@@ -35,11 +35,6 @@
       <div class="c-footer__credit u-font--secondary--xs u-color--gray">
         Design & Code: <a class="u-link--white" href="https://cahillscreative.com" target="_blank">Cahill's Creative LLC.</a>
       </div>
-      <div class="c-footer__affiliate">
-        <a href="https://smile.amazon.com/" class="u-path-fill--gray" target="_blank">
-          @include('patterns.icons.c-logo--amazon-smile')
-        </a>
-      </div>
     </div>
     <div class="c-footer__scroll">
       <a href="#top" class="u-link--cta u-link--white">To Top<span class="u-icon u-icon--l u-path-fill--white">@include('patterns.icons.o-arrow--long')</span></a>

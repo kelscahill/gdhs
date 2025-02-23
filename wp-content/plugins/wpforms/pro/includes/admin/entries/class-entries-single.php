@@ -547,6 +547,18 @@ class WPForms_Entries_Single {
 		$fields    = wpforms_decode( $this->entry->fields );
 		$form_data = wpforms_decode( $this->form->post_content );
 
+		/**
+		 * Filters the form data for the entry before processing notifications.
+		 *
+		 * @since 1.9.2
+		 *
+		 * @param array  $fields    Entry fields.
+		 * @param array  $form_data Form data.
+		 *
+		 * @return array
+		 */
+		$form_data = apply_filters( 'wpforms_entries_single_process_notifications_form_data',  $form_data, $this->entry );
+
 		wpforms()->obj( 'process' )->entry_email( $fields, [], $form_data, $this->entry->entry_id );
 
 		$this->alerts[] = [
@@ -1136,25 +1148,17 @@ class WPForms_Entries_Single {
 	 *
 	 * @since 1.8.3
 	 *
+	 * @depecated 1.9.3
+	 *
 	 * @param array $column Column width data.
 	 *
 	 * @return float
 	 */
 	public function get_layout_col_width( array $column ): float {
 
-		$preset_width = ! empty( $column['width_preset'] ) ? (int) $column['width_preset'] : 50;
+		_deprecated_function( __METHOD__, '1.9.3 of the WPForms plugin', 'wpforms_get_column_width()' );
 
-		if ( $preset_width === 33 ) {
-			$preset_width = 33.33333;
-		} elseif ( $preset_width === 67 ) {
-			$preset_width = 66.66666;
-		}
-
-		if ( ! empty( $column['width_custom'] ) ) {
-			$preset_width = (int) $column['width_custom'];
-		}
-
-		return (float) $preset_width;
+		return wpforms_get_column_width( $column );
 	}
 
 	/**
@@ -1489,15 +1493,64 @@ class WPForms_Entries_Single {
 						<div class="wpforms-entry-logs-single <?php echo esc_attr( $class ); ?>">
 							<div class="wpforms-entry-logs-byline">
 								<?php
-								printf(
+								$log_details = sprintf(
 									/* translators: %1$s - user name, %2$s - date. */
 									esc_html__( 'Added by %1$s on %2$s', 'wpforms' ),
 									'<a href="' . esc_url( $user_url ) . '" class="log-user">' . esc_html( $user_name ) . '</a>',
 									esc_html( $date )
 								);
+
+								/**
+								 * Filter a message for each log record.
+								 *
+								 * @since 1.9.3
+								 *
+								 * @param string $log_details Default message.
+								 * @param object $log         Log row.
+								 * @param array  $form_data   Form data and settings.
+								 *
+								 * @return string
+								 */
+								$log_details = (string) apply_filters(
+									'wpforms_entries_single_details_log_display',
+									$log_details,
+									$log,
+									$form_data
+								);
+
+								echo wp_kses(
+									$log_details,
+									[
+										'a' => [
+											'href'  => [],
+											'class' => [],
+										],
+									]
+								);
 								?>
 							</div>
-							<?php echo wp_kses_post( wp_unslash( $log->data ) ); ?>
+							<?php
+							$log_data = $log->data;
+							/**
+							 * Filter a description for each log record.
+							 *
+							 * @since 1.9.3
+							 *
+							 * @param string $log_data  Log data.
+							 * @param object $log       Log row.
+							 * @param array  $form_data Form data and settings.
+							 *
+							 * @return string
+							 */
+							$log_data = (string) apply_filters(
+								'wpforms_entries_single_details_log_data_display',
+								$log_data,
+								$log,
+								$form_data
+							);
+
+							echo wp_kses_post( wp_unslash( $log_data ) );
+							?>
 						</div>
 						<?php
 						++$count;

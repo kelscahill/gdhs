@@ -958,7 +958,7 @@ WPForms.Admin.Builder.FieldLayout = WPForms.Admin.Builder.FieldLayout || ( funct
 			);
 
 			app.reorderLayoutFieldsOptions(
-				$column.closest( '.wpforms-field-layout' )
+				$column.closest( '.wpforms-field-layout, .wpforms-field-repeater' )
 			);
 		},
 

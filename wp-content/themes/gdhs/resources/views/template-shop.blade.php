@@ -35,7 +35,7 @@
         @endwhile
       </div>
       @php wp_reset_query() @endphp
-      @php echo do_shortcode('[ajax_load_more container_type="div" post_type="shop" scroll="false" transition_container="false" button_label="Load More" posts_per_page="12" offset="12"]'); @endphp
+      @php echo do_shortcode('[ajax_load_more container_type="div" post_type="product" pause="false" transition_container="false" button_label="Load More" posts_per_page="12" offset="12"]'); @endphp
     @else
       <p class="u-text-align--center">Sorry, there are no products at this time.</p>
     @endif

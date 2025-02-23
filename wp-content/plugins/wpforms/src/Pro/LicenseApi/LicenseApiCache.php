@@ -106,7 +106,8 @@ abstract class LicenseApiCache extends CacheBase {
 		$file_name .= '-' . wp_hash( $file_name ) . '.json';
 
 		return [
-			'remote_source' => WPFORMS_UPDATER_API,
+			'remote_source' => WPFORMS_UPDATER_API . '/' . $this->get_action_slug(),
+			'timeout'       => 30,
 			'cache_file'    => $file_name,
 			/**
 			 * Time-to-live of the templates cache files in seconds.

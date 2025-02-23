@@ -26,7 +26,7 @@
         @endif
         @if (!$nav['menu_item_parent'])
           @php $parent_id = $nav['ID'] @endphp
-          <li class="c-primary-nav__list-item js-hover js-this">
+          <li class="c-primary-nav__list-item js-this">
             <div class="c-primary-nav__list-toggle">
               <a href="{{ $nav['url'] }}" title="{!! $nav['title'] !!}" class="c-primary-nav__list-link u-font--secondary--s">{!! $nav['title'] !!}</a>
               <span class="u-icon u-icon--xs js-toggle" data-toggled="this">@include('patterns.icons.o-arrow--small')</span>

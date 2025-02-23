@@ -157,6 +157,11 @@
   }
 }
 
-.c-footer__affiliate {
-  width: rem(140);
+.c-footer__rights {
+  flex: 1;
+
+  @include media('>large') {
+    margin-left: $space;
+    margin-right: $space;
+  }
 }

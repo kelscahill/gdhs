@@ -759,36 +759,62 @@ class Edit {
 	 * @param array $entry_fields Entry fields data.
 	 * @param bool  $hide_empty   Flag to hide empty fields.
 	 */
-	private function display_repeater( array $field, array $form_data, array $entry_fields, bool $hide_empty ) { // phpcs:ignore Generic.Metrics.NestingLevel.MaxExceeded, Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function display_repeater( array $field, array $form_data, array $entry_fields, bool $hide_empty ) {
 
 		$blocks = RepeaterHelpers::get_blocks( $field, $form_data );
 
 		if ( ! $blocks ) {
-			return '';
+			return;
 		}
+
+		$display = $field['display'] ?? 'rows';
 
 		?>
 
-		<?php foreach ( $blocks as $key => $rows ) : ?>
-			<div class="wpforms-field-repeater-block">
-				<?php
-				$block_number = $key >= 1 ? ' #' . ( $key + 1 ) : '';
-				?>
+		<div class="wpforms-edit-entry-field wpforms-entry-edit-repeater wpforms-entry-edit-repeater-display-<?php echo esc_attr( $display ); ?>">
+			<?php foreach ( $blocks as $key => $rows ) : ?>
+				<div class="wpforms-field-repeater-block">
+					<?php $block_number = $key >= 1 ? ' #' . ( $key + 1 ) : ''; ?>
 
-				<p class="wpforms-entry-field-name">
-					<?php echo esc_html( $field['label'] . $block_number ); ?>
-				</p>
+					<p class="wpforms-entry-field-name">
+						<?php echo esc_html( $field['label'] . $block_number ); ?>
+					</p>
 
-				<?php foreach ( $rows as $row_data ) : ?>
-					<?php foreach ( $row_data as $data ) : ?>
-						<?php if ( $data['field'] ) : ?>
-							<?php $this->display_edit_form_field( $data['field']['id'], $data['field'], $entry_fields, $form_data, $hide_empty ); ?>
-						<?php endif; ?>
-					<?php endforeach; ?>
+					<?php $this->display_repeater_items( $rows, $entry_fields, $form_data, $hide_empty ); ?>
+				</div>
+			<?php endforeach; ?>
+
+		</div>
+		<?php
+	}
+
+	/**
+	 * Display repeater items.
+	 *
+	 * @since 1.9.3
+	 *
+	 * @param array $rows         Rows data.
+	 * @param array $entry_fields Entry fields data.
+	 * @param array $form_data    Form data and settings.
+	 * @param bool  $hide_empty   Flag to hide empty fields.
+	 */
+	private function display_repeater_items( array $rows, array $entry_fields, array $form_data, bool $hide_empty ) {
+
+		foreach ( $rows as $row_data ) :
+			?>
+			<div class="wpforms-entry-edit-row">
+				<?php foreach ( $row_data as $data ) : ?>
+					<div class="wpforms-entry-edit-column wpforms-entry-edit-column-<?php echo esc_attr( $data['width_preset'] ); ?>">
+						<?php
+							if ( $data['field'] ) {
+								$this->display_edit_form_field( $data['field']['id'], $data['field'], $entry_fields, $form_data, $hide_empty );
+							}
+						?>
+					</div>
 				<?php endforeach; ?>
 			</div>
-		<?php endforeach; ?>
 		<?php
+		endforeach;
 	}
 
 	/**
@@ -805,13 +831,85 @@ class Edit {
 
 		$rows = isset( $field['columns'] ) && is_array( $field['columns'] ) ? LayoutHelpers::get_row_data( $field ) : [];
 
-		foreach ( $rows as $row_data ) {
-			foreach ( $row_data as $data ) {
-				if ( $data['field'] ) {
-					$this->display_edit_form_field( $data['field']['id'], $data['field'], $entry_fields, $form_data, $hide_empty );
-				}
-			}
-		}
+		$display = $field['display'] ?? 'rows';
+
+		$label_hide = ! empty( $field['label_hide'] );
+
+		?>
+		<div class="wpforms-edit-entry-field wpforms-entry-edit-layout wpforms-entry-edit-layout-display-<?php echo esc_attr( $display ); ?>">
+			<div class="wpforms-field-layout-block">
+				<?php if ( ! $label_hide ) : ?>
+					<p class="wpforms-entry-field-name">
+						<?php echo esc_html( $field['label'] ); ?>
+					</p>
+				<?php endif; ?>
+
+				<?php
+					if ( $display === 'rows' ) {
+						$this->display_layout_rows( $rows, $entry_fields, $form_data, $hide_empty );
+					} else {
+						$this->display_layout_columns( $field['columns'], $entry_fields, $form_data, $hide_empty );
+					}
+				?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Display Layout field rows.
+	 *
+	 * @since 1.9.3
+	 *
+	 * @param array $rows         Rows data.
+	 * @param array $entry_fields Entry fields data.
+	 * @param array $form_data    Form data and settings.
+	 * @param bool  $hide_empty   Flag to hide empty fields.
+	 */
+	private function display_layout_rows( array $rows, array $entry_fields, array $form_data, bool $hide_empty ) {
+
+		foreach ( $rows as $row_data ) :
+			?>
+			<div class="wpforms-entry-edit-row">
+				<?php foreach ( $row_data as $column ) : ?>
+					<div class="wpforms-entry-edit-column wpforms-entry-edit-column-<?php echo esc_attr( $column['width_preset'] ); ?>">
+						<?php
+						if ( ! empty( $column['field'] ) ) {
+							$this->display_edit_form_field( $column['field']['id'], $column['field'], $entry_fields, $form_data, $hide_empty );
+						}
+						?>
+					</div>
+				<?php endforeach; ?>
+			</div>
+
+		<?php
+		endforeach;
+	}
+
+	/**
+	 * Display Layout field columns.
+	 *
+	 * @since 1.9.3
+	 *
+	 * @param array $columns      Columns data.
+	 * @param array $entry_fields Entry fields data.
+	 * @param array $form_data    Form data and settings.
+	 * @param bool  $hide_empty   Flag to hide empty fields.
+	 */
+	private function display_layout_columns( array $columns, array $entry_fields, array $form_data, bool $hide_empty ) {
+		?>
+		<div class="wpforms-entry-edit-row">
+			<?php foreach ( $columns as $column ) : ?>
+				<div class="wpforms-entry-edit-column wpforms-entry-edit-column-<?php echo esc_attr( $column['width_preset'] ); ?>">
+					<?php
+					foreach ( $column['fields'] as $child_field ) {
+						$this->display_edit_form_field( $child_field['id'], $child_field, $entry_fields, $form_data, $hide_empty );
+					}
+					?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		<?php
 	}
 
 	/**
