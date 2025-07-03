@@ -245,39 +245,6 @@ add_action('wp_enqueue_scripts', 'enqueue_ajax_load_more');
 add_post_type_support( 'page', 'excerpt' );
 
 /*
- * ALPS Gutenberg Blocks
- */
-
-// Remove colors and text styles from Gutenberg
-add_theme_support('disable-custom-colors');
-add_theme_support('editor-color-palette');
-add_theme_support('editor-text-styles');
-add_theme_support('wp-block-styles');
-
-// Only allow the following blocks in Gutenberg
-// add_filter('allowed_block_types', function () {
-//   return [
-//     'core/heading',
-//     'core/image',
-//     'core/block',
-//     'core/embed',
-//     'core/spacer',
-//     'core/buttons',
-//     'core/list',
-//     'core/shortcode',
-//     'core/video',
-//     'core/html',
-//     'core/embed',
-//     'core/paragraph',
-//     'core/separator',
-//     'core/quote',
-//     'core/table',
-//     'core/text-columns',
-//     'acf/gallery',
-//   ];
-// });
-
-/*
  * ACF Options Page
  */
 if( function_exists('acf_add_options_page') ) {

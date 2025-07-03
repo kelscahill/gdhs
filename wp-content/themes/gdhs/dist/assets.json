@@ -22,7 +22,9 @@
   "images/o-icon--twitter.svg": "images/o-icon--twitter_e6044979.svg",
   "images/o-icon--youtube.svg": "images/o-icon--youtube_36c360b3.svg",
   "images/o-texture--paper.svg": "images/o-texture--paper_2baddc49.svg",
-  "scripts/customizer.js": "scripts/customizer_e051f2ea.js",
-  "styles/main.css": "styles/main_e051f2ea.css",
-  "scripts/main.js": "scripts/main_e051f2ea.js"
+  "scripts/customizer.js": "scripts/customizer_0dc5cd93.js",
+  "styles/editor.css": "styles/editor_0dc5cd93.css",
+  "scripts/editor.js": "scripts/editor_0dc5cd93.js",
+  "styles/main.css": "styles/main_0dc5cd93.css",
+  "scripts/main.js": "scripts/main_0dc5cd93.js"
 }

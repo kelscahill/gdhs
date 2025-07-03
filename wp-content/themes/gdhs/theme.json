@@ -1,0 +1,15 @@
+{
+  "settings": {
+      "color": {
+          "palette": [
+              { "slug": "primary", "color": "#ff0000", "name": "Primary" }
+          ]
+      }
+  },
+  "styles": {
+      "typography": {
+          "fontSize": "16px",
+          "lineHeight": "1.6"
+      }
+  }
+}
