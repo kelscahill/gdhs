@@ -13,35 +13,18 @@ acf_register_store( 'values' )->prop( 'multisite', true );
  *
  * @param   string $field_name The name of the field. eg 'sub_heading'.
  * @param   mixed  $post_id    The post_id of which the value is saved against.
- * @return  string|null The field key, or null on failure.
+ * @return  string The field key.
  */
 function acf_get_reference( $field_name, $post_id ) {
+
 	// Allow filter to short-circuit load_value logic.
 	$reference = apply_filters( 'acf/pre_load_reference', null, $field_name, $post_id );
 	if ( $reference !== null ) {
 		return $reference;
 	}
 
-	// Back-compat.
-	$reference = apply_filters( 'acf/pre_load_metadata', null, $post_id, $field_name, true );
-	if ( $reference !== null ) {
-		return ( $reference === '__return_null' ) ? null : $reference;
-	}
-
-	$decoded = acf_decode_post_id( $post_id );
-
-	// Bail if no ID or type.
-	if ( empty( $decoded['id'] ) || empty( $decoded['type'] ) ) {
-		return null;
-	}
-
-	$meta_instance = acf_get_meta_instance( $decoded['type'] );
-	if ( ! $meta_instance ) {
-		return null;
-	}
-
 	// Get hidden meta for this field name.
-	$reference = $meta_instance->get_reference( $decoded['id'], $field_name );
+	$reference = acf_get_metadata( $post_id, $field_name, true );
 
 	/**
 	 * Filters the reference value.
@@ -95,9 +78,7 @@ function acf_get_value( $post_id, $field ) {
 
 	// If we're using a non options_ option key, ensure we have a valid reference key.
 	if ( 'option' === $decoded['type'] && 'options' !== $decoded['id'] ) {
-		// TODO: Move this into options meta class? i.e. return false
-		$meta = acf_get_metadata_by_field( $post_id, $field, true );
-
+		$meta = acf_get_metadata( $post_id, $field_name, true );
 		if ( ! $meta ) {
 			$allow_load = false;
 		} elseif ( $meta !== $field['key'] ) {
@@ -116,7 +97,7 @@ function acf_get_value( $post_id, $field ) {
 			return $store->get( "$post_id:$field_name" );
 		}
 
-		$value = acf_get_metadata_by_field( $post_id, $field );
+		$value = acf_get_metadata( $post_id, $field_name );
 	}
 
 	// Use field's default_value if no meta was found.
@@ -239,9 +220,11 @@ function acf_update_value( $value, $post_id, $field ) {
 		return acf_delete_value( $post_id, $field );
 	}
 
-	// Update value and reference key.
-	$return = acf_update_metadata_by_field( $post_id, $field, $value );
-	acf_update_metadata_by_field( $post_id, $field, $field['key'], true );
+	// Update meta.
+	$return = acf_update_metadata( $post_id, $field['name'], $value );
+
+	// Update reference.
+	acf_update_metadata( $post_id, $field['name'], $field['key'], true );
 
 	// Delete stored data.
 	acf_flush_value_cache( $post_id, $field['name'] );
@@ -327,9 +310,11 @@ function acf_delete_value( $post_id, $field ) {
 	 */
 	do_action( 'acf/delete_value', $post_id, $field['name'], $field );
 
-	// Delete value and reference key.
-	$return = acf_delete_metadata_by_field( $post_id, $field );
-	acf_delete_metadata_by_field( $post_id, $field, true );
+	// Delete meta.
+	$return = acf_delete_metadata( $post_id, $field['name'] );
+
+	// Delete reference.
+	acf_delete_metadata( $post_id, $field['name'], true );
 
 	// Delete stored data.
 	acf_flush_value_cache( $post_id, $field['name'] );
@@ -387,8 +372,8 @@ function acf_log_invalid_field_notice( $field, $function ) {
 	}
 
 	$error_text = sprintf(
-		// This happens too early for translations to be loaded properly.
-		'<strong>%1$s</strong> - We\'ve detected one or more calls to retrieve ACF field values before ACF has been initialized. This is not supported and can result in malformed or missing data. <a href="%2$s" target="_blank">Learn how to fix this</a>.',
+		/* translators: %1 plugin name, %2 the URL to the documentation on this error */
+		__( '<strong>%1$s</strong> - We\'ve detected one or more calls to retrieve ACF field values before ACF has been initialized. This is not supported and can result in malformed or missing data. <a href="%2$s" target="_blank">Learn how to fix this</a>.', 'acf' ),
 		acf_get_setting( 'name' ),
 		acf_add_url_utm_tags( 'https://www.advancedcustomfields.com/resources/acf-field-functions/', 'docs', 'early_init_warning' )
 	);

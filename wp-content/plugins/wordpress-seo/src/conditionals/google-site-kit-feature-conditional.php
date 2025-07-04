@@ -2,35 +2,17 @@
 
 namespace Yoast\WP\SEO\Conditionals;
 
-use Yoast\WP\SEO\Helpers\Options_Helper;
-
 /**
- * Conditional for the Google Site Kit feature.
+ * Conditional for the GOOGLE_SITE_KIT_FEATURE feature flag.
  */
-class Google_Site_Kit_Feature_Conditional implements Conditional {
+class Google_Site_Kit_Feature_Conditional extends Feature_Flag_Conditional {
 
 	/**
-	 * The options helper.
+	 * Returns the name of the feature flag.
 	 *
-	 * @var Options_Helper
+	 * @return string The name of the feature flag.
 	 */
-	private $options;
-
-	/**
-	 * The constructor.
-	 *
-	 * @param Options_Helper $options The options helper.
-	 */
-	public function __construct( Options_Helper $options ) {
-		$this->options = $options;
-	}
-
-	/**
-	 * Returns `true` when the Site Kit feature is enabled.
-	 *
-	 * @return bool `true` when the Site Kit feature is enabled.
-	 */
-	public function is_met() {
-		return $this->options->get( 'google_site_kit_feature_enabled' ) === true;
+	protected function get_feature_flag() {
+		return 'GOOGLE_SITE_KIT_FEATURE';
 	}
 }

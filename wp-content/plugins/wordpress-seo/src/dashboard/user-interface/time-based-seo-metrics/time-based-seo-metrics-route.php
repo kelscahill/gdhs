@@ -8,7 +8,6 @@ use Exception;
 use WP_REST_Request;
 use WP_REST_Response;
 use Yoast\WP\SEO\Conditionals\Google_Site_Kit_Feature_Conditional;
-use Yoast\WP\SEO\Conditionals\Third_Party\Site_Kit_Conditional;
 use Yoast\WP\SEO\Dashboard\Application\Search_Rankings\Search_Ranking_Compare_Repository;
 use Yoast\WP\SEO\Dashboard\Application\Search_Rankings\Top_Page_Repository;
 use Yoast\WP\SEO\Dashboard\Application\Search_Rankings\Top_Query_Repository;
@@ -44,40 +43,40 @@ final class Time_Based_SEO_Metrics_Route implements Route_Interface {
 	/**
 	 * The data provider for page based search rankings.
 	 *
-	 * @var Top_Page_Repository
+	 * @var Top_Page_Repository $top_page_repository
 	 */
 	private $top_page_repository;
 
 	/**
 	 * The data provider for query based search rankings.
 	 *
-	 * @var Top_Query_Repository
+	 * @var Top_Query_Repository $top_query_repository
 	 */
 	private $top_query_repository;
 
 	/**
 	 * The data provider for comparison organic session traffic.
 	 *
-	 * @var Organic_Sessions_Compare_Repository
+	 * @var Organic_Sessions_Compare_Repository $organic_sessions_compare_repository
 	 */
 	private $organic_sessions_compare_repository;
 
 	/**
 	 * The data provider for daily organic session traffic.
 	 *
-	 * @var Organic_Sessions_Daily_Repository
+	 * @var Organic_Sessions_Daily_Repository $organic_sessions_daily_repository
 	 */
 	private $organic_sessions_daily_repository;
 
 	/**
 	 * The data provider for searching ranking comparison.
 	 *
-	 * @var Search_Ranking_Compare_Repository
+	 * @var Search_Ranking_Compare_Repository $search_ranking_compare_repository
 	 */
 	private $search_ranking_compare_repository;
 
 	/**
-	 * Holds the capability helper instance.
+	 * Holds the capabilit helper instance.
 	 *
 	 * @var Capability_Helper
 	 */
@@ -89,7 +88,7 @@ final class Time_Based_SEO_Metrics_Route implements Route_Interface {
 	 * @return array<string> The conditionals that must be met to load this.
 	 */
 	public static function get_conditionals(): array {
-		return [ Google_Site_Kit_Feature_Conditional::class, Site_Kit_Conditional::class ];
+		return [ Google_Site_Kit_Feature_Conditional::class ];
 	}
 
 	/**
@@ -160,14 +159,13 @@ final class Time_Based_SEO_Metrics_Route implements Route_Interface {
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 *
-	 * @return WP_REST_Response The success or failure response.
-	 *
 	 * @throws Repository_Not_Found_Exception When the given widget name is not implemented yet.
+	 *
+	 * @return WP_REST_Response The success or failure response.
 	 */
 	public function get_time_based_seo_metrics( WP_REST_Request $request ): WP_REST_Response {
 		try {
 			$widget_name = $request->get_param( 'options' )['widget'];
-
 			switch ( $widget_name ) {
 				case 'query':
 					$request_parameters = new Search_Console_Parameters();
@@ -243,11 +241,11 @@ final class Time_Based_SEO_Metrics_Route implements Route_Interface {
 	 * @return Parameters The request parameters with configured date range.
 	 */
 	public function set_date_range_parameters( Parameters $request_parameters ): Parameters {
-		$date = $this->get_base_date();
+		$date = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 		$date->modify( '-28 days' );
 		$start_date = $date->format( 'Y-m-d' );
 
-		$date = $this->get_base_date();
+		$date = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 		$date->modify( '-1 days' );
 		$end_date = $date->format( 'Y-m-d' );
 
@@ -265,7 +263,7 @@ final class Time_Based_SEO_Metrics_Route implements Route_Interface {
 	 * @return Parameters The request parameters with configured comparison date range.
 	 */
 	public function set_comparison_date_range_parameters( Parameters $request_parameters ): Parameters {
-		$date = $this->get_base_date();
+		$date = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 		$date->modify( '-29 days' );
 		$compare_end_date = $date->format( 'Y-m-d' );
 
@@ -276,26 +274,6 @@ final class Time_Based_SEO_Metrics_Route implements Route_Interface {
 		$request_parameters->set_compare_end_date( $compare_end_date );
 
 		return $request_parameters;
-	}
-
-	/**
-	 * Gets the base date.
-	 *
-	 * @return DateTime The base date.
-	 */
-	private function get_base_date() {
-		/**
-		 * Filter: 'wpseo_custom_site_kit_base_date' - Allow the base date for Site Kit requests to be dynamically set.
-		 *
-		 * @param string $base_date The custom base date for Site Kit requests, defaults to 'now'.
-		 */
-		$base_date = \apply_filters( 'wpseo_custom_site_kit_base_date', 'now' );
-
-		try {
-			return new DateTime( $base_date, new DateTimeZone( 'UTC' ) );
-		} catch ( Exception $e ) {
-			return new DateTime( 'now', new DateTimeZone( 'UTC' ) );
-		}
 	}
 
 	/**
