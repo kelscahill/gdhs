@@ -7,17 +7,17 @@
  * Author: Darren Cooney
  * Twitter: @KaptonKaos
  * Author URI: https://connekthq.com
- * Version: 7.3.1
+ * Version: 7.4.2
  * License: GPL
  * Copyright: Darren Cooney & Connekt Media
  *
  * @package AjaxLoadMore
  */
-define( 'ALM_VERSION', '7.3.1' );
-define( 'ALM_RELEASE', 'February 12, 2025' );
+
+define( 'ALM_VERSION', '7.4.2' );
+define( 'ALM_RELEASE', 'June 10, 2025' );
 define( 'ALM_STORE_URL', 'https://connekthq.com' );
 
-// Plugin installation helpers.
 require_once plugin_dir_path( __FILE__ ) . 'core/functions/install.php';
 
 /**
@@ -64,27 +64,27 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			$this->alm_define_constants();
 			$this->alm_includes();
 
-			add_action( 'wp_ajax_alm_get_posts', [ &$this, 'alm_query_posts' ] );
-			add_action( 'wp_ajax_nopriv_alm_get_posts', [ &$this, 'alm_query_posts' ] );
-			add_action( 'wp_enqueue_scripts', [ &$this, 'alm_enqueue_scripts' ] );
-			add_action( 'after_setup_theme', [ &$this, 'alm_image_sizes' ] );
+			add_action( 'wp_ajax_alm_get_posts', [ $this, 'alm_query_posts' ] );
+			add_action( 'wp_ajax_nopriv_alm_get_posts', [ $this, 'alm_query_posts' ] );
+			add_action( 'wp_enqueue_scripts', [ $this, 'alm_enqueue_scripts' ] );
+			add_action( 'after_setup_theme', [ $this, 'alm_image_sizes' ] );
+			add_action( 'init', [ $this, 'alm_load_text_domain' ] );
 
-			add_filter( 'alm_noscript', [ &$this, 'alm_noscript' ], 10, 6 );
-			add_filter( 'alm_noscript_pagination', [ &$this, 'alm_noscript_pagination' ], 10, 3 );
-			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), [ &$this, 'alm_action_links' ] );
-			add_filter( 'plugin_row_meta', [ &$this, 'alm_plugin_meta_links' ], 10, 2 );
+			add_filter( 'alm_noscript', [ $this, 'alm_noscript' ], 10, 6 );
+			add_filter( 'alm_noscript_pagination', [ $this, 'alm_noscript_pagination' ], 10, 3 );
+			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), [ $this, 'alm_action_links' ] );
+			add_filter( 'plugin_row_meta', [ $this, 'alm_plugin_meta_links' ], 10, 2 );
 			add_filter( 'widget_text', 'do_shortcode' );
 
-			add_shortcode( 'ajax_load_more', [ &$this, 'alm_shortcode' ] );
-			add_action( 'init', [ &$this, 'alm_init' ] );
+			add_shortcode( 'ajax_load_more', [ $this, 'alm_shortcode' ] );
 		}
 
 		/**
-		 * Initialize the plugin.
+		 * Load the plugin text domain for translation.
 		 *
 		 * @return void
 		 */
-		public function alm_init() {
+		public function alm_load_text_domain() {
 			load_plugin_textdomain( 'ajax-load-more', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
 		}
 

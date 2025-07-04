@@ -348,8 +348,9 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 			}
 
 			// Paging.
+			$has_paging        = has_action( 'alm_paging_installed' ) && $paging === 'true';
 			$inline_paging_css = '';
-			if ( has_action( 'alm_paging_installed' ) && $paging === 'true' ) {
+			if ( $has_paging ) {
 				wp_enqueue_script( 'ajax-load-more-paging' );
 				wp_enqueue_script( 'ajax-load-more-images-loaded' ); // Required for Paging.
 
@@ -477,10 +478,10 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 			$alm_loading_style = isset( $options['_alm_btn_color'] ) ? ' ' . $options['_alm_btn_color'] : ' default';
 			$alm_loading_style = $loading_style !== '' ? ' ' . $loading_style : $alm_loading_style;
 
-			// Get paging color.
-			$paging_color = isset( $options['_alm_paging_color'] ) && has_action( 'alm_paging_installed' ) && $paging === 'true' ? ' alm-paging paging-' . $options['_alm_paging_color'] : '';
+			// Get Paging color.
+			$paging_color = isset( $options['_alm_paging_color'] ) && $has_paging ? ' alm-paging paging-' . $options['_alm_paging_color'] : '';
 
-			// Layouts Class.
+			// Layouts class.
 			$alm_layouts = has_action( 'alm_layouts_installed' ) ? ' alm-layouts' : '';
 
 			// Get btn classnames.
@@ -573,7 +574,7 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 			$alm_wrapper_class = $woocommerce ? 'ajax-load-more-wrap ' . ALM_WOOCOMMERCE::get_wrapper_class() : 'ajax-load-more-wrap';
 
 			// ALM Direction.
-			$alm_direction = $scroll_direction ? ' alm-' . $scroll_direction : '';
+			$alm_direction = $scroll_direction ? ' alm-' . esc_attr( $scroll_direction ) : '';
 
 			// Start $ajaxloadmore element.
 			$ajaxloadmore .= '<div id="' . esc_attr( $div_id ) . '" class="' . esc_attr( $alm_wrapper_class ) . esc_attr( $wrapper_classes ) . esc_attr( $alm_loading_style ) . esc_attr( $paging_color ) . esc_attr( $alm_layouts ) . esc_attr( $alm_direction ) . '" ' . $unique_id . ' data-alm-id="" data-canonical-url="' . esc_attr( $canonical_url ) . '" data-slug="' . esc_attr( $slug ) . '" data-post-id="' . esc_attr( $post_id ) . '" ' . wp_kses_post( $is_search ) . esc_attr( $is_nested ) . ' data-localized="' . alm_convert_dashes_to_underscore( $localize_id ) . '_vars" data-alm-object="' . alm_convert_dashes_to_underscore( $localize_id ) . '">';
@@ -586,7 +587,7 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 			// Horizontal Scroll CSS.
 			if ( $scroll_direction === 'horizontal' && $scroll_container ) {
 				// Add style for overflow style of the container.
-				$ajaxloadmore .= '<style>' . $scroll_container . '{ height: auto; width: 100%; overflow: hidden; overflow-x: auto; -webkit-overflow-scrolling: touch; }</style>';
+				$ajaxloadmore .= '<style>' . esc_attr( $scroll_container ) . '{ height: auto; width: 100%; overflow: hidden; overflow-x: auto; -webkit-overflow-scrolling: touch; }</style>';
 			}
 
 			// Masonry Hook (Before).
@@ -985,7 +986,7 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 			}
 
 			// Paging Add-on.
-			if ( has_action( 'alm_paging_installed' ) && $paging === 'true' ) {
+			if ( $has_paging ) {
 				$paging_return = apply_filters(
 					'alm_paging_shortcode',
 					$paging,
@@ -1283,7 +1284,8 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 			// End .alm-listing data.
 
 			// Paging before.
-			if ( has_action( 'alm_paging_installed' ) && $paging === 'true' ) {
+			if ( $has_paging && $container_type !== 'table' ) {
+				// Only add paging container if not table layout.
 				$paging_container_classes = $paging_container_classes ? ' ' . esc_attr( $paging_container_classes ) : '';
 				$ajaxloadmore            .= apply_filters( 'alm_paging_before', '<div class="alm-paging-content' . $paging_container_classes . '" style="opacity: 0; outline: none;">' );
 			}
@@ -1336,7 +1338,8 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 			}
 
 			// Paging after.
-			if ( has_action( 'alm_paging_installed' ) && $paging === 'true' ) {
+			if ( $has_paging && $container_type !== 'table' ) {
+				// Only close paging container if not table layout.
 				$ajaxloadmore .= apply_filters( 'alm_paging_after', '</div>' );
 				$ajaxloadmore .= apply_filters( 'alm_paging_loader', '<div class="alm-paging-loading"></div>' );
 			}
