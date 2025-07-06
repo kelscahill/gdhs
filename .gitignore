@@ -1,6 +1,7 @@
 .DS_Store
 *.log
 wp-config.php
+wp-config-production.php
 wp-content/advanced-cache.php
 wp-content/backup-db/
 wp-content/backups/
