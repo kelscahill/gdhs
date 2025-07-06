@@ -1,0 +1,26 @@
+[0.0181] Info: WP_Query results written to log
+[0.0004] Registered sizes: ["thumbnail","medium","medium_large","large","featured__hero--s","featured__hero--m","featured__hero--l","featured__hero--xl","horiz__16x9--s","horiz__16x9--m","horiz__16x9--l","horiz__16x9--xl","horiz__4x3--s","horiz__4x3--m","horiz__4x3--l","vert__3x4--s","vert__3x4--m","flex-height--s","flex-height--m","flex-height--l","flex-height--xl","horiz-thumb","vert-thumb","alm-thumbnail","full"]
+[0.0027] Meta indexed so far: 1 / 169
+[0.0059] Sample meta:
+{"width":504,"height":364,"file":"2018\/02\/John-Heckler-image.jpg","sizes":{"thumbnail":{"file":"John-Heckler-image-150x150.jpg","width":150,"height":150,"mime-type":"image\/jpeg"},"medium":{"file":"John-Heckler-image-300x217.jpg","width":300,"height":217,"mime-type":"image\/jpeg"},"featured__hero--s":{"file":"John-Heckler-image-500x364.jpg","width":500,"height":364,"mime-type":"image\/jpeg"},"horiz__16x9--s":{"file":"John-Heckler-image-500x280.jpg","width":500,"height":280,"mime-type":"image\/jpeg"},"horiz__4x3--s":{"file":"John-Heckler-image-500x364.jpg","width":500,"height":364,"mime-type":"image\/jpeg"},"vert__3x4--s":{"file":"John-Heckler-image-375x364.jpg","width":375,"height":364,"mime-type":"image\/jpeg"},"flex-height--s":{"file":"John-Heckler-image-350x253.jpg","width":350,"height":253,"mime-type":"image\/jpeg"},"horiz-thumb":{"file":"John-Heckler-image-260x190.jpg","width":260,"height":190,"mime-type":"image\/jpeg"},"vert-thumb":{"file":"John-Heckler-image-260x364.jpg","width":260,"height":364,"mime-type":"image\/jpeg"},"alm-thumbnail":{"file":"John-Heckler-image-150x150.jpg","width":150,"height":150,"mime-type":"image\/jpeg"}},"image_meta":{"aperture":"0","credit":"","camera":"","caption":"","created_timestamp":"0","copyright":"","focal_length":"0","iso":"0","shutter_speed":"0","title":"","orientation":"0","keywords":[]}}
+[0.0004] Registered sizes: ["thumbnail","medium","medium_large","large","featured__hero--s","featured__hero--m","featured__hero--l","featured__hero--xl","horiz__16x9--s","horiz__16x9--m","horiz__16x9--l","horiz__16x9--xl","horiz__4x3--s","horiz__4x3--m","horiz__4x3--l","vert__3x4--s","vert__3x4--m","flex-height--s","flex-height--m","flex-height--l","flex-height--xl","horiz-thumb","vert-thumb","alm-thumbnail","full"]
+[0.0030] Meta indexed so far: 1 / 169
+[0.0055] Sample meta:
+{"width":504,"height":364,"file":"2018\/02\/John-Heckler-image.jpg","sizes":{"thumbnail":{"file":"John-Heckler-image-150x150.jpg","width":150,"height":150,"mime-type":"image\/jpeg"},"medium":{"file":"John-Heckler-image-300x217.jpg","width":300,"height":217,"mime-type":"image\/jpeg"},"featured__hero--s":{"file":"John-Heckler-image-500x364.jpg","width":500,"height":364,"mime-type":"image\/jpeg"},"horiz__16x9--s":{"file":"John-Heckler-image-500x280.jpg","width":500,"height":280,"mime-type":"image\/jpeg"},"horiz__4x3--s":{"file":"John-Heckler-image-500x364.jpg","width":500,"height":364,"mime-type":"image\/jpeg"},"vert__3x4--s":{"file":"John-Heckler-image-375x364.jpg","width":375,"height":364,"mime-type":"image\/jpeg"},"flex-height--s":{"file":"John-Heckler-image-350x253.jpg","width":350,"height":253,"mime-type":"image\/jpeg"},"horiz-thumb":{"file":"John-Heckler-image-260x190.jpg","width":260,"height":190,"mime-type":"image\/jpeg"},"vert-thumb":{"file":"John-Heckler-image-260x364.jpg","width":260,"height":364,"mime-type":"image\/jpeg"},"alm-thumbnail":{"file":"John-Heckler-image-150x150.jpg","width":150,"height":150,"mime-type":"image\/jpeg"}},"image_meta":{"aperture":"0","credit":"","camera":"","caption":"","created_timestamp":"0","copyright":"","focal_length":"0","iso":"0","shutter_speed":"0","title":"","orientation":"0","keywords":[]}}
+[0.0002] Uknown error: Please see returned value below
+<HTML>
+<HEAD>
+<TITLE>Inactivity Timeout</TITLE>
+</HEAD>
+
+<BODY BGCOLOR=\"white\" FGCOLOR=\"black\">
+<H1>Inactivity Timeout</H1>
+<HR>
+
+<FONT FACE=\"Helvetica,Arial\"><B>
+Description: Too much time has passed without sending any data for document. 
+</B></FONT>
+<HR>
+</BODY>
+
+[114.1235] Meta indexed so far: 169 / 169
