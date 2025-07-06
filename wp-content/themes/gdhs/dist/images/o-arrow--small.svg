@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><title>o-arrow--small</title><path d="M7.5,4.62,3.25.38a.5.5,0,0,0-.71.71L6.44,5,2.5,8.91a.5.5,0,1,0,.71.71L7.45,5.38l0,0h0A.5.5,0,0,0,7.5,4.62Z" fill="#31302e"/></svg>
