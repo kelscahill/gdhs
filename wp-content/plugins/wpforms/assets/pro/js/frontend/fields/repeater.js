@@ -498,7 +498,7 @@ const WPFormsRepeaterField = window.WPFormsRepeaterField || ( function( document
 			app.initNumberSlider( $clone );
 			wpforms.loadDatePicker( $clone );
 			wpforms.loadTimePicker( $clone );
-			wpforms.loadSmartPhoneField( $clone );
+			window.WPFormsPhoneField?.loadSmartField?.( $clone );
 			wpforms.loadChoicesJS( $clone );
 			wpforms.loadInputMask( $clone );
 			wpforms.loadValidationGroups( $clone );

@@ -537,8 +537,8 @@ class Process {
 	 *
 	 * @since 1.8.9
 	 *
-	 * @param array $form_data Form data.
-	 * @param int   $entry_id  Entry ID.
+	 * @param array|mixed $form_data Form data.
+	 * @param int         $entry_id  Entry ID.
 	 *
 	 * @return array
 	 */

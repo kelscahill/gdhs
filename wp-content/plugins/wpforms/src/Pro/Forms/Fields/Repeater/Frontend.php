@@ -187,15 +187,17 @@ class Frontend {
 	 *
 	 * @since 1.8.9
 	 *
-	 * @param array $properties Field properties.
-	 * @param array $field      Field settings.
-	 * @param array $form_data  Form data and settings.
+	 * @param array|mixed $properties Field properties.
+	 * @param array       $field      Field settings.
+	 * @param array       $form_data  Form data and settings.
 	 *
 	 * @return array
 	 * @noinspection PhpMissingParamTypeInspection
 	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function field_properties( $properties, $field, $form_data ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+
+		$properties = (array) $properties;
 
 		$display  = $field['display'] ?? $this->field_obj->defaults['display'];
 		$preset   = $field['preset'] ?? $this->field_obj->defaults['preset'];

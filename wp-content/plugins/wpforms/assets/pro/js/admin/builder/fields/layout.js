@@ -122,6 +122,8 @@ WPForms.Admin.Builder.FieldLayout = WPForms.Admin.Builder.FieldLayout || ( funct
 			}
 
 			app.rowDisplayHeightBalance( $fieldLayoutWrapper );
+
+			$fieldLayoutWrapper.closest( '.wpforms-field-layout' ).removeClass( 'wpforms-field-child-hovered' );
 		},
 
 		/**
@@ -296,6 +298,8 @@ WPForms.Admin.Builder.FieldLayout = WPForms.Admin.Builder.FieldLayout || ( funct
 				$fieldPreview = $( `#wpforms-field-${ fieldId }` ),
 				$fieldPreviewColumns = $fieldPreview.find( '.wpforms-field-layout-columns' ),
 				$columnFields = [];
+
+			$( document ).trigger( 'wpformsLayoutPresetChanged', $presetsRow );
 
 			// Detach and store in an array all the fields from columns.
 			$fieldPreviewColumns.find( '.wpforms-layout-column' ).each( function( columnIndex ) {
@@ -830,7 +834,7 @@ WPForms.Admin.Builder.FieldLayout = WPForms.Admin.Builder.FieldLayout || ( funct
 			}
 
 			const columnsData = app.getFieldColumnsData( layoutFieldId ),
-				newLayoutFieldID = WPFormsBuilder.fieldDuplicateRoutine( layoutFieldId ),
+				newLayoutFieldID = WPFormsBuilder.fieldDuplicateRoutine( layoutFieldId, true ),
 				$newLayoutField = $( `#wpforms-field-${ newLayoutFieldID }` ),
 				$newLayoutFieldOptions = $( `#wpforms-field-option-${ newLayoutFieldID }` ),
 				$newLayoutFieldColumn = $newLayoutField.find( '.wpforms-layout-column' ),
@@ -863,7 +867,7 @@ WPForms.Admin.Builder.FieldLayout = WPForms.Admin.Builder.FieldLayout || ( funct
 						return;
 					}
 
-					const newFieldID = WPFormsBuilder.fieldDuplicateRoutine( fieldId ),
+					const newFieldID = WPFormsBuilder.fieldDuplicateRoutine( fieldId, false ),
 						$newField = $( `#wpforms-field-${ newFieldID }` ).detach().removeClass( 'active' ),
 						$newFieldOptions = $( `#wpforms-field-option-${ newFieldID }` );
 

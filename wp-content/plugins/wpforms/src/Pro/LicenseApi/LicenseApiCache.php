@@ -121,6 +121,7 @@ abstract class LicenseApiCache extends CacheBase {
 			'cache_ttl'     => (int) apply_filters( $this->plugin_slug . '_license_api_' . $this->type . '_cache_ttl', HOUR_IN_SECONDS * self::CACHE_TIME ), // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
 			'update_action' => $this->plugin_slug . '_license_api_' . $this->type . '_cache',
 			'query_args'    => [
+				'tgm-updater-key'         => wpforms()->is_pro() ? wpforms_get_license_key() : 'lite',
 				'tgm-updater-action'      => $this->get_action_slug(),
 				'tgm-updater-wp-version'  => get_bloginfo( 'version' ),
 				'tgm-updater-php-version' => PHP_VERSION,

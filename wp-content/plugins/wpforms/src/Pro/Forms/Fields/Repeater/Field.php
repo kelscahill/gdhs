@@ -89,6 +89,7 @@ class Field extends WPForms_Field {
 		'square',
 		'authorize_net',
 		'internal-information',
+        'gdpr-checkbox',
 	];
 
 	/**
