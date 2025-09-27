@@ -24,6 +24,7 @@
 
 label {
   margin-top: $space;
+  margin-bottom: $space-quarter;
   width: 100%;
 
   @include u-font--secondary--xs;
@@ -121,12 +122,12 @@ input[type=submit] {
 }
 
 .wpforms-field-sublabel {
-  margin-top: 0;
+  margin-top: $space-quarter;
   margin-bottom: $space;
   text-transform: none;
   letter-spacing: normal;
   font-weight: normal;
 
-  @include u-font--s;
   @include p;
+  @include u-font--s;
 }

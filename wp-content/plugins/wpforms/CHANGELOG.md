@@ -1,6 +1,50 @@
 # Changelog
 All notable changes to this project will be documented in this file and formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.9.8.1] - 2025-09-25
+### Changed
+- Disabled non-dismissible admin notice.
+
+## [1.9.8] - 2025-09-23
+### Added
+- New Camera field allowing users to use the device's camera to take a photo or video and instantly attach it to the form.
+- Added Camera option in the File Upload field where users can upload a photo or a video instantly instead of attaching a file.
+- Read-Only toggle option for form fields in the Form Builder Advanced Options.
+- Ability to disconnect Stripe accounts through the Settings > Payments admin page.
+- Settings to change Lowest and Highest Score Labels for the Rating field.
+- Ability to set how many times a Stripe recurring payment will be repeated.
+- An option to Show/Hide Password in the Password Field.
+- Back To Previous Page option for Confirmation Page Redirect.
+- Ability to disable suggestions for the Email field on the Form Builder screen.
+- New email warnings will be sent to a site administrator if there are any corrupted form submissions.
+- New `wpforms_updater_allow_load` filter that allows modifying whether the updater is allowed to load.
+
+### Changed
+- Improved accessibility for the Modern Dropdown field by adding ARIA attributes to support VoiceOver navigation.
+- Improved the Compact email notification template for forms with Repeater fields.
+- Notification email fields in the Form Builder (Lite/Pro) now only display email-compatible Smart Tags.
+
+### Fixed
+- Extra spacing between fields inside the Repeater field in email notifications.
+- `Disallow` rule for the robots.txt file was generated incorrectly for a site installed in a subdirectory.
+- PHP warnings might be generated for new forms created from a template by non-admin users.
+- Disabled fields (read-only) didn't look disabled.
+- Smart Tag fields in the sidebar had incorrect height.
+- The last step of the WPForms Challenge wasn't shown up for users in some cases.
+- Header Menu Links position has been adjusted to be on the same level on every screen.
+- Duplicated Square field button existed in the Form Builder.
+- Form authors with no capabilities to install addons did not get information about missing privileges.
+- HTMLPurifier threw a deprecated API call notice.
+- Users with no sufficient access permissions were able to display a broken Themes settings panel.
+- Page break buttons had opacity in the Elementor and Divi page builders.
+- Custom CSS with quotes in selectors now displays correctly instead of showing broken HTML entities.
+- Pinned AI Chat layout in the Form Builder.
+- Entry Preview after the confirmation message was empty in some rare cases.
+- Log titles having apostrophes in them were not displayed correctly in the Log Viewer.
+- Uploaded files with special characters (e.g. `^`) in their names were not available for opening.
+- A fatal error when viewing some old entries with choices.
+- There might be errors when processing Stripe payments with customer metadata containing empty keys.
+
 ## [1.9.7.3] - 2025-08-11
 ### Added
 - Settings for Number fields validation messages in the Settings > Validation page.

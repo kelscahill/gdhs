@@ -8,6 +8,7 @@ use WPForms\Pro\Forms\Fields\Layout\Helpers;
 use WPForms\Pro\Forms\Fields\Repeater\Helpers as RepeaterHelpers;
 use WPForms\Pro\Forms\Fields\Layout\Helpers as LayoutHelpers;
 use WPForms\Pro\Forms\Fields\FileUpload\Field as FileUploadField;
+use WPForms\Pro\Forms\Fields\Camera\Field as CameraField;
 use WPForms\Pro\Forms\Fields\Richtext\Field as RichtextField;
 use WPForms_Entries_Single;
 
@@ -1295,6 +1296,7 @@ class Edit {
 		$this->add_entry_meta( esc_html__( 'Entry edited.', 'wpforms' ) );
 
 		$removed_files = FileUploadField::delete_uploaded_files_from_entry( $this->entry_id, $updated_fields, $this->entry_fields );
+		$removed_files = array_merge( $removed_files, CameraField::delete_uploaded_files_from_entry( $this->entry_id, $updated_fields, $this->entry_fields ) );
 
 		array_map( [ $this, 'add_removed_file_meta' ], $removed_files );
 
@@ -1759,7 +1761,7 @@ class Edit {
 				->map(
 					function ( $entry_field ) use ( $entry_id, $attachment_id ) {
 
-						if ( $entry_field['type'] !== 'file-upload' ) {
+						if ( $entry_field['type'] !== 'file-upload' && $entry_field['type'] !== 'camera' ) {
 							return $entry_field;
 						}
 
@@ -1798,7 +1800,7 @@ class Edit {
 	 */
 	private function maybe_remove_attachment_data_from_entry_fields( $entry_field, $entry_id, $attachment_id ) {
 
-		if ( ! FileUploadField::is_modern_upload( $entry_field ) ) {
+		if ( ! FileUploadField::is_modern_upload( $entry_field ) && ! CameraField::is_modern_upload( $entry_field ) ) {
 			if ( $this->maybe_remove_attachment_from_entry_field( $attachment_id, $entry_field, $entry_id, $entry_field['id'] ) ) {
 				$entry_field['value'] = '';
 			}

@@ -12,6 +12,7 @@ use Roots\Sage\Container;
  * @param string $subtitle
  * @param string $title
  */
+
 $sage_error = function ($message, $subtitle = '', $title = '') {
   $title = $title ?: __('Sage &rsaquo; Error', 'sage');
   $footer = '<a href="https://roots.io/sage/docs/">roots.io/sage/docs/</a>';
@@ -37,7 +38,7 @@ if (version_compare('5.0.0', get_bloginfo('version'), '>=')) {
  * Ensure dependencies are loaded
  */
 if (!class_exists('Roots\\Sage\\Container')) {
-  if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
+  if (!file_exists($composer = __DIR__ . '/../vendor/autoload.php')) {
     $sage_error(
       __('You must run <code>composer install</code> from the Sage directory.', 'sage'),
       __('Autoloader not found.', 'sage')
@@ -55,7 +56,7 @@ if (!class_exists('Roots\\Sage\\Container')) {
 array_map(function ($file) use ($sage_error) {
   $file = "../app/{$file}.php";
   if (!locate_template($file, true, true)) {
-      $sage_error(sprintf(__('Error locating <code>%s</code> for inclusion.', 'sage'), $file), 'File not found');
+    $sage_error(sprintf(__('Error locating <code>%s</code> for inclusion.', 'sage'), $file), 'File not found');
   }
 }, ['helpers', 'setup', 'filters', 'admin', 'timber']);
 
@@ -84,16 +85,17 @@ array_map(
 Container::getInstance()
   ->bindIf('config', function () {
     return new Config([
-      'assets' => require dirname(__DIR__).'/config/assets.php',
-      'theme' => require dirname(__DIR__).'/config/theme.php',
-      'view' => require dirname(__DIR__).'/config/view.php',
+      'assets' => require dirname(__DIR__) . '/config/assets.php',
+      'theme' => require dirname(__DIR__) . '/config/theme.php',
+      'view' => require dirname(__DIR__) . '/config/view.php',
     ]);
-}, true);
+  }, true);
 
 /*
  * Allow SVG's through WP media uploader
  */
-function cc_mime_types($mimes) {
+function cc_mime_types($mimes)
+{
   $mimes['svg'] = 'image/svg+xml';
   return $mimes;
 }
@@ -102,7 +104,8 @@ add_filter('upload_mimes', 'cc_mime_types');
 /*
  * ACF Save json files
  */
-function my_acf_json_save_point($path) {
+function my_acf_json_save_point($path)
+{
   $path = get_stylesheet_directory() . '/acf-json';
   return $path;
 }
@@ -111,8 +114,9 @@ add_filter('acf/settings/save_json', 'my_acf_json_save_point');
 /*
  * Event date columns - Add custom column to events post type
  */
-function add_acf_columns($columns) {
-  return array_merge($columns, array (
+function add_acf_columns($columns)
+{
+  return array_merge($columns, array(
     'event_start_date' => 'Event Start Date',
     'event_end_date' => 'Event End Date'
   ));
@@ -122,7 +126,8 @@ add_filter('manage_events_posts_columns', 'add_acf_columns');
 /*
  * Event start date column - Display data in custom column
  */
-function display_acf_column($column, $post_id) {
+function display_acf_column($column, $post_id)
+{
   if ($column === 'event_start_date') {
     $event_start_date = get_field('event_start_date', $post_id);
     if ($event_start_date) {
@@ -145,7 +150,8 @@ add_action('manage_events_posts_custom_column', 'display_acf_column', 10, 2);
 /*
  * Event start date column - Make the custom column sortable
  */
-function make_acf_column_sortable($columns) {
+function make_acf_column_sortable($columns)
+{
   $columns['event_start_date'] = 'event_start_date';
   $columns['event_end_date'] = 'event_end_date';
   return $columns;
@@ -155,8 +161,9 @@ add_filter('manage_edit-events_sortable_columns', 'make_acf_column_sortable');
 /*
  * Event start date column - Handle custom column sorting
  */
-function handle_acf_column_sorting($query) {
-  if ($query->is_main_query() && ( $orderby = $query->get('orderby') )) {
+function handle_acf_column_sorting($query)
+{
+  if ($query->is_main_query() && ($orderby = $query->get('orderby'))) {
     if ($orderby === 'event_start_date') {
       $query->set('meta_key', 'event_start_date');
       $query->set('orderby', 'meta_value');
@@ -234,48 +241,50 @@ add_action('pre_get_posts', 'handle_acf_column_sorting');
 /*
  * Load ajax script on news template
  */
-function enqueue_ajax_load_more() {
-   wp_enqueue_script('ajax-load-more'); // Already registered, just needs to be enqueued
+function enqueue_ajax_load_more()
+{
+  wp_enqueue_script('ajax-load-more'); // Already registered, just needs to be enqueued
 }
 add_action('wp_enqueue_scripts', 'enqueue_ajax_load_more');
 
 /*
  * Excerpt for pages
  */
-add_post_type_support( 'page', 'excerpt' );
+add_post_type_support('page', 'excerpt');
 
 /*
  * ACF Options Page
  */
-if( function_exists('acf_add_options_page') ) {
+if (function_exists('acf_add_options_page')) {
   acf_add_options_page();
 }
 
 /*
  * Custom fields
  */
-function cptui_register_my_cpts() {
+function cptui_register_my_cpts()
+{
 
   /*
    * Post Type: Events.
    */
   $event_labels = array(
-    "name" => __( 'Events', 'sage' ),
-    "singular_name" => __( 'Event', 'sage' ),
-    "menu_name" => __( 'Events', 'sage' ),
-    "all_items" => __( 'All Events', 'sage' ),
-    "add_new" => __( 'Add New Event', 'sage' ),
-    "edit_item" => __( 'Edit Event', 'sage' ),
-    "new_item" => __( 'New Event', 'sage' ),
-    "view_item" => __( 'View Event', 'sage' ),
-    "view_items" => __( 'View Events', 'sage' ),
-    "search_items" => __( 'Search Events', 'sage' ),
-    "not_found" => __( 'No Events Found', 'sage' ),
-    "not_found_in_trash" => __( 'No Events found in Trash', 'sage' ),
+    "name" => __('Events', 'sage'),
+    "singular_name" => __('Event', 'sage'),
+    "menu_name" => __('Events', 'sage'),
+    "all_items" => __('All Events', 'sage'),
+    "add_new" => __('Add New Event', 'sage'),
+    "edit_item" => __('Edit Event', 'sage'),
+    "new_item" => __('New Event', 'sage'),
+    "view_item" => __('View Event', 'sage'),
+    "view_items" => __('View Events', 'sage'),
+    "search_items" => __('Search Events', 'sage'),
+    "not_found" => __('No Events Found', 'sage'),
+    "not_found_in_trash" => __('No Events found in Trash', 'sage'),
   );
 
   $event_args = array(
-    "label" => __( 'Events', 'sage' ),
+    "label" => __('Events', 'sage'),
     "labels" => $event_labels,
     "description" => "GDHS Events",
     "public" => true,
@@ -287,36 +296,36 @@ function cptui_register_my_cpts() {
     "exclude_from_search" => false,
     "capability_type" => "post",
     "hierarchical" => true,
-    "rewrite" => array( "slug" => "event", "with_front" => true ),
+    "rewrite" => array("slug" => "event", "with_front" => true),
     'has_archive' => false,
     "query_var" => true,
     "menu_position" => 4,
     "menu_icon" => "dashicons-calendar-alt",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
+    "supports" => array("title", "editor", "thumbnail", "excerpt", "author")
   );
 
-  register_post_type( "events", $event_args );
+  register_post_type("events", $event_args);
 
   /*
    * Post Type: Exhibitions.
    */
   $exhibit_labels = array(
-    "name" => __( 'Exhibitions', 'sage' ),
-    "singular_name" => __( 'Exhibition', 'sage' ),
-    "menu_name" => __( 'Exhibitions', 'sage' ),
-    "all_items" => __( 'All Exhibitions', 'sage' ),
-    "add_new" => __( 'Add New Exhibition', 'sage' ),
-    "edit_item" => __( 'Edit Exhibition', 'sage' ),
-    "new_item" => __( 'New Exhibition', 'sage' ),
-    "view_item" => __( 'View Exhibition', 'sage' ),
-    "view_items" => __( 'View Exhibitions', 'sage' ),
-    "search_items" => __( 'Search Exhibitions', 'sage' ),
-    "not_found" => __( 'No Exhibitions Found', 'sage' ),
-    "not_found_in_trash" => __( 'No Exhibitions found in Trash', 'sage' ),
+    "name" => __('Exhibitions', 'sage'),
+    "singular_name" => __('Exhibition', 'sage'),
+    "menu_name" => __('Exhibitions', 'sage'),
+    "all_items" => __('All Exhibitions', 'sage'),
+    "add_new" => __('Add New Exhibition', 'sage'),
+    "edit_item" => __('Edit Exhibition', 'sage'),
+    "new_item" => __('New Exhibition', 'sage'),
+    "view_item" => __('View Exhibition', 'sage'),
+    "view_items" => __('View Exhibitions', 'sage'),
+    "search_items" => __('Search Exhibitions', 'sage'),
+    "not_found" => __('No Exhibitions Found', 'sage'),
+    "not_found_in_trash" => __('No Exhibitions found in Trash', 'sage'),
   );
 
   $exhibit_args = array(
-    "label" => __( 'Exhibitions', 'sage' ),
+    "label" => __('Exhibitions', 'sage'),
     "labels" => $exhibit_labels,
     "description" => "GDHS Exhibitions",
     "public" => true,
@@ -328,36 +337,36 @@ function cptui_register_my_cpts() {
     "exclude_from_search" => false,
     "capability_type" => "post",
     "hierarchical" => true,
-    "rewrite" => array( "slug" => "exhibition", "with_front" => true ),
+    "rewrite" => array("slug" => "exhibition", "with_front" => true),
     'has_archive' => false,
     "query_var" => true,
     "menu_position" => 5,
     "menu_icon" => "dashicons-format-gallery",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
+    "supports" => array("title", "editor", "thumbnail", "excerpt", "author")
   );
 
-  register_post_type( "exhibit", $exhibit_args );
+  register_post_type("exhibit", $exhibit_args);
 
   /*
    * Post Type: Research Library.
    */
   $research_labels = array(
-    "name" => __( 'Research Library', 'sage' ),
-    "singular_name" => __( 'Research Library', 'sage' ),
-    "menu_name" => __( 'Research Library', 'sage' ),
-    "all_items" => __( 'All Items', 'sage' ),
-    "add_new" => __( 'Add New Item', 'sage' ),
-    "edit_item" => __( 'Edit Item', 'sage' ),
-    "new_item" => __( 'New Item', 'sage' ),
-    "view_item" => __( 'View Item', 'sage' ),
-    "view_items" => __( 'View Items', 'sage' ),
-    "search_items" => __( 'Search Items', 'sage' ),
-    "not_found" => __( 'No Items Found', 'sage' ),
-    "not_found_in_trash" => __( 'No Items found in Trash', 'sage' ),
+    "name" => __('Research Library', 'sage'),
+    "singular_name" => __('Research Library', 'sage'),
+    "menu_name" => __('Research Library', 'sage'),
+    "all_items" => __('All Items', 'sage'),
+    "add_new" => __('Add New Item', 'sage'),
+    "edit_item" => __('Edit Item', 'sage'),
+    "new_item" => __('New Item', 'sage'),
+    "view_item" => __('View Item', 'sage'),
+    "view_items" => __('View Items', 'sage'),
+    "search_items" => __('Search Items', 'sage'),
+    "not_found" => __('No Items Found', 'sage'),
+    "not_found_in_trash" => __('No Items found in Trash', 'sage'),
   );
 
   $research_args = array(
-    "label" => __( 'Research Library', 'sage' ),
+    "label" => __('Research Library', 'sage'),
     "labels" => $research_labels,
     "description" => "GDHS Research Library",
     "public" => true,
@@ -369,36 +378,36 @@ function cptui_register_my_cpts() {
     "exclude_from_search" => false,
     "capability_type" => "post",
     "hierarchical" => true,
-    "rewrite" => array( "slug" => "library", "with_front" => true ),
+    "rewrite" => array("slug" => "library", "with_front" => true),
     'has_archive' => false,
     "query_var" => true,
     "menu_position" => 5,
     "menu_icon" => "dashicons-book-alt",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
+    "supports" => array("title", "editor", "thumbnail", "excerpt", "author")
   );
 
-  register_post_type( "library", $research_args );
+  register_post_type("library", $research_args);
 
   /*
    * Post Type: Products.
    */
   $product_labels = array(
-    "name" => __( 'Product', 'sage' ),
-    "singular_name" => __( 'Product', 'sage' ),
-    "menu_name" => __( 'Products', 'sage' ),
-    "all_items" => __( 'All Products', 'sage' ),
-    "add_new" => __( 'Add New Product', 'sage' ),
-    "edit_item" => __( 'Edit Product', 'sage' ),
-    "new_item" => __( 'New Product', 'sage' ),
-    "view_item" => __( 'View Product', 'sage' ),
-    "view_items" => __( 'View Products', 'sage' ),
-    "search_items" => __( 'Search Products', 'sage' ),
-    "not_found" => __( 'No Products Found', 'sage' ),
-    "not_found_in_trash" => __( 'No Products found in Trash', 'sage' ),
+    "name" => __('Product', 'sage'),
+    "singular_name" => __('Product', 'sage'),
+    "menu_name" => __('Products', 'sage'),
+    "all_items" => __('All Products', 'sage'),
+    "add_new" => __('Add New Product', 'sage'),
+    "edit_item" => __('Edit Product', 'sage'),
+    "new_item" => __('New Product', 'sage'),
+    "view_item" => __('View Product', 'sage'),
+    "view_items" => __('View Products', 'sage'),
+    "search_items" => __('Search Products', 'sage'),
+    "not_found" => __('No Products Found', 'sage'),
+    "not_found_in_trash" => __('No Products found in Trash', 'sage'),
   );
 
   $product_args = array(
-    "label" => __( 'Products', 'sage' ),
+    "label" => __('Products', 'sage'),
     "labels" => $product_labels,
     "description" => "GDHS Products",
     "public" => true,
@@ -410,47 +419,48 @@ function cptui_register_my_cpts() {
     "exclude_from_search" => false,
     "capability_type" => "post",
     "hierarchical" => true,
-    "rewrite" => array( "slug" => "product", "with_front" => true ),
+    "rewrite" => array("slug" => "product", "with_front" => true),
     'has_archive' => false,
     "query_var" => true,
     "menu_position" => 5,
     "menu_icon" => "dashicons-cart",
-    "supports" => array( "title", "editor", "thumbnail", "excerpt", "author")
+    "supports" => array("title", "editor", "thumbnail", "excerpt", "author")
   );
 
-  register_post_type( "product", $product_args );
+  register_post_type("product", $product_args);
 }
-add_action( 'init', 'cptui_register_my_cpts' );
+add_action('init', 'cptui_register_my_cpts');
 
 /*
  * Custom taxonomy
  */
-function cptui_register_my_taxes() {
+function cptui_register_my_taxes()
+{
 
   /*
    * Taxonomy: Event Category.
    */
 
   $event_cat_labels = array(
-    "name" => __( 'Event Category', 'sage' ),
-    "singular_name" => __( 'Event Category', 'sage' ),
-    "menu_name" => __( 'Event Categories', 'sage' ),
-    "all_items" => __( 'All Event Categories', 'sage' ),
-    "edit_item" => __( 'Edit Event Categories', 'sage' ),
-    "view_item" => __( 'View Event Categories', 'sage' ),
-    "update_item" => __( 'Update Event Categories', 'sage' ),
-    "add_new_item" => __( 'Add New Event Category', 'sage' ),
-    "new_item_name" => __( 'New Event Category', 'sage' ),
-    "search_items" => __( 'Search Event Categories', 'sage' ),
-    "popular_items" => __( 'Popular Event Categories', 'sage' ),
-    "add_or_remove_items" => __( 'Add or Remove Event Categories', 'sage' ),
-    "choose_from_most_used" => __( 'Choose from the most used Event Categories', 'sage' ),
-    "not_found" => __( 'No Event Categories Found', 'sage' ),
-    "items_list" => __( 'Event Categories List', 'sage' ),
+    "name" => __('Event Category', 'sage'),
+    "singular_name" => __('Event Category', 'sage'),
+    "menu_name" => __('Event Categories', 'sage'),
+    "all_items" => __('All Event Categories', 'sage'),
+    "edit_item" => __('Edit Event Categories', 'sage'),
+    "view_item" => __('View Event Categories', 'sage'),
+    "update_item" => __('Update Event Categories', 'sage'),
+    "add_new_item" => __('Add New Event Category', 'sage'),
+    "new_item_name" => __('New Event Category', 'sage'),
+    "search_items" => __('Search Event Categories', 'sage'),
+    "popular_items" => __('Popular Event Categories', 'sage'),
+    "add_or_remove_items" => __('Add or Remove Event Categories', 'sage'),
+    "choose_from_most_used" => __('Choose from the most used Event Categories', 'sage'),
+    "not_found" => __('No Event Categories Found', 'sage'),
+    "items_list" => __('Event Categories List', 'sage'),
   );
 
   $event_cat_args = array(
-    "label" => __( 'Category', 'sage' ),
+    "label" => __('Category', 'sage'),
     "labels" => $event_cat_labels,
     "public" => true,
     "hierarchical" => true,
@@ -459,39 +469,39 @@ function cptui_register_my_taxes() {
     "show_in_menu" => true,
     "show_in_nav_menus" => true,
     "query_var" => true,
-    "rewrite" => array( "slug" => "event_category", "with_front" => false ),
+    "rewrite" => array("slug" => "event_category", "with_front" => false),
     "has_archive" => false,
     "show_admin_column" => true,
     "show_in_rest" => false,
     "rest_base" => "",
     "show_in_quick_edit" => true,
   );
-  register_taxonomy( "event_category", array( "events" ), $event_cat_args );
+  register_taxonomy("event_category", array("events"), $event_cat_args);
 
   /*
    * Taxonomy: Exhibition Category.
    */
 
   $exhibit_cat_labels = array(
-    "name" => __( 'Exhibition Category', 'sage' ),
-    "singular_name" => __( 'Exhibition Category', 'sage' ),
-    "menu_name" => __( 'Exhibition Categories', 'sage' ),
-    "all_items" => __( 'All Exhibition Categories', 'sage' ),
-    "edit_item" => __( 'Edit Exhibition Categories', 'sage' ),
-    "view_item" => __( 'View Exhibition Categories', 'sage' ),
-    "update_item" => __( 'Update Exhibition Categories', 'sage' ),
-    "add_new_item" => __( 'Add New Exhibition Category', 'sage' ),
-    "new_item_name" => __( 'New Exhibition Category', 'sage' ),
-    "search_items" => __( 'Search Exhibition Categories', 'sage' ),
-    "popular_items" => __( 'Popular Exhibition Categories', 'sage' ),
-    "add_or_remove_items" => __( 'Add or Remove Exhibition Categories', 'sage' ),
-    "choose_from_most_used" => __( 'Choose from the most used Exhibition Categories', 'sage' ),
-    "not_found" => __( 'No Exhibition Categories Found', 'sage' ),
-    "items_list" => __( 'Exhibition Categories List', 'sage' ),
+    "name" => __('Exhibition Category', 'sage'),
+    "singular_name" => __('Exhibition Category', 'sage'),
+    "menu_name" => __('Exhibition Categories', 'sage'),
+    "all_items" => __('All Exhibition Categories', 'sage'),
+    "edit_item" => __('Edit Exhibition Categories', 'sage'),
+    "view_item" => __('View Exhibition Categories', 'sage'),
+    "update_item" => __('Update Exhibition Categories', 'sage'),
+    "add_new_item" => __('Add New Exhibition Category', 'sage'),
+    "new_item_name" => __('New Exhibition Category', 'sage'),
+    "search_items" => __('Search Exhibition Categories', 'sage'),
+    "popular_items" => __('Popular Exhibition Categories', 'sage'),
+    "add_or_remove_items" => __('Add or Remove Exhibition Categories', 'sage'),
+    "choose_from_most_used" => __('Choose from the most used Exhibition Categories', 'sage'),
+    "not_found" => __('No Exhibition Categories Found', 'sage'),
+    "items_list" => __('Exhibition Categories List', 'sage'),
   );
 
   $exhibit_cat_args = array(
-    "label" => __( 'Category', 'sage' ),
+    "label" => __('Category', 'sage'),
     "labels" => $exhibit_cat_labels,
     "public" => true,
     "hierarchical" => true,
@@ -500,39 +510,39 @@ function cptui_register_my_taxes() {
     "show_in_menu" => true,
     "show_in_nav_menus" => true,
     "query_var" => true,
-    "rewrite" => array( "slug" => "exhibit_category", "with_front" => false ),
+    "rewrite" => array("slug" => "exhibit_category", "with_front" => false),
     "has_archive" => false,
     "show_admin_column" => true,
     "show_in_rest" => false,
     "rest_base" => "",
     "show_in_quick_edit" => true,
   );
-  register_taxonomy( "exhibit_category", array( "exhibit" ), $exhibit_cat_args );
+  register_taxonomy("exhibit_category", array("exhibit"), $exhibit_cat_args);
 
   /*
    * Taxonomy: Research Library Category.
    */
 
   $research_cat_labels = array(
-    "name" => __( 'Library Category', 'sage' ),
-    "singular_name" => __( 'Library Category', 'sage' ),
-    "menu_name" => __( 'Library Categories', 'sage' ),
-    "all_items" => __( 'All Library Categories', 'sage' ),
-    "edit_item" => __( 'Edit Library Categories', 'sage' ),
-    "view_item" => __( 'View Library Categories', 'sage' ),
-    "update_item" => __( 'Update Library Categories', 'sage' ),
-    "add_new_item" => __( 'Add New Library Category', 'sage' ),
-    "new_item_name" => __( 'New Library Category', 'sage' ),
-    "search_items" => __( 'Search Library Categories', 'sage' ),
-    "popular_items" => __( 'Popular Library Categories', 'sage' ),
-    "add_or_remove_items" => __( 'Add or Remove Library Categories', 'sage' ),
-    "choose_from_most_used" => __( 'Choose from the most used Library Categories', 'sage' ),
-    "not_found" => __( 'No Library Categories Found', 'sage' ),
-    "items_list" => __( 'Library Categories List', 'sage' ),
+    "name" => __('Library Category', 'sage'),
+    "singular_name" => __('Library Category', 'sage'),
+    "menu_name" => __('Library Categories', 'sage'),
+    "all_items" => __('All Library Categories', 'sage'),
+    "edit_item" => __('Edit Library Categories', 'sage'),
+    "view_item" => __('View Library Categories', 'sage'),
+    "update_item" => __('Update Library Categories', 'sage'),
+    "add_new_item" => __('Add New Library Category', 'sage'),
+    "new_item_name" => __('New Library Category', 'sage'),
+    "search_items" => __('Search Library Categories', 'sage'),
+    "popular_items" => __('Popular Library Categories', 'sage'),
+    "add_or_remove_items" => __('Add or Remove Library Categories', 'sage'),
+    "choose_from_most_used" => __('Choose from the most used Library Categories', 'sage'),
+    "not_found" => __('No Library Categories Found', 'sage'),
+    "items_list" => __('Library Categories List', 'sage'),
   );
 
   $research_cat_args = array(
-    "label" => __( 'Category', 'sage' ),
+    "label" => __('Category', 'sage'),
     "labels" => $research_cat_labels,
     "public" => true,
     "hierarchical" => true,
@@ -541,39 +551,39 @@ function cptui_register_my_taxes() {
     "show_in_menu" => true,
     "show_in_nav_menus" => true,
     "query_var" => true,
-    "rewrite" => array( "slug" => "library_category", "with_front" => false ),
+    "rewrite" => array("slug" => "library_category", "with_front" => false),
     "has_archive" => false,
     "show_admin_column" => true,
     "show_in_rest" => false,
     "rest_base" => "",
     "show_in_quick_edit" => true,
   );
-  register_taxonomy( "library_category", array( "library" ), $research_cat_args );
+  register_taxonomy("library_category", array("library"), $research_cat_args);
 
   /*
    * Taxonomy: Product Category.
    */
 
   $product_cat_labels = array(
-    "name" => __( 'Product Category', 'sage' ),
-    "singular_name" => __( 'Product Category', 'sage' ),
-    "menu_name" => __( 'Product Categories', 'sage' ),
-    "all_items" => __( 'All Product Categories', 'sage' ),
-    "edit_item" => __( 'Edit Product Categories', 'sage' ),
-    "view_item" => __( 'View Product Categories', 'sage' ),
-    "update_item" => __( 'Update Product Categories', 'sage' ),
-    "add_new_item" => __( 'Add New Product Category', 'sage' ),
-    "new_item_name" => __( 'New Product Category', 'sage' ),
-    "search_items" => __( 'Search Product Categories', 'sage' ),
-    "popular_items" => __( 'Popular Product Categories', 'sage' ),
-    "add_or_remove_items" => __( 'Add or Remove Product Categories', 'sage' ),
-    "choose_from_most_used" => __( 'Choose from the most used Product Categories', 'sage' ),
-    "not_found" => __( 'No Product Categories Found', 'sage' ),
-    "items_list" => __( 'Exhibition Categories List', 'sage' ),
+    "name" => __('Product Category', 'sage'),
+    "singular_name" => __('Product Category', 'sage'),
+    "menu_name" => __('Product Categories', 'sage'),
+    "all_items" => __('All Product Categories', 'sage'),
+    "edit_item" => __('Edit Product Categories', 'sage'),
+    "view_item" => __('View Product Categories', 'sage'),
+    "update_item" => __('Update Product Categories', 'sage'),
+    "add_new_item" => __('Add New Product Category', 'sage'),
+    "new_item_name" => __('New Product Category', 'sage'),
+    "search_items" => __('Search Product Categories', 'sage'),
+    "popular_items" => __('Popular Product Categories', 'sage'),
+    "add_or_remove_items" => __('Add or Remove Product Categories', 'sage'),
+    "choose_from_most_used" => __('Choose from the most used Product Categories', 'sage'),
+    "not_found" => __('No Product Categories Found', 'sage'),
+    "items_list" => __('Exhibition Categories List', 'sage'),
   );
 
   $product_cat_args = array(
-    "label" => __( 'Category', 'sage' ),
+    "label" => __('Category', 'sage'),
     "labels" => $product_cat_labels,
     "public" => true,
     "hierarchical" => true,
@@ -582,16 +592,16 @@ function cptui_register_my_taxes() {
     "show_in_menu" => true,
     "show_in_nav_menus" => true,
     "query_var" => true,
-    "rewrite" => array( "slug" => "product_category", "with_front" => false ),
+    "rewrite" => array("slug" => "product_category", "with_front" => false),
     "has_archive" => false,
     "show_admin_column" => true,
     "show_in_rest" => false,
     "rest_base" => "",
     "show_in_quick_edit" => true,
   );
-  register_taxonomy( "product_category", array( "product" ), $product_cat_args );
+  register_taxonomy("product_category", array("product"), $product_cat_args);
 }
-add_action( 'init', 'cptui_register_my_taxes' );
+add_action('init', 'cptui_register_my_taxes');
 
 /*
  * Custom block types.
@@ -602,8 +612,9 @@ add_action( 'init', 'cptui_register_my_taxes' );
 /*
  * Register custom block types.
  */
-function register_custom_block_types() {
-  if ( function_exists( 'acf_register_block_type' ) ) {
+function register_custom_block_types()
+{
+  if (function_exists('acf_register_block_type')) {
     // Register a gallery block.
     acf_register_block_type(
       array(
@@ -612,7 +623,7 @@ function register_custom_block_types() {
         'description'     => 'A custom gallery block.',
         'category'        => 'media',
         'icon'            => 'format-gallery',
-        'keywords'        => array( 'gallery', 'images' ),
+        'keywords'        => array('gallery', 'images'),
         'render_template' => 'views/partials/block-gallery.blade.php',
         'mode'            => 'edit',
         'supports'        => array(
@@ -622,1031 +633,1135 @@ function register_custom_block_types() {
     );
   }
 }
-add_action( 'init', 'register_custom_block_types' );
+add_action('init', 'register_custom_block_types');
 
-if( function_exists('acf_add_local_field_group') ):
+if (function_exists('acf_add_local_field_group')):
 
-acf_add_local_field_group(array (
-  'key' => 'group_5a8eb7d3bf43f',
-  'title' => 'Blocks',
-  'fields' => array (
-    array (
-      'key' => 'field_5a8eb7d7d3970',
-      'label' => 'Block',
-      'name' => 'block',
-      'type' => 'repeater',
-      'instructions' => '',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'collapsed' => 'field_5a8eb7e1d3971',
-      'min' => '',
-      'max' => '',
-      'layout' => 'block',
-      'button_label' => 'Add Block',
-      'sub_fields' => array (
-        array (
-          'key' => 'field_5a8eb7e1d3971',
-          'label' => 'Block Title',
-          'name' => 'block_title',
-          'type' => 'text',
-          'instructions' => '',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-          'prepend' => '',
-          'append' => '',
-          'maxlength' => '',
-          'readonly' => 0,
-          'disabled' => 0,
-        ),
-        array (
-          'key' => 'field_5a8eb7e7d3972',
-          'label' => 'Block Description',
-          'name' => 'block_description',
-          'type' => 'textarea',
-          'instructions' => '',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-          'maxlength' => '',
-          'rows' => '',
-          'new_lines' => 'wpautop',
-          'readonly' => 0,
-          'disabled' => 0,
-        ),
-        array (
-          'key' => 'field_5a8eb7f1d3973',
-          'label' => 'Block Url',
-          'name' => 'block_url',
-          'type' => 'url',
-          'instructions' => '',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-        ),
-        array (
-          'key' => 'field_5a8eb832d3974',
-          'label' => 'Block Image',
-          'name' => 'block_image',
-          'type' => 'image',
-          'instructions' => '',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'return_format' => 'array',
-          'preview_size' => 'thumbnail',
-          'library' => 'all',
-          'min_width' => '',
-          'min_height' => '',
-          'min_size' => '',
-          'max_width' => '',
-          'max_height' => '',
-          'max_size' => '',
-          'mime_types' => '',
-        ),
-      ),
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'page_template',
-        'operator' => '==',
-        'value' => 'views/template-blocks.blade.php',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'post',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5a67d4f2a0366',
-  'title' => 'Event Details',
-  'fields' => array (
-    array (
-      'key' => 'field_5a67d4fab9476',
-      'label' => 'Event Start Date',
-      'name' => 'event_start_date',
-      'type' => 'date_time_picker',
-      'instructions' => 'Enter the start date and time for the event.',
-      'required' => 1,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => 50,
-        'class' => '',
-        'id' => '',
-      ),
-      'display_format' => 'F j, Y g:i a',
-      'return_format' => 'Y-m-d H:i:s',
-      'first_day' => 0,
-    ),
-    array (
-      'key' => 'field_5a67d53ab9477',
-      'label' => 'Event End Date',
-      'name' => 'event_end_date',
-      'type' => 'date_time_picker',
-      'instructions' => 'Enter the end date and time for the event.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => 50,
-        'class' => '',
-        'id' => '',
-      ),
-      'display_format' => 'F j, Y g:i a',
-      'return_format' => 'Y-m-d H:i:s',
-      'first_day' => 0,
-    ),
-    array (
-      'key' => 'field_63e81c5cc2f03',
-      'label' => 'Event Date Override',
-      'name' => 'event_date_override',
-      'aria-label' => '',
-      'type' => 'text',
-      'instructions' => 'Use for events where to event start\/end is TBD.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => ''
-      ),
-      'default_value' => '',
-      'maxlength' => '',
-      'placeholder' => '',
-      'prepend' => '',
-      'append' => ''
-    ),
-    array (
-      'key' => 'field_5a67d5c2ab1d3',
-      'label' => 'Event Location',
-      'name' => 'event_location',
-      'type' => 'text',
-      'instructions' => 'Enter the location for the event.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-      'prepend' => '',
-      'append' => '',
-      'maxlength' => '',
-      'readonly' => 0,
-      'disabled' => 0,
-    ),
-    array (
-      'key' => 'field_5a691f05ec4a2',
-      'label' => 'Disable Link',
-      'name' => 'disable_link',
-      'type' => 'true_false',
-      'instructions' => 'Check to prevent the event block from linking to the detail page.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'message' => '',
-      'default_value' => 0,
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'events',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5a692fc072e31',
-  'title' => 'Featured Pages',
-  'fields' => array (
-    array (
-      'key' => 'field_5a692fe1be2bc',
-      'label' => 'Featured Pages',
-      'name' => 'featured_pages',
-      'type' => 'relationship',
-      'instructions' => '',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'post_type' => array (
-        0 => 'page',
-      ),
-      'taxonomy' => array (
-      ),
-      'filters' => array (
-        0 => 'search',
-      ),
-      'elements' => array (
-        0 => 'featured_image',
-      ),
-      'min' => 3,
-      'max' => 3,
-      'return_format' => 'object',
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'page_type',
-        'operator' => '==',
-        'value' => 'front_page',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'page_template',
-        'operator' => '==',
-        'value' => 'views/template-landing.blade.php',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5a4c2d649d5b9',
-  'title' => 'Footer Settings',
-  'fields' => array (
-    array (
-      'key' => 'field_5a4c2d71a9a93',
-      'label' => 'Footer Annual Report',
-      'name' => 'footer_annual_report',
-      'type' => 'url',
-      'instructions' => 'Enter the link to the current annual report.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'options_page',
-        'operator' => '==',
-        'value' => 'acf-options',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5a7260af5bd35',
-  'title' => 'Gallery',
-  'fields' => array (
-    array (
-      'key' => 'field_5a7260b27d5a3',
-      'label' => 'Gallery',
-      'name' => 'gallery',
-      'type' => 'gallery',
-      'instructions' => 'Upload images for the gallery.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'min' => '',
-      'max' => '',
-      'preview_size' => 'thumbnail',
-      'insert' => 'append',
-      'library' => 'all',
-      'min_width' => '',
-      'min_height' => '',
-      'min_size' => '',
-      'max_width' => '',
-      'max_height' => '',
-      'max_size' => '',
-      'mime_types' => '',
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'page',
-        'operator' => '==',
-        'value' => '31',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5a5a69c76e814',
-  'title' => 'Page Settings',
-  'fields' => array (
-    array (
-      'key' => 'field_5a5a69d16e55b',
-      'label' => 'Display Title',
-      'name' => 'display_title',
-      'type' => 'text',
-      'instructions' => 'Title to display in place of the default page title.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-      'prepend' => '',
-      'append' => '',
-      'maxlength' => '',
-      'readonly' => 0,
-      'disabled' => 0,
-    ),
-    array (
-      'key' => 'field_5a5a69d76e55c',
-      'label' => 'Intro',
-      'name' => 'intro',
-      'type' => 'textarea',
-      'instructions' => 'Short introduction blurb for the page.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-      'maxlength' => '',
-      'rows' => '',
-      'new_lines' => '',
-      'readonly' => 0,
-      'disabled' => 0,
-    ),
-    array (
-      'key' => 'field_5a5a69e96e55d',
-      'label' => 'CTA Link',
-      'name' => 'cta_link',
-      'type' => 'url',
-      'instructions' => 'Enter the url for the CTA link. (This link displays below the introduction blurb)',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-    ),
-    array (
-      'key' => 'field_5a5a6a646e55e',
-      'label' => 'CTA Text',
-      'name' => 'cta_text',
-      'type' => 'text',
-      'instructions' => 'Enter text for the CTA link.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-      'prepend' => '',
-      'append' => '',
-      'maxlength' => '',
-      'readonly' => 0,
-      'disabled' => 0,
-    ),
-    array (
-      'key' => 'field_5a6fcfcbd9a81',
-      'label' => 'Hide Featured Image',
-      'name' => 'hide_featured_image',
-      'type' => 'true_false',
-      'instructions' => 'Check to hide the featured image from displaying on the page.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'message' => '',
-      'default_value' => 0,
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'page',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5a6f9f9fce34f',
-  'title' => 'Shop Settings',
-  'fields' => array (
-    array (
-      'key' => 'field_5a6fa078dcf9e',
-      'label' => 'Product Subtitle',
-      'name' => 'product_subtitle',
-      'type' => 'text',
-      'instructions' => 'Displays below the title. Enter the publishing information on the product or just supporting text.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-      'prepend' => '',
-      'append' => '',
-      'maxlength' => '',
-      'readonly' => 0,
-      'disabled' => 0,
-    ),
-    array (
-      'key' => 'field_5a6f9ff3dcf9b',
-      'label' => 'Product Details',
-      'name' => 'product_details',
-      'type' => 'repeater',
-      'instructions' => 'Enter the details for the product. Each item will in a bulleted list.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'collapsed' => '',
-      'min' => '',
-      'max' => '',
-      'layout' => 'table',
-      'button_label' => 'Add Row',
-      'sub_fields' => array (
-        array (
-          'key' => 'field_5a6fa01edcf9c',
-          'label' => 'Product Detail',
-          'name' => 'product_detail',
-          'type' => 'text',
-          'instructions' => '',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-          'prepend' => '',
-          'append' => '',
-          'maxlength' => '',
-          'readonly' => 0,
-          'disabled' => 0,
-        ),
-      ),
-    ),
-    array (
-      'key' => 'field_5a6fa038dcf9d',
-      'label' => 'Product Gallery',
-      'name' => 'product_gallery',
-      'type' => 'gallery',
-      'instructions' => 'Upload Images to display as a slideshow for the product. If no images are uploaded, the image will default to the `Featured Image`',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'min' => '',
-      'max' => '',
-      'preview_size' => 'thumbnail',
-      'insert' => 'append',
-      'library' => 'all',
-      'min_width' => '',
-      'min_height' => '',
-      'min_size' => '',
-      'max_width' => '',
-      'max_height' => '',
-      'max_size' => '',
-      'mime_types' => '',
-    ),
-    array (
-      'key' => 'field_5a6f9fcbdcf9a',
-      'label' => 'PDF Download',
-      'name' => 'pdf_download',
-      'type' => 'file',
-      'instructions' => 'Upload a PDF file of the product\'s order form.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'return_format' => 'array',
-      'library' => 'all',
-      'min_size' => '',
-      'max_size' => '',
-      'mime_types' => '',
-    ),
-    array (
-      'key' => 'field_5a6f9fabdcf99',
-      'label' => 'Paypal Link',
-      'name' => 'paypal_link',
-      'type' => 'url',
-      'instructions' => 'Enter the url for the paypal button.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'product',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5a5a6aaee3d6e',
-  'title' => 'Slideshow Settings',
-  'fields' => array (
-    array (
-      'key' => 'field_5a5a6ab4e7990',
-      'label' => 'Slideshow Slides',
-      'name' => 'slideshow',
-      'type' => 'repeater',
-      'instructions' => 'Add slides to appear in the homepage slideshow.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'collapsed' => 'field_5a5a6ac3e7991',
-      'min' => '',
-      'max' => '',
-      'layout' => 'block',
-      'button_label' => 'Add Slide',
-      'sub_fields' => array (
-        array (
-          'key' => 'field_5a5a6ac3e7991',
-          'label' => 'Slideshow Image',
-          'name' => 'slideshow_image',
-          'type' => 'image',
-          'instructions' => 'Upload the slide image.',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'return_format' => 'array',
-          'preview_size' => 'thumbnail',
-          'library' => 'all',
-          'min_width' => 1200,
-          'min_height' => '',
-          'min_size' => '',
-          'max_width' => '',
-          'max_height' => '',
-          'max_size' => '',
-          'mime_types' => '',
-        ),
-        array (
-          'key' => 'field_5a5a6ae2e7992',
-          'label' => 'Slideshow Title',
-          'name' => 'slideshow_title',
-          'type' => 'text',
-          'instructions' => 'Enter a slide title.',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-          'prepend' => '',
-          'append' => '',
-          'maxlength' => '',
-          'readonly' => 0,
-          'disabled' => 0,
-        ),
-        array (
-          'key' => 'field_5a5a6afce7993',
-          'label' => 'Slideshow Description',
-          'name' => 'slideshow_description',
-          'type' => 'textarea',
-          'instructions' => 'Enter a hero description.',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-          'maxlength' => '',
-          'rows' => '',
-          'new_lines' => 'wpautop',
-          'readonly' => 0,
-          'disabled' => 0,
-        ),
-        array (
-          'key' => 'field_5a5a6b15e7994',
-          'label' => 'Slideshow CTA Link',
-          'name' => 'slideshow_cta_link',
-          'type' => 'url',
-          'instructions' => 'Enter a url for the slide to link to.',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-        ),
-        array (
-          'key' => 'field_5a5a6b2ae7995',
-          'label' => 'Slideshow CTA Text',
-          'name' => 'slideshow_cta_text',
-          'type' => 'text',
-          'instructions' => 'Enter text to display for the link. (Defaults to \'Learn More\')',
-          'required' => 0,
-          'conditional_logic' => 0,
-          'wrapper' => array (
-            'width' => '',
-            'class' => '',
-            'id' => '',
-          ),
-          'default_value' => '',
-          'placeholder' => '',
-          'prepend' => '',
-          'append' => '',
-          'maxlength' => '',
-          'readonly' => 0,
-          'disabled' => 0,
-        ),
-      ),
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'page_type',
-        'operator' => '==',
-        'value' => 'front_page',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5abae0be304a0',
-  'title' => 'Hide Author',
-  'fields' => array (
-    array (
-      'key' => 'field_5abae0c8ddc6d',
-      'label' => 'Hide Author',
-      'name' => 'hide_author',
-      'type' => 'true_false',
-      'instructions' => 'Check to hide the author from displaying on the page.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'message' => '',
-      'default_value' => 0,
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'post',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'exhibit',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'library',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'side',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array (
-  'key' => 'group_5ac0f3ab01971',
-  'title' => 'Hide Dropcap',
-  'fields' => array (
-    array (
-      'key' => 'field_5ac0f3b5f5c18',
-      'label' => 'Hide Dropcap',
-      'name' => 'hide_dropcap',
-      'type' => 'true_false',
-      'instructions' => 'Check to hide the dropcap from displaying in the text area.',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array (
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'message' => '',
-      'default_value' => 0,
-    ),
-  ),
-  'location' => array (
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'page',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'post',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'events',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'library',
-      ),
-    ),
-    array (
-      array (
-        'param' => 'post_type',
-        'operator' => '==',
-        'value' => 'exhibit',
-      ),
-    ),
-  ),
-  'menu_order' => 0,
-  'position' => 'side',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => 1,
-  'description' => '',
-));
-
-acf_add_local_field_group(array(
-  'key' => 'group_602405abbb4ef',
-  'title' => 'Block: Gallery',
-  'fields' => array(
-    array(
-      'key' => 'field_602405b10585a',
-      'label' => 'Gallery Title',
-      'name' => 'gallery_title',
-      'type' => 'text',
-      'instructions' => '',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array(
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-      'prepend' => '',
-      'append' => '',
-      'maxlength' => '',
-    ),
-    array(
-      'key' => 'field_602405b90585b',
-      'label' => 'Gallery Description',
-      'name' => 'gallery_description',
-      'type' => 'text',
-      'instructions' => '',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array(
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'default_value' => '',
-      'placeholder' => '',
-      'prepend' => '',
-      'append' => '',
-      'maxlength' => '',
-    ),
-    array(
-      'key' => 'field_602405c10585c',
-      'label' => 'Gallery',
-      'name' => 'gallery',
-      'type' => 'gallery',
-      'instructions' => '',
-      'required' => 0,
-      'conditional_logic' => 0,
-      'wrapper' => array(
-        'width' => '',
-        'class' => '',
-        'id' => '',
-      ),
-      'return_format' => 'array',
-      'preview_size' => 'medium',
-      'insert' => 'append',
-      'library' => 'all',
-      'min' => '',
-      'max' => '',
-      'min_width' => '',
-      'min_height' => '',
-      'min_size' => '',
-      'max_width' => '',
-      'max_height' => '',
-      'max_size' => '',
-      'mime_types' => '',
-    ),
-  ),
-  'location' => array(
-    array(
+  acf_add_local_field_group(array(
+    'key' => 'group_5a8eb7d3bf43f',
+    'title' => 'Blocks',
+    'fields' => array(
       array(
-        'param' => 'block',
-        'operator' => '==',
-        'value' => 'acf/gallery',
+        'key' => 'field_5a8eb7d7d3970',
+        'label' => 'Block',
+        'name' => 'block',
+        'type' => 'repeater',
+        'instructions' => '',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'collapsed' => 'field_5a8eb7e1d3971',
+        'min' => '',
+        'max' => '',
+        'layout' => 'block',
+        'button_label' => 'Add Block',
+        'sub_fields' => array(
+          array(
+            'key' => 'field_5a8eb7e1d3971',
+            'label' => 'Block Title',
+            'name' => 'block_title',
+            'type' => 'text',
+            'instructions' => '',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+            'maxlength' => '',
+            'readonly' => 0,
+            'disabled' => 0,
+          ),
+          array(
+            'key' => 'field_5a8eb7e7d3972',
+            'label' => 'Block Description',
+            'name' => 'block_description',
+            'type' => 'textarea',
+            'instructions' => '',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'maxlength' => '',
+            'rows' => '',
+            'new_lines' => 'wpautop',
+            'readonly' => 0,
+            'disabled' => 0,
+          ),
+          array(
+            'key' => 'field_5a8eb7f1d3973',
+            'label' => 'Block Url',
+            'name' => 'block_url',
+            'type' => 'url',
+            'instructions' => '',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+          ),
+          array(
+            'key' => 'field_5a8eb832d3974',
+            'label' => 'Block Image',
+            'name' => 'block_image',
+            'type' => 'image',
+            'instructions' => '',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'return_format' => 'array',
+            'preview_size' => 'thumbnail',
+            'library' => 'all',
+            'min_width' => '',
+            'min_height' => '',
+            'min_size' => '',
+            'max_width' => '',
+            'max_height' => '',
+            'max_size' => '',
+            'mime_types' => '',
+          ),
+        ),
       ),
     ),
-  ),
-  'menu_order' => 0,
-  'position' => 'normal',
-  'style' => 'default',
-  'label_placement' => 'top',
-  'instruction_placement' => 'label',
-  'hide_on_screen' => '',
-  'active' => true,
-  'description' => '',
-));
+    'location' => array(
+      array(
+        array(
+          'param' => 'page_template',
+          'operator' => '==',
+          'value' => 'views/template-blocks.blade.php',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'post',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5a67d4f2a0366',
+    'title' => 'Event Details',
+    'fields' => array(
+      array(
+        'key' => 'field_5a67d4fab9476',
+        'label' => 'Event Start Date',
+        'name' => 'event_start_date',
+        'type' => 'date_time_picker',
+        'instructions' => 'Enter the start date and time for the event.',
+        'required' => 1,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => 50,
+          'class' => '',
+          'id' => '',
+        ),
+        'display_format' => 'F j, Y g:i a',
+        'return_format' => 'Y-m-d H:i:s',
+        'first_day' => 0,
+      ),
+      array(
+        'key' => 'field_5a67d53ab9477',
+        'label' => 'Event End Date',
+        'name' => 'event_end_date',
+        'type' => 'date_time_picker',
+        'instructions' => 'Enter the end date and time for the event.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => 50,
+          'class' => '',
+          'id' => '',
+        ),
+        'display_format' => 'F j, Y g:i a',
+        'return_format' => 'Y-m-d H:i:s',
+        'first_day' => 0,
+      ),
+      array(
+        'key' => 'field_63e81c5cc2f03',
+        'label' => 'Event Date Override',
+        'name' => 'event_date_override',
+        'aria-label' => '',
+        'type' => 'text',
+        'instructions' => 'Use for events where to event start\/end is TBD.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => ''
+        ),
+        'default_value' => '',
+        'maxlength' => '',
+        'placeholder' => '',
+        'prepend' => '',
+        'append' => ''
+      ),
+      array(
+        'key' => 'field_5a67d5c2ab1d3',
+        'label' => 'Event Location',
+        'name' => 'event_location',
+        'type' => 'text',
+        'instructions' => 'Enter the location for the event.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+        'prepend' => '',
+        'append' => '',
+        'maxlength' => '',
+        'readonly' => 0,
+        'disabled' => 0,
+      ),
+      array(
+        'key' => 'field_5a691f05ec4a2',
+        'label' => 'Disable Link',
+        'name' => 'disable_link',
+        'type' => 'true_false',
+        'instructions' => 'Check to prevent the event block from linking to the detail page.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'message' => '',
+        'default_value' => 0,
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'events',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5a692fc072e31',
+    'title' => 'Featured Pages',
+    'fields' => array(
+      array(
+        'key' => 'field_5a692fe1be2bc',
+        'label' => 'Featured Pages',
+        'name' => 'featured_pages',
+        'type' => 'relationship',
+        'instructions' => '',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'post_type' => array(
+          0 => 'page',
+        ),
+        'taxonomy' => array(),
+        'filters' => array(
+          0 => 'search',
+        ),
+        'elements' => array(
+          0 => 'featured_image',
+        ),
+        'min' => 3,
+        'max' => 3,
+        'return_format' => 'object',
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'page_type',
+          'operator' => '==',
+          'value' => 'front_page',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'page_template',
+          'operator' => '==',
+          'value' => 'views/template-landing.blade.php',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5a4c2d649d5b9',
+    'title' => 'Footer Settings',
+    'fields' => array(
+      array(
+        'key' => 'field_5a4c2d71a9a93',
+        'label' => 'Footer Annual Report',
+        'name' => 'footer_annual_report',
+        'type' => 'url',
+        'instructions' => 'Enter the link to the current annual report.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'options_page',
+          'operator' => '==',
+          'value' => 'acf-options',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5a7260af5bd35',
+    'title' => 'Gallery',
+    'fields' => array(
+      array(
+        'key' => 'field_5a7260b27d5a3',
+        'label' => 'Gallery',
+        'name' => 'gallery',
+        'type' => 'gallery',
+        'instructions' => 'Upload images for the gallery.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'min' => '',
+        'max' => '',
+        'preview_size' => 'thumbnail',
+        'insert' => 'append',
+        'library' => 'all',
+        'min_width' => '',
+        'min_height' => '',
+        'min_size' => '',
+        'max_width' => '',
+        'max_height' => '',
+        'max_size' => '',
+        'mime_types' => '',
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'page',
+          'operator' => '==',
+          'value' => '31',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5a5a69c76e814',
+    'title' => 'Page Settings',
+    'fields' => array(
+      array(
+        'key' => 'field_5a5a69d16e55b',
+        'label' => 'Display Title',
+        'name' => 'display_title',
+        'type' => 'text',
+        'instructions' => 'Title to display in place of the default page title.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+        'prepend' => '',
+        'append' => '',
+        'maxlength' => '',
+        'readonly' => 0,
+        'disabled' => 0,
+      ),
+      array(
+        'key' => 'field_5a5a69d76e55c',
+        'label' => 'Intro',
+        'name' => 'intro',
+        'type' => 'textarea',
+        'instructions' => 'Short introduction blurb for the page.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+        'maxlength' => '',
+        'rows' => '',
+        'new_lines' => '',
+        'readonly' => 0,
+        'disabled' => 0,
+      ),
+      array(
+        'key' => 'field_5a5a69e96e55d',
+        'label' => 'CTA Link',
+        'name' => 'cta_link',
+        'type' => 'url',
+        'instructions' => 'Enter the url for the CTA link. (This link displays below the introduction blurb)',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+      ),
+      array(
+        'key' => 'field_5a5a6a646e55e',
+        'label' => 'CTA Text',
+        'name' => 'cta_text',
+        'type' => 'text',
+        'instructions' => 'Enter text for the CTA link.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+        'prepend' => '',
+        'append' => '',
+        'maxlength' => '',
+        'readonly' => 0,
+        'disabled' => 0,
+      ),
+      array(
+        'key' => 'field_5a6fcfcbd9a81',
+        'label' => 'Hide Featured Image',
+        'name' => 'hide_featured_image',
+        'type' => 'true_false',
+        'instructions' => 'Check to hide the featured image from displaying on the page.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'message' => '',
+        'default_value' => 0,
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'page',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5a6f9f9fce34f',
+    'title' => 'Shop Settings',
+    'fields' => array(
+      array(
+        'key' => 'field_5a6fa078dcf9e',
+        'label' => 'Product Subtitle',
+        'name' => 'product_subtitle',
+        'type' => 'text',
+        'instructions' => 'Displays below the title. Enter the publishing information on the product or just supporting text.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+        'prepend' => '',
+        'append' => '',
+        'maxlength' => '',
+        'readonly' => 0,
+        'disabled' => 0,
+      ),
+      array(
+        'key' => 'field_5a6f9ff3dcf9b',
+        'label' => 'Product Details',
+        'name' => 'product_details',
+        'type' => 'repeater',
+        'instructions' => 'Enter the details for the product. Each item will in a bulleted list.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'collapsed' => '',
+        'min' => '',
+        'max' => '',
+        'layout' => 'table',
+        'button_label' => 'Add Row',
+        'sub_fields' => array(
+          array(
+            'key' => 'field_5a6fa01edcf9c',
+            'label' => 'Product Detail',
+            'name' => 'product_detail',
+            'type' => 'text',
+            'instructions' => '',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+            'maxlength' => '',
+            'readonly' => 0,
+            'disabled' => 0,
+          ),
+        ),
+      ),
+      array(
+        'key' => 'field_5a6fa038dcf9d',
+        'label' => 'Product Gallery',
+        'name' => 'product_gallery',
+        'type' => 'gallery',
+        'instructions' => 'Upload Images to display as a slideshow for the product. If no images are uploaded, the image will default to the `Featured Image`',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'min' => '',
+        'max' => '',
+        'preview_size' => 'thumbnail',
+        'insert' => 'append',
+        'library' => 'all',
+        'min_width' => '',
+        'min_height' => '',
+        'min_size' => '',
+        'max_width' => '',
+        'max_height' => '',
+        'max_size' => '',
+        'mime_types' => '',
+      ),
+      array(
+        'key' => 'field_5a6f9fcbdcf9a',
+        'label' => 'PDF Download',
+        'name' => 'pdf_download',
+        'type' => 'file',
+        'instructions' => 'Upload a PDF file of the product\'s order form.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'return_format' => 'array',
+        'library' => 'all',
+        'min_size' => '',
+        'max_size' => '',
+        'mime_types' => '',
+      ),
+      array(
+        'key' => 'field_5a6f9fabdcf99',
+        'label' => 'Paypal Link',
+        'name' => 'paypal_link',
+        'type' => 'url',
+        'instructions' => 'Enter the url for the paypal button.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'product',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5a5a6aaee3d6e',
+    'title' => 'Slideshow Settings',
+    'fields' => array(
+      array(
+        'key' => 'field_5a5a6ab4e7990',
+        'label' => 'Slideshow Slides',
+        'name' => 'slideshow',
+        'type' => 'repeater',
+        'instructions' => 'Add slides to appear in the homepage slideshow.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'collapsed' => 'field_5a5a6ac3e7991',
+        'min' => '',
+        'max' => '',
+        'layout' => 'block',
+        'button_label' => 'Add Slide',
+        'sub_fields' => array(
+          array(
+            'key' => 'field_5a5a6ac3e7991',
+            'label' => 'Slideshow Image',
+            'name' => 'slideshow_image',
+            'type' => 'image',
+            'instructions' => 'Upload the slide image.',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'return_format' => 'array',
+            'preview_size' => 'thumbnail',
+            'library' => 'all',
+            'min_width' => 1200,
+            'min_height' => '',
+            'min_size' => '',
+            'max_width' => '',
+            'max_height' => '',
+            'max_size' => '',
+            'mime_types' => '',
+          ),
+          array(
+            'key' => 'field_5a5a6ae2e7992',
+            'label' => 'Slideshow Title',
+            'name' => 'slideshow_title',
+            'type' => 'text',
+            'instructions' => 'Enter a slide title.',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+            'maxlength' => '',
+            'readonly' => 0,
+            'disabled' => 0,
+          ),
+          array(
+            'key' => 'field_5a5a6afce7993',
+            'label' => 'Slideshow Description',
+            'name' => 'slideshow_description',
+            'type' => 'textarea',
+            'instructions' => 'Enter a hero description.',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'maxlength' => '',
+            'rows' => '',
+            'new_lines' => 'wpautop',
+            'readonly' => 0,
+            'disabled' => 0,
+          ),
+          array(
+            'key' => 'field_5a5a6b15e7994',
+            'label' => 'Slideshow CTA Link',
+            'name' => 'slideshow_cta_link',
+            'type' => 'url',
+            'instructions' => 'Enter a url for the slide to link to.',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+          ),
+          array(
+            'key' => 'field_5a5a6b2ae7995',
+            'label' => 'Slideshow CTA Text',
+            'name' => 'slideshow_cta_text',
+            'type' => 'text',
+            'instructions' => 'Enter text to display for the link. (Defaults to \'Learn More\')',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+            'maxlength' => '',
+            'readonly' => 0,
+            'disabled' => 0,
+          ),
+        ),
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'page_type',
+          'operator' => '==',
+          'value' => 'front_page',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5abae0be304a0',
+    'title' => 'Hide Author',
+    'fields' => array(
+      array(
+        'key' => 'field_5abae0c8ddc6d',
+        'label' => 'Hide Author',
+        'name' => 'hide_author',
+        'type' => 'true_false',
+        'instructions' => 'Check to hide the author from displaying on the page.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'message' => '',
+        'default_value' => 0,
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'post',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'exhibit',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'library',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'side',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_5ac0f3ab01971',
+    'title' => 'Hide Dropcap',
+    'fields' => array(
+      array(
+        'key' => 'field_5ac0f3b5f5c18',
+        'label' => 'Hide Dropcap',
+        'name' => 'hide_dropcap',
+        'type' => 'true_false',
+        'instructions' => 'Check to hide the dropcap from displaying in the text area.',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'message' => '',
+        'default_value' => 0,
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'page',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'post',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'events',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'library',
+        ),
+      ),
+      array(
+        array(
+          'param' => 'post_type',
+          'operator' => '==',
+          'value' => 'exhibit',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'side',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => 1,
+    'description' => '',
+  ));
+
+  acf_add_local_field_group(array(
+    'key' => 'group_602405abbb4ef',
+    'title' => 'Block: Gallery',
+    'fields' => array(
+      array(
+        'key' => 'field_602405b10585a',
+        'label' => 'Gallery Title',
+        'name' => 'gallery_title',
+        'type' => 'text',
+        'instructions' => '',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+        'prepend' => '',
+        'append' => '',
+        'maxlength' => '',
+      ),
+      array(
+        'key' => 'field_602405b90585b',
+        'label' => 'Gallery Description',
+        'name' => 'gallery_description',
+        'type' => 'text',
+        'instructions' => '',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'default_value' => '',
+        'placeholder' => '',
+        'prepend' => '',
+        'append' => '',
+        'maxlength' => '',
+      ),
+      array(
+        'key' => 'field_602405c10585c',
+        'label' => 'Gallery',
+        'name' => 'gallery',
+        'type' => 'gallery',
+        'instructions' => '',
+        'required' => 0,
+        'conditional_logic' => 0,
+        'wrapper' => array(
+          'width' => '',
+          'class' => '',
+          'id' => '',
+        ),
+        'return_format' => 'array',
+        'preview_size' => 'medium',
+        'insert' => 'append',
+        'library' => 'all',
+        'min' => '',
+        'max' => '',
+        'min_width' => '',
+        'min_height' => '',
+        'min_size' => '',
+        'max_width' => '',
+        'max_height' => '',
+        'max_size' => '',
+        'mime_types' => '',
+      ),
+    ),
+    'location' => array(
+      array(
+        array(
+          'param' => 'block',
+          'operator' => '==',
+          'value' => 'acf/gallery',
+        ),
+      ),
+    ),
+    'menu_order' => 0,
+    'position' => 'normal',
+    'style' => 'default',
+    'label_placement' => 'top',
+    'instruction_placement' => 'label',
+    'hide_on_screen' => '',
+    'active' => true,
+    'description' => '',
+  ));
 endif;
+
+/**
+ * Dynamically populate Payment Select (Dropdown) fields with Products CPT and ACF prices
+ * For field IDs 21, 24, and 28
+ */
+add_filter('wpforms_field_properties_payment-select', function ($properties, $field, $form_data) {
+
+  // Only apply to specific field IDs (21, 24, and 28)
+  if (!in_array($field['id'], ['21', '24', '28'])) {
+    return $properties;
+  }
+
+  // Get all published products
+  $products = get_posts([
+    'post_type'      => 'product',
+    'posts_per_page' => -1,
+    'post_status'    => 'publish',
+    'orderby'        => 'title',
+    'order'          => 'ASC',
+  ]);
+
+  // Clear existing choices
+  $properties['inputs']['primary']['options'] = [];
+
+  // Add products as dropdown options
+  foreach ($products as $product) {
+    // Get ACF price field
+    $price = get_field('product_price', $product->ID);
+
+    // Make sure price is numeric
+    $price = floatval(str_replace(['$', ','], '', $price));
+
+    // Add option with product title and price
+    $properties['inputs']['primary']['options'][] = [
+      'label' => get_the_title($product->ID),
+      'value' => get_the_title($product->ID), // Using title as value for clarity
+      'price' => $price,
+      'depth' => 0,
+    ];
+  }
+
+  return $properties;
+}, 10, 3);
+
+/**
+ * Alternative method using wpforms_frontend_form_data for dynamic population
+ * This ensures the dropdown items are populated before form render
+ * Priority set to 5 to run early
+ */
+add_filter('wpforms_frontend_form_data', function ($form_data) {
+
+  // Check if we have fields to process
+  if (empty($form_data['fields'])) {
+    return $form_data;
+  }
+
+  // Target field IDs 21, 24, and 28
+  $target_field_ids = ['21', '24', '28']; // Convert to strings for comparison
+
+  foreach ($form_data['fields'] as $field_id => $field) {
+    // Check if this is one of our target payment select fields
+    // Field ID might be string or integer, so we check both
+    if ((in_array((string)$field_id, $target_field_ids) || in_array($field_id, [21, 24, 28]))
+        && isset($field['type'])
+        && $field['type'] === 'payment-select') {
+
+      // Get all published products
+      $products = get_posts([
+        'post_type'      => 'product',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'orderby'        => 'title',
+        'order'          => 'ASC',
+      ]);
+
+      // Clear existing choices
+      $form_data['fields'][$field_id]['choices'] = [];
+
+      // Add a default empty option
+      $form_data['fields'][$field_id]['choices'][] = [
+        'label' => '-- Select a Product --',
+        'value' => '',
+        'price' => '0.00',
+      ];
+
+      // Add products as choices
+      foreach ($products as $product) {
+        // Get ACF price field
+        $price = get_field('product_price', $product->ID);
+
+        // Clean and format price (remove $ and commas, convert to float)
+        $price = floatval(str_replace(['$', ','], '', $price));
+
+        // Add choice with product title and price
+        $form_data['fields'][$field_id]['choices'][] = [
+          'label' => get_the_title($product->ID),
+          'value' => get_the_title($product->ID),
+          'price' => number_format($price, 2, '.', ''), // Ensure proper price format
+        ];
+      }
+    }
+  }
+
+  return $form_data;
+}, 5);

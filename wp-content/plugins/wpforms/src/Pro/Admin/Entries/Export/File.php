@@ -138,6 +138,7 @@ class File {
 
 		rewind( $f );
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$file_contents = file_get_contents( $file_path );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose

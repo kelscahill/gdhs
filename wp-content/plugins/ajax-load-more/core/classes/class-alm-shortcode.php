@@ -204,6 +204,7 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 						'day'                          => '',
 						'author'                       => '',
 						'search'                       => '',
+						'engine'                       => '',
 						'custom_args'                  => '',
 						'post_status'                  => '',
 						'order'                        => 'DESC',
@@ -232,10 +233,8 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 						'progress_bar_color'           => 'ed7070',
 						'images_loaded'                => 'false',
 						'button_label'                 => AjaxLoadMore::alm_default_button_label(),
-						'button_loading_label'         => '',
 						'button_done_label'            => '',
 						'prev_button_label'            => AjaxLoadMore::alm_default_prev_button_label(),
-						'prev_button_loading_label'    => '',
 						'prev_button_done_label'       => '',
 						'wrapper_classes'              => '',
 						'css_classes'                  => '',
@@ -843,12 +842,14 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 				'post__in'                  => $post__in,
 				'post__not_in'              => $post__not_in,
 				'search'                    => $search,
+				'engine'                    => $engine,
 				'custom_args'               => $custom_args,
 				'post_status'               => $post_status,
 				'order'                     => $order,
 				'orderby'                   => $orderby,
 				'exclude'                   => $exclude,
 				'offset'                    => $offset,
+				'original_offset'           => $offset,
 				'posts_per_page'            => $posts_per_page,
 				'lang'                      => $lang,
 				'css_classes'               => $css_classes,
@@ -1219,6 +1220,7 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 
 			// Search.
 			$ajaxloadmore .= $search ? ' data-search="' . esc_attr( $search ) . '"' : '';
+			$ajaxloadmore .= $engine ? ' data-engine="' . esc_attr( $engine ) . '"' : '';
 
 			// Custom Args.
 			$ajaxloadmore .= $custom_args ? ' data-custom-args="' . esc_attr( $custom_args ) . '"' : '';
@@ -1255,10 +1257,8 @@ if ( ! class_exists( 'ALM_SHORTCODE' ) ) :
 
 			// Button labels.
 			$ajaxloadmore .= ' data-button-label="' . self::alm_strip_tags( $button_label ) . '"';
-			$ajaxloadmore .= $button_loading_label ? ' data-button-loading-label="' . self::alm_strip_tags( $button_loading_label ) . '"' : '';
 			$ajaxloadmore .= $button_done_label ? ' data-button-done-label="' . self::alm_strip_tags( $button_done_label ) . '"' : '';
 			$ajaxloadmore .= ' data-prev-button-label="' . self::alm_strip_tags( $prev_button_label ) . '"';
-			$ajaxloadmore .= $prev_button_loading_label ? ' data-prev-button-loading-label="' . self::alm_strip_tags( $prev_button_loading_label ) . '"' : '';
 			$ajaxloadmore .= $prev_button_done_label ? ' data-prev-button-done-label="' . self::alm_strip_tags( $prev_button_done_label ) . '"' : '';
 
 			// Destroy After.

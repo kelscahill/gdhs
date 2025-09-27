@@ -46,9 +46,9 @@ $overlay: rgba(25, 25, 25, 0.6);
 /**
  * Typography
  */
-$font: 'Esteban', serif;
-$font-primary: 'Esteban', serif;
-$font-secondary: 'Raleway', sans-serif;
+$font: "Esteban", serif;
+$font-primary: "Esteban", serif;
+$font-secondary: "Raleway", sans-serif;
 $sans-serif: "Helvetica", sans-serif;
 $serif: Georgia, Times, "Times New Roman", serif;
 $monospace: Menlo, Monaco, "Courier New", "Courier", monospace;
@@ -65,18 +65,26 @@ $ease-bounce: cubic-bezier(0.3, -0.14, 0.68, 1.17);
  * Default Spacing/Padding
  */
 $space: 1.25rem;
-$space-and-half: $space*1.5;
-$space-double: $space*2;
-$space-quad: $space*4;
+$space-and-half: $space * 1.5;
+$space-double: $space * 2;
+$space-quad: $space * 4;
 $space-half: $space/2;
+$space-quarter: $space/4;
 $pad: 1.25rem;
-$pad-and-half: $pad*1.5;
-$pad-double: $pad*2;
+$pad-and-half: $pad * 1.5;
+$pad-double: $pad * 2;
 $pad-half: $pad/2;
 $pad-quarter: $pad/4;
-$pad-quad: $pad*4;
-$gutters: (mobile: 10, desktop: 10, super: 10);
-$verticalspacing: (mobile: 20, desktop: 30);
+$pad-quad: $pad * 4;
+$gutters: (
+  mobile: 10,
+  desktop: 10,
+  super: 10
+);
+$verticalspacing: (
+  mobile: 20,
+  desktop: 30
+);
 
 /**
  * Icon Sizing
@@ -99,13 +107,13 @@ $xxlarge: 1300px;
 $xxxlarge: 1500px;
 
 $breakpoints: (
-  'xsmall': $xsmall,
-  'small': $small,
-  'medium': $medium,
-  'large': $large,
-  'xlarge': $xlarge,
-  'xxlarge': $xxlarge,
-  'xxxlarge': $xxxlarge
+  "xsmall": $xsmall,
+  "small": $small,
+  "medium": $medium,
+  "large": $large,
+  "xlarge": $xlarge,
+  "xxlarge": $xxlarge,
+  "xxxlarge": $xxxlarge
 );
 
 /**

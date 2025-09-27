@@ -1279,46 +1279,55 @@
 }
 
 #wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .file-icon,
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf .file-icon {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf .file-icon,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera .file-icon {
   padding-right: 10px;
 }
 
 #wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .file-icon img,
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf .file-icon img {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf .file-icon img,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera .file-icon img {
   vertical-align: bottom;
 }
 
 #wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload a,
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf a {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf a,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera a {
   cursor: pointer;
   word-break: break-all;
 }
 
 #wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload a.disabled,
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf a.disabled {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-pdf a.disabled,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera a.disabled {
   opacity: 0.5;
 }
 
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload p.file-entry {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload p.file-entry,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera p.file-entry {
   padding-left: 12px;
 }
 
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-help-tooltip {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-help-tooltip,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera .wpforms-help-tooltip {
   line-height: 16px;
   font-size: 14px;
   margin-left: 10px;
   color: #a6a6a6;
 }
 
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-help-tooltip:hover {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-help-tooltip:hover,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera .wpforms-help-tooltip:hover {
   color: #444444;
 }
 
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .button-link-delete {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .button-link-delete,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera .button-link-delete {
   text-decoration: none;
 }
 
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-trash-icon {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-trash-icon,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera .wpforms-trash-icon {
   width: 16px;
   height: 16px;
   font-size: 16px;
@@ -1326,7 +1335,8 @@
   margin-left: 8px;
 }
 
-#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-trash-icon:hover {
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-file-upload .wpforms-trash-icon:hover,
+#wpforms-entries-single #wpforms-entry-fields .inside .wpforms-field-camera .wpforms-trash-icon:hover {
   color: #dc3232;
 }
 

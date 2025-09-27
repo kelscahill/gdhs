@@ -12,7 +12,7 @@
   font-family: $font-primary;
   font-weight: 400;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(60);
     line-height: rem(75);
   }
@@ -29,7 +29,7 @@ h1 {
   font-family: $font-primary;
   font-weight: 400;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(36);
     line-height: rem(46);
   }
@@ -46,7 +46,7 @@ h2 {
   font-family: $font-primary;
   font-weight: 400;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(32);
     line-height: rem(38);
   }
@@ -62,7 +62,7 @@ h3 {
   line-height: rem(22);
   font-family: $font-primary;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(22);
     line-height: rem(28);
   }
@@ -98,7 +98,7 @@ h4 {
   font-weight: 700;
   text-transform: uppercase;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(12);
     line-height: rem(18);
     letter-spacing: rem(3);
@@ -117,7 +117,7 @@ h4 {
   line-height: rem(30);
   font-family: $font;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(20);
     line-height: rem(30);
   }
@@ -132,7 +132,7 @@ h4 {
   line-height: rem(26);
   font-family: $font;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(20);
     line-height: rem(30);
   }
@@ -159,7 +159,7 @@ h4 {
   font-family: $font;
   font-style: italic;
 
-  @include media ('>large') {
+  @include media(">large") {
     font-size: rem(16);
     line-height: rem(22);
   }

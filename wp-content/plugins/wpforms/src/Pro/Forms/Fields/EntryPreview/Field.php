@@ -293,7 +293,7 @@ class Field extends FieldLite {
 	 * @param array $form_data                Form data and settings.
 	 * @param int   $current_entry_preview_id Current entry preview ID.
 	 *
-	 * @return int
+	 * @return int Field ID. -1 if not found.
 	 */
 	private function get_end_page_break_id( $form_data, $current_entry_preview_id ): int {
 
@@ -313,7 +313,8 @@ class Field extends FieldLite {
 			}
 		}
 
-		return 0;
+		// Return -1 as the field ID can be 0 or any positive number.
+		return -1;
 	}
 
 	/**

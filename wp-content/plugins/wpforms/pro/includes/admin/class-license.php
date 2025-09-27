@@ -1,5 +1,8 @@
 <?php
 
+// phpcs:ignore  Generic.Commenting.DocComment.MissingShort
+/** @noinspection AutoloadingIssuesInspection */
+
 use WPForms\Helpers\Transient;
 use WPForms\Admin\Notice;
 
@@ -173,9 +176,9 @@ class WPForms_License {
 			}
 		}
 
-		$success = isset( $verify->success ) ? $verify->success : esc_html__( 'Congratulations! This site is now receiving automatic updates.', 'wpforms' );
+		$success = $verify->success ?? esc_html__( 'Congratulations! This site is now receiving automatic updates.', 'wpforms' );
 
-		// Otherwise, user's license has been verified successfully, update the option and set the success message.
+		// Otherwise, the user's license has been verified successfully, update the option and set the success message.
 		$option          = (array) get_option( 'wpforms_license', [] );
 		$option['key']   = $key;
 		$option['type']  = $verify->type ?? $option['type'];
@@ -426,7 +429,7 @@ class WPForms_License {
 		}
 
 		// Otherwise, user's license has been deactivated successfully, reset the option and set the success message.
-		$success         = isset( $deactivate->success ) ? $deactivate->success : $success_message;
+		$success         = $deactivate->success ?? $success_message;
 		$this->success[] = $success;
 
 		$this->remove_key();
@@ -803,7 +806,11 @@ class WPForms_License {
 			return [];
 		}
 
-		$addons = Transient::get( 'addons' );
+		static $addons = null;
+
+		if ( $addons === null ) {
+			$addons = Transient::get( 'addons' );
+		}
 
 		// We store an empty array if the request isn't valid to prevent spam requests.
 		if ( is_array( $addons ) ) {

@@ -621,6 +621,9 @@ class WPForms_Pro {
 		$is_valid_key = $has_key && ! empty( $type ) && ! $has_errors;
 		$no_refresh   = ! $has_key || $license->is_invalid() || $license->is_disabled();
 
+		// Replace key with asterisks.
+		$key = $has_key ? str_repeat( '*', strlen( $key ) ) : '';
+
 		// Block ui when the license key used as a constant.
 		$class  = $is_constant ? 'wpforms-setting-license-block-ui' : '';
 		$output = '<span class="wpforms-setting-license-wrapper ' . $class . '">'; // Reset the original output from the Lite version.
@@ -1207,8 +1210,9 @@ class WPForms_Pro {
 							'default'     => '{admin_email}',
 							'tooltip'     => esc_html__( 'Enter the email address to receive form entry notifications. For multiple notifications, separate email addresses with a comma.', 'wpforms' ),
 							'smarttags'   => [
-								'type'                  => 'fields',
+								'type'                  => 'all',
 								'fields'                => 'email',
+								'allowed'               => 'admin_email,user_email',
 								'allow-repeated-fields' => true,
 							],
 							'parent'      => 'settings',
@@ -1228,9 +1232,12 @@ class WPForms_Pro {
 							[
 								'tooltip'     => esc_html__( 'Enter the email address to add it to the carbon copy of the form entry notifications. For multiple notifications, separate email addresses with a comma.', 'wpforms' ),
 								'smarttags'   => [
-									'type'   => 'fields',
-									'fields' => 'email',
+									// phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
+									'type'                  => 'all',
+									'fields'                => 'email',
+									'allowed'               => 'admin_email,user_email',
 									'allow-repeated-fields' => true,
+									// phpcs:enable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
 								],
 								'parent'      => 'settings',
 								'subsection'  => $id,
@@ -1314,8 +1321,9 @@ class WPForms_Pro {
 							[
 								'default'     => $from_email,
 								'smarttags'   => [
-									'type'   => 'fields',
-									'fields' => 'email',
+									'type'    => 'all',
+									'fields'  => 'email',
+									'allowed' => 'admin_email,user_email',
 								],
 								'parent'      => 'settings',
 								'subsection'  => $id,
@@ -1343,8 +1351,9 @@ class WPForms_Pro {
 								)
 							),
 							'smarttags'   => [
-								'type'   => 'fields',
-								'fields' => 'email,name',
+								'type'    => 'all',
+								'fields'  => 'email,name',
+								'allowed' => 'admin_email,user_email',
 							],
 							'parent'      => 'settings',
 							'subsection'  => $id,
@@ -1648,6 +1657,21 @@ class WPForms_Pro {
 								'use_ajax'    => true,
 								'callback_fn' => 'select_pages',
 							],
+						]
+					);
+
+					wpforms_panel_field(
+						'text',
+						'confirmations',
+						'page_url_parameters',
+						$settings->form_data,
+						esc_html__( 'URL Parameters', 'wpforms' ),
+						[
+							'input_id'    => 'wpforms-panel-field-confirmations-page-url-parameters-' . $field_id,
+							'input_class' => 'wpforms-panel-field-confirmations-page-url-parameters',
+							'parent'      => 'settings',
+							'subsection'  => $field_id,
+							'tooltip'     => esc_html__( 'Add query string parameters to append to the URL when the form is submitted. Separate multiple parameters with an ampersand (&).', 'wpforms' ),
 						]
 					);
 

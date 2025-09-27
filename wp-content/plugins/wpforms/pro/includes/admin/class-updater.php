@@ -684,7 +684,16 @@ class WPForms_Updater {
 
 		$this->is_allowed = $this->is_update();
 
-		return $this->is_allowed;
+		/**
+		 * Whether the updater is allowed to load.
+		 * Useful for third-party plugins and snippets to allow refreshing the WPForms update data programmatically.
+		 *
+		 * @since 1.9.8
+		 *
+		 * @param bool            $is_allowed Whether the updater is allowed to load.
+		 * @param WPForms_Updater $updater    Updater instance.
+		 */
+		return (bool) apply_filters( 'wpforms_updater_allow_load', $this->is_allowed, $this );
 	}
 
 	/**

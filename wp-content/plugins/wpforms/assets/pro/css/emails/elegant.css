@@ -474,6 +474,12 @@ tr:not(.smart-tag) > .field-value span {
   vertical-align: middle;
 }
 
+/* Camera */
+.field-camera .field-value .file-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* RichText, Content */
 .field-richtext .field-value:only-child, .field-content .field-value:only-child {
   display: inline-block;
@@ -734,7 +740,7 @@ tr:not(.smart-tag) > .field-value span {
   padding-bottom: 0;
 }
 
-.wpforms-layout-table-display-blocks .wpforms-layout-table-row:last-child .field-value, .wpforms-layout-table-display-columns .wpforms-layout-table-row:last-child .field-value {
+.wpforms-layout-table-display-blocks .wpforms-layout-table-row tr:last-child .wpforms-layout-table-cell .field-value, .wpforms-layout-table-display-columns .wpforms-layout-table-row tr:last-child .wpforms-layout-table-cell .field-value {
   padding-bottom: 0;
 }
 
@@ -835,6 +841,7 @@ tr:first-child > .content {
 
 .content .field-name.field-repeater-name, .content .field-name.field-layout-name {
   font-size: 22px;
+  padding-top: 25px;
   padding-bottom: 25px;
 }
 

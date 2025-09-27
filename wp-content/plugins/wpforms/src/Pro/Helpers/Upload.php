@@ -45,6 +45,7 @@ class Upload {
 	public function process_file( $file, $field_id, $form_data, $is_media_integrated ) {
 
 		$file_name     = sanitize_file_name( $file['name'] );
+		$file_name     = str_replace( '^', '', $file_name ); // Remove ^ since sanitize_file_name() allows it, but esc_url_raw() will strip it when saving the URL, causing mismatches.
 		$file_ext      = pathinfo( $file_name, PATHINFO_EXTENSION );
 		$file_base     = $this->get_file_basename( $file_name, $file_ext );
 		$file_name_new = sprintf( '%s-%s.%s', $file_base, wp_hash( wp_rand() . microtime() . $form_data['id'] . $field_id ), strtolower( $file_ext ) );
