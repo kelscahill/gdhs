@@ -1,0 +1,58 @@
+{
+  "key": "group_5a692fc072e31",
+  "title": "Featured Pages",
+  "fields": [
+    {
+      "key": "field_5a692fe1be2bc",
+      "label": "Featured Pages",
+      "name": "featured_pages",
+      "type": "relationship",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "post_type": [
+        "page"
+      ],
+      "taxonomy": [],
+      "filters": [
+        "search"
+      ],
+      "elements": [
+        "featured_image"
+      ],
+      "min": 3,
+      "max": 3,
+      "return_format": "object"
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "page_type",
+        "operator": "==",
+        "value": "front_page"
+      }
+    ],
+    [
+      {
+        "param": "page_template",
+        "operator": "==",
+        "value": "views/template-landing.blade.php"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": 1,
+  "description": "",
+  "modified": 1735346400
+}

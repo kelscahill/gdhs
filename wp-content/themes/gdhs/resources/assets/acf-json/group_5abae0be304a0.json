@@ -1,0 +1,54 @@
+{
+  "key": "group_5abae0be304a0",
+  "title": "Hide Author",
+  "fields": [
+    {
+      "key": "field_5abae0c8ddc6d",
+      "label": "Hide Author",
+      "name": "hide_author",
+      "type": "true_false",
+      "instructions": "Check to hide the author from displaying on the page.",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "message": "",
+      "default_value": 0
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "post"
+      }
+    ],
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "exhibit"
+      }
+    ],
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "library"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "side",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": 1,
+  "description": "",
+  "modified": 1735346400
+}
