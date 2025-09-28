@@ -5,11 +5,16 @@
       $subtitle = get_field('product_subtitle');
       $gallery = get_field('product_gallery');
       $details = get_field('product_details');
-      $button = get_field('paypal_link');
-      if (get_field('pdf_download')) {
-        $pdf = get_field('pdf_download')['url'];
-      } else {
-        $pdf = NULL;
+      $product_categories = get_the_terms(get_the_ID(), 'product_category');
+      $is_digital_download = false;
+
+      if ($product_categories && !is_wp_error($product_categories)) {
+        foreach ($product_categories as $category) {
+          if ($category->slug === 'digital-download') {
+            $is_digital_download = true;
+            break;
+          }
+        }
       }
     @endphp
     <header class="c-page-header l-container l-narrow l-narrow--l u-text-align--center u-spacing--double">
@@ -67,16 +72,13 @@
             </ul>
           @endif
           <footer class="c-article__footer">
-            @if ($button || $pdf)
-              <div class="c-article__footer--left">
-                @if ($button)
-                  <a href="{{ $button }}" class="o-button u-button--red" target="_blank">Order Now</a>
-                @endif
-                @if ($pdf)
-                  <a href="{{ $pdf }}" class="u-link u-font--m u-font-style--italic" target="_blank">PDF Download</a>
-                @endif
-              </div>
-            @endif
+            <div class="c-article__footer--left">
+              @if ($is_digital_download)
+                <a href="{{ home_url('/digital-download-checkout#' . get_the_ID()) }}" class="o-button u-button--red" target="_blank">Order Now</a>
+              @else
+                <a href="{{ home_url('/checkout#' . get_the_ID()) }}" class="o-button u-button--red" target="_blank">Order Now</a>
+              @endif
+            </div>
             <div class="c-article__footer--right">
               @include('patterns.components.c-share-tools')
             </div>

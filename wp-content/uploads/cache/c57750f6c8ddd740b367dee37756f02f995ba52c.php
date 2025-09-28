@@ -4,11 +4,16 @@
       $subtitle = get_field('product_subtitle');
       $gallery = get_field('product_gallery');
       $details = get_field('product_details');
-      $button = get_field('paypal_link');
-      if (get_field('pdf_download')) {
-        $pdf = get_field('pdf_download')['url'];
-      } else {
-        $pdf = NULL;
+      $product_categories = get_the_terms(get_the_ID(), 'product_category');
+      $is_digital_download = false;
+
+      if ($product_categories && !is_wp_error($product_categories)) {
+        foreach ($product_categories as $category) {
+          if ($category->slug === 'digital-download') {
+            $is_digital_download = true;
+            break;
+          }
+        }
       }
     ?>
     <header class="c-page-header l-container l-narrow l-narrow--l u-text-align--center u-spacing--double">
@@ -67,16 +72,13 @@
             </ul>
           <?php endif; ?>
           <footer class="c-article__footer">
-            <?php if($button || $pdf): ?>
-              <div class="c-article__footer--left">
-                <?php if($button): ?>
-                  <a href="<?php echo e($button); ?>" class="o-button u-button--red" target="_blank">Order Now</a>
-                <?php endif; ?>
-                <?php if($pdf): ?>
-                  <a href="<?php echo e($pdf); ?>" class="u-link u-font--m u-font-style--italic" target="_blank">PDF Download</a>
-                <?php endif; ?>
-              </div>
-            <?php endif; ?>
+            <div class="c-article__footer--left">
+              <?php if($is_digital_download): ?>
+                <a href="<?php echo e(home_url('/digital-download-checkout#' . get_the_ID())); ?>" class="o-button u-button--red" target="_blank">Order Now</a>
+              <?php else: ?>
+                <a href="<?php echo e(home_url('/checkout#' . get_the_ID())); ?>" class="o-button u-button--red" target="_blank">Order Now</a>
+              <?php endif; ?>
+            </div>
             <div class="c-article__footer--right">
               <?php echo $__env->make('patterns.components.c-share-tools', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
             </div>

@@ -243,6 +243,122 @@
         $('.js-stop-prop').on('click', function(e) {
           e.stopPropagation();
         });
+
+        /**
+         * Get product ID mapping via AJAX and add to select options
+         */
+        function addProductIdsToWPFormsOptions() {
+          // Make AJAX call to get product mapping
+          $.ajax({
+            url: window.location.origin + '/wp-admin/admin-ajax.php',
+            type: 'POST',
+            data: {
+              action: 'get_product_id_mapping'
+            },
+            success: function(response) {
+              if (response.success && response.data) {
+                var productMapping = response.data;
+
+                // Target only field ID 21
+                $('select[name="wpforms[fields][21]"]').each(function() {
+                  var $select = $(this);
+
+                  $select.find('option').each(function() {
+                    var $option = $(this);
+                    var optionText = $option.text().trim();
+
+                    // Remove leading spaces from indented options (from categories)
+                    var cleanOptionText = optionText.replace(/^\s+/, '');
+
+                    // Check if we have a product ID for this title
+                    if (productMapping[cleanOptionText]) {
+                      $option.attr('data-product-id', productMapping[cleanOptionText]);
+                    }
+                  });
+                });
+
+                // Now run auto-select after IDs are added
+                autoSelectWPFormsProduct();
+              }
+            },
+            error: function() {
+              console.log('Failed to load product mapping');
+            }
+          });
+        }
+
+        /**
+         * Auto-select WPForms product based on URL hash (product ID)
+         */
+        function autoSelectWPFormsProduct() {
+          // Check if there's a hash in the URL
+          var hash = window.location.hash;
+
+          if (hash && hash.length > 1) {
+            var productId = hash.substring(1); // Remove the # symbol
+
+            // Target only field ID 21
+            var targetSelectors = [
+              'select[name="wpforms[fields][21]"]'
+            ];
+
+            // Function to find and select matching option by product ID
+            function selectProductById($select, id) {
+              var found = false;
+
+              // Try to find a matching option by product ID
+              $select.find('option').each(function() {
+                var $option = $(this);
+                var optionValue = $option.val();
+                var productId = $option.data('product-id') || $option.attr('data-product-id');
+
+                // Skip empty options
+                if (!optionValue || optionValue === '0.00' || optionValue === '') {
+                  return true; // continue
+                }
+
+                // Check if product ID matches
+                if (productId && productId.toString() === id.toString()) {
+                  $option.prop('selected', true);
+                  $select.trigger('change'); // Trigger change to update WPForms totals
+                  found = true;
+                  console.log('Auto-selected product ID:', id, 'Product:', $option.text().trim());
+                  return false; // Break the loop
+                }
+              });
+
+              if (!found) {
+                console.log('Product not found in dropdown for ID:', id);
+                console.log('Available options:');
+                $select.find('option').each(function() {
+                  var $option = $(this);
+                  var productId = $option.data('product-id') || $option.attr('data-product-id');
+                  if (productId) {
+                    console.log('- ID:', productId, 'Text:', $option.text().trim());
+                  }
+                });
+              }
+
+              return found;
+            }
+
+            // Apply to all target selectors
+            targetSelectors.forEach(function(selector) {
+              var $element = $(selector);
+              if ($element.length) {
+                selectProductById($element, productId);
+              }
+            });
+          }
+        }
+
+        // Load product IDs and run auto-select on page load
+        addProductIdsToWPFormsOptions();
+
+        // Also run when WPForms is loaded (in case forms load via AJAX)
+        $(document).on('wpformsReady', function() {
+          addProductIdsToWPFormsOptions();
+        });
       },
       finalize: function() {
         // JavaScript to be fired on all pages, after page specific JS is fired
