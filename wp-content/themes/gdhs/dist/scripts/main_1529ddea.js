@@ -221,6 +221,43 @@ d.slice(e-c+1,e+c+2).addClass("slick-active").attr("aria-hidden","false")),0===a
           getWidth();
         };
 
+        /**
+         * Set equal block heights
+         * 1. Select all elements with the class .js-block-height
+         * 2. Reset heights to auto to recalculate based on the new size
+         * 3. Find the tallest block height
+         * 4. Apply the tallest height to each block as inline style
+         * 5. Ensure the content is fully loaded before executing the height adjustment
+         * 6. Reapply the height on window resize
+         * 7. Reapply the height on tab change
+         */
+        function setEqualBlockHeights() {
+          /* 1 */
+          var blocks = document.querySelectorAll('.c-block-news');
+          /* 2 */
+          blocks.forEach(function (block) {
+            block.style.height = 'auto';
+          });
+          /* 3 */
+          var maxHeight = 0;
+          blocks.forEach(function (block) {
+            var blockHeight = block.offsetHeight;
+            if (blockHeight > maxHeight) {
+              maxHeight = blockHeight;
+            }
+          });
+          /* 4 */
+          blocks.forEach(function (block) {
+            block.style.height = maxHeight + "px";
+          });
+        }
+        /* 5 */
+        window.addEventListener('load', function () {
+          setEqualBlockHeights();
+        });
+        /* 6 */
+        window.addEventListener("resize", setEqualBlockHeights);
+
         // This will create a single gallery from all elements that have class "c-gallery__image"
         $('.c-block-gallery__image-link, .c-gallery__image-link').magnificPopup({
           type: 'image',

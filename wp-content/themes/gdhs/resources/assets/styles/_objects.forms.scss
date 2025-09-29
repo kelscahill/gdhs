@@ -163,7 +163,7 @@ label.wpforms-error {
 .wpforms-container {
   border: 1px solid $border-color;
   padding: $pad;
-  background-color: white;
+  background-color: $tan;
 
   .wpforms-title {
     @include u-font--primary--l;
