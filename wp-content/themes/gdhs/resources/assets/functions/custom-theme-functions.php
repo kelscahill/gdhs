@@ -177,145 +177,141 @@ if (function_exists('acf_add_options_page')) {
  * Supports form-specific tax queries (4229 exclude digital, 4305 only digital)
  * Preselects choice with ?product_id=### in the URL
  */
+
+/**
+ * Helper: Build product choices for payment-select fields
+ *
+ * @param int $form_id The form ID
+ * @param int $preselect_id Optional product ID to preselect
+ * @return array Array with 'choices' and 'default_value' keys
+ */
+function gdhs_build_product_choices($form_id, $preselect_id = 0) {
+  // Build tax query per form
+  $tax_query = [];
+  if ($form_id === 4229) {
+    // Exclude digital-download
+    $tax_query[] = [
+      'taxonomy' => 'product_category',
+      'field'    => 'slug',
+      'terms'    => ['digital-download'],
+      'operator' => 'NOT IN',
+    ];
+  } elseif ($form_id === 4305) {
+    // Only digital-download
+    $tax_query[] = [
+      'taxonomy' => 'product_category',
+      'field'    => 'slug',
+      'terms'    => ['digital-download'],
+      'operator' => 'IN',
+    ];
+  }
+
+  // Fetch products
+  $query_args = [
+    'post_type'      => 'product',
+    'posts_per_page' => -1,
+    'post_status'    => 'publish',
+    'orderby'        => 'title',
+    'order'          => 'ASC',
+  ];
+  if (!empty($tax_query)) {
+    $query_args['tax_query'] = $tax_query;
+  }
+  $products = get_posts($query_args);
+
+  // Build choices - WPForms uses 1-indexed arrays for payment-select
+  $choices = [];
+  $choice_index = 1;
+  $preselected_price = '';
+
+  // Add placeholder option
+  $choices[$choice_index] = [
+    'label'      => '--- Select a product ---',
+    'value'      => '0.00',
+    'image'      => '',
+    'icon'       => '',
+    'icon_style' => ''
+  ];
+  $choice_index++;
+
+  // Add products
+  foreach ($products as $product) {
+    $pid   = $product->ID;
+    $title = get_the_title($product->ID);
+    $price = get_post_meta($product->ID, 'product_price', true);
+
+    // Skip products with no price
+    if (empty($price) || $price === '') {
+      continue;
+    }
+
+    $is_preselected = ($preselect_id && $preselect_id == $pid);
+
+    $choices[$choice_index] = [
+      'label'      => $title,
+      'value'      => $price,
+      'image'      => '',
+      'icon'       => '',
+      'icon_style' => '',
+      'default'    => $is_preselected ? '1' : '',
+    ];
+
+    if ($is_preselected) {
+      $preselected_price = $price;
+    }
+
+    $choice_index++;
+  }
+
+  return [
+    'choices'       => $choices,
+    'default_value' => $preselected_price
+  ];
+}
+
+/**
+ * Populate payment-select fields with product choices (frontend display)
+ */
 add_filter('wpforms_frontend_form_data', function ($form_data) {
   if (empty($form_data['fields'])) {
     return $form_data;
   }
 
   $form_id = isset($form_data['id']) ? (int) $form_data['id'] : 0;
-  $target_field_ids = ['21', '24', '28']; // adjust as needed
-  $preselect = isset($_GET['product_id']) ? sanitize_text_field($_GET['product_id']) : '';
+  $target_field_ids = ['21', '24', '28'];
+  $preselect = isset($_GET['product_id']) ? (int) sanitize_text_field($_GET['product_id']) : 0;
 
   foreach ($form_data['fields'] as $field_id => $field) {
-    // Only touch the targeted Payment Select fields
     $is_target = in_array((string) $field_id, $target_field_ids, true);
     if (!$is_target || empty($field['type']) || $field['type'] !== 'payment-select') {
       continue;
     }
 
-    // Build tax query per form
-    $tax_query = [];
-    if ($form_id === 4229) {
-      // exclude digital-download
-      $tax_query[] = [
-        'taxonomy' => 'product_category',
-        'field'    => 'slug',
-        'terms'    => ['digital-download'],
-        'operator' => 'NOT IN',
-      ];
-    } elseif ($form_id === 4305) {
-      // only digital-download
-      $tax_query[] = [
-        'taxonomy' => 'product_category',
-        'field'    => 'slug',
-        'terms'    => ['digital-download'],
-        'operator' => 'IN',
-      ];
-    }
+    $result = gdhs_build_product_choices($form_id, $preselect);
+    $form_data['fields'][$field_id]['choices'] = $result['choices'];
 
-    // Fetch products
-    $query_args = [
-      'post_type'      => 'product',
-      'posts_per_page' => -1,
-      'post_status'    => 'publish',
-      'orderby'        => 'title',
-      'order'          => 'ASC',
-    ];
-    if (!empty($tax_query)) {
-      $query_args['tax_query'] = $tax_query;
-    }
-    $products = get_posts($query_args);
-
-    // Reset choices
-    $choices = [];
-
-    // Optional placeholder. Keep amount 0 so totals stay sane.
-    $choices[] = [
-      'label'   => '--- Select a product ---',
-      'value'   => '0.00'
-    ];
-
-    // Add products: value = ID, amount = price
-    foreach ($products as $product) {
-      $pid   = $product->ID;
-      $title = get_the_title($product->ID);
-      $price = get_post_meta($product->ID, 'product_price', true);
-
-      $choices[] = [
-        'label'   => $title,
-        'value'   => $price,
-        'default' => ($preselect !== '' && $preselect == $pid),
-      ];
-    }
-
-    $form_data['fields'][$field_id]['choices'] = $choices;
-
-    // Set default_value to the preselected ID so the UI reflects it
-    if ($preselect !== '') {
-      $form_data['fields'][$field_id]['default_value'] = (string) $preselect;
+    if ($result['default_value']) {
+      $form_data['fields'][$field_id]['default_value'] = (string) $result['default_value'];
     }
   }
 
   return $form_data;
 }, 5);
 
+/**
+ * Populate payment-select fields with product choices (form submission/validation)
+ */
+add_action('wpforms_process_before', function ($entry, $form_data) {
+  $form_id = isset($form_data['id']) ? (int) $form_data['id'] : 0;
+  $target_field_ids = ['21', '24', '28'];
 
-// /**
-//  * AJAX handler to get product ID mapping
-//  */
-// add_action('wp_ajax_get_product_id_mapping', 'handle_get_product_id_mapping');
-// add_action('wp_ajax_nopriv_get_product_id_mapping', 'handle_get_product_id_mapping');
+  foreach ($form_data['fields'] as $field_id => $field) {
+    $is_target = in_array((string) $field_id, $target_field_ids, true);
+    if (!$is_target || empty($field['type']) || $field['type'] !== 'payment-select') {
+      continue;
+    }
 
-// function handle_get_product_id_mapping() {
-//   // Get all products to create ID mapping
-//   $products = get_posts([
-//     'post_type' => 'product',
-//     'posts_per_page' => -1,
-//     'post_status' => 'publish',
-//   ]);
-
-//   // Create title to ID mapping
-//   $title_to_id = [];
-//   foreach ($products as $product) {
-//     $title_to_id[get_the_title($product->ID)] = $product->ID;
-//   }
-
-//   wp_send_json_success($title_to_id);
-// }
-
-// /**
-//  * Add product IDs as data attributes to WPForms payment select options
-//  */
-// add_filter('wpforms_field_properties_payment_select', function($properties, $field, $form_data) {
-//   // Only target our specific field IDs
-//   // if ($form_data['form_id'] === '4229') return;
-//   // print_r($form_data);
-
-//   if (!in_array($field['id'], ['21', '24', '28'])) {
-//     return $properties;
-//   }
-
-//   // Get all products to create ID mapping
-//   $products = get_posts([
-//     'post_type' => 'product',
-//     'posts_per_page' => -1,
-//     'post_status' => 'publish',
-//   ]);
-
-//   // Create title to ID mapping
-//   $title_to_id = [];
-//   foreach ($products as $product) {
-//     $title_to_id[get_the_title($product->ID)] = $product->ID;
-//   }
-
-//   // Add product IDs to options
-//   if (isset($properties['inputs']['primary']['options'])) {
-//     foreach ($properties['inputs']['primary']['options'] as &$option) {
-//       if (isset($option['label']) && isset($title_to_id[$option['label']])) {
-//         $option['product_id'] = $title_to_id[$option['label']];
-//       }
-//     }
-//   }
-
-//   return $properties;
-// }, 10, 3);
+    $result = gdhs_build_product_choices($form_id);
+    wpforms()->process->form_data['fields'][$field_id]['choices'] = $result['choices'];
+  }
+}, 5, 2);
