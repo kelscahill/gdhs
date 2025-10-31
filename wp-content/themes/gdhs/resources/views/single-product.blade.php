@@ -74,9 +74,9 @@
           <footer class="c-article__footer">
             <div class="c-article__footer--left">
               @if ($is_digital_download)
-                <a href="{{ home_url('/digital-download-checkout#' . get_the_ID()) }}" class="o-button u-button--red" target="_blank">Order Now</a>
+                <a href="{{ home_url('/digital-download-checkout?product_id=' . get_the_ID()) }}" class="o-button u-button--red" target="_blank">Order Now</a>
               @else
-                <a href="{{ home_url('/checkout#' . get_the_ID()) }}" class="o-button u-button--red" target="_blank">Order Now</a>
+                <a href="{{ home_url('/checkout?product_id=' . get_the_ID()) }}" class="o-button u-button--red" target="_blank">Order Now</a>
               @endif
             </div>
             <div class="c-article__footer--right">

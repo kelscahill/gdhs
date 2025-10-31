@@ -74,9 +74,9 @@
           <footer class="c-article__footer">
             <div class="c-article__footer--left">
               <?php if($is_digital_download): ?>
-                <a href="<?php echo e(home_url('/digital-download-checkout#' . get_the_ID())); ?>" class="o-button u-button--red" target="_blank">Order Now</a>
+                <a href="<?php echo e(home_url('/digital-download-checkout?product_id=' . get_the_ID())); ?>" class="o-button u-button--red" target="_blank">Order Now</a>
               <?php else: ?>
-                <a href="<?php echo e(home_url('/checkout#' . get_the_ID())); ?>" class="o-button u-button--red" target="_blank">Order Now</a>
+                <a href="<?php echo e(home_url('/checkout?product_id=' . get_the_ID())); ?>" class="o-button u-button--red" target="_blank">Order Now</a>
               <?php endif; ?>
             </div>
             <div class="c-article__footer--right">
