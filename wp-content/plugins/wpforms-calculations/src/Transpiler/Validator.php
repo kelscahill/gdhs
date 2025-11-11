@@ -246,7 +246,7 @@ class Validator {
 	 *
 	 * @return bool
 	 */
-	private function is_correct_function_args_num( $node ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function is_correct_function_args_num( $node ) {
 
 		if ( ! isset( $node->name, $node->args ) ) {
 			return false;

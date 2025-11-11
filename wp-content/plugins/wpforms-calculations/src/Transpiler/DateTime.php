@@ -126,7 +126,7 @@ class DateTime {
 	 *
 	 * @return string Date time string format.
 	 */
-	private function get_format_from_fields( $datetime_str ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function get_format_from_fields( $datetime_str ) {
 
 		$process      = wpforms_calculations()->process;
 		$fields_entry = $process->get_fields_entry();
@@ -259,7 +259,7 @@ class DateTime {
 	 *
 	 * @return DateTimeImmutable|false Instance of DateTimeImmutable.
 	 */
-	public function parse( $datetime_str, $format = '' ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function parse( $datetime_str, $format = '' ) {
 
 		$format       = empty( $format ) ? $this->get_format_by_value( $datetime_str ) : $format;
 		$datetime_obj = date_create_immutable_from_format( $format, $datetime_str );

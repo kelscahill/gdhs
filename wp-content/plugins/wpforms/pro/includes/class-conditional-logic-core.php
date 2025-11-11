@@ -547,6 +547,12 @@ class WPForms_Conditional_Logic_Core {
 														if ( ! empty( $form_fields[ $rule['field'] ]['choices'] ) ) {
 
 															foreach ( $form_fields[ $rule['field'] ]['choices'] as $option_id => $option ) {
+
+																// Do not allow to select Other option.
+																if ( isset( $option['other'] ) ) {
+																	continue;
+																}
+
 																$value = isset( $rule['value'] ) ? $rule['value'] : '';
 																$label = ! isset( $option['label'] ) || trim( $option['label'] ) === ''
 																	? sprintf( /* translators: %d - choice number. */

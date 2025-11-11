@@ -883,6 +883,10 @@ a:hover, a:active, a:focus {
   position: relative;
 }
 
+.print-preview .field-value-choice .wpforms-entry-other-text {
+  font-style: italic;
+}
+
 .print-preview .field-value-choice.field-value-choice-image .field-value-choice-image-wrapper {
   display: inline-block;
   width: auto;

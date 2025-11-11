@@ -201,10 +201,15 @@ var WPFormsConditionals = window.WPFormsConditionals || ( function( document, wi
 				field = Object.values( wpf.getFields() ).find( ( el ) => el.id.toString() === fieldSelected.toString() );
 
 			for ( const key in items ) {
-				const choiceKey = items[ key ],
-					label = typeof field.choices[ choiceKey ] !== 'undefined' && field.choices[ choiceKey ].label.toString().trim() !== ''
-						? wpf.sanitizeHTML( field.choices[ choiceKey ].label.toString().trim() )
-						: wpforms_builder.choice_empty_label_tpl.replace( '{number}', choiceKey );
+				const choiceKey = items[ key ];
+				const choice = ( field.choices || {} )[ choiceKey ] || {};
+				// Exclude the "Other" option from conditional value select.
+				if ( choice.other ) {
+					continue;
+				}
+				const label = typeof choice.label !== 'undefined' && choice.label.toString().trim() !== ''
+					? wpf.sanitizeHTML( choice.label.toString().trim() )
+					: wpforms_builder.choice_empty_label_tpl.replace( '{number}', choiceKey );
 				$select.append( $( '<option>', { value: choiceKey, text: label, id: 'choice-' + choiceKey } ) );
 			}
 
@@ -645,14 +650,20 @@ var WPFormsConditionals = window.WPFormsConditionals || ( function( document, wi
 				// language=HTML
 				$element = $( '<select>' ).attr( { name, class: 'wpforms-conditional-value' } ); // jshint ignore:line
 				$element.append( $( '<option>', { value: '', text : wpforms_builder.select_choice } ) );
-				if ( data.field.choices ) {
-					for ( const key in wpf.orders.choices[ 'field_' + data.field.id ] ) {
-						const choiceKey = wpf.orders.choices[ 'field_' + data.field.id ][ key ],
-							label = typeof data.field.choices[ choiceKey ].label !== 'undefined' && data.field.choices[ choiceKey ].label.toString().trim() !== ''
-								? wpf.sanitizeHTML( data.field.choices[ choiceKey ].label.toString().trim() )
-								: wpforms_builder.choice_empty_label_tpl.replace( '{number}', choiceKey );
-						$element.append( $( '<option>', { value: choiceKey, text: wpf.sanitizeHTML( label ) } ) );
+				const order = data.field.choices ? wpf.orders.choices[ 'field_' + data.field.id ] : [];
+				for ( const key in order ) {
+					const choiceKey = order[ key ],
+						choice = data.field.choices[ choiceKey ] || {},
+						label = typeof choice.label !== 'undefined' && choice.label.toString().trim() !== ''
+							? wpf.sanitizeHTML( choice.label.toString().trim() )
+							: wpforms_builder.choice_empty_label_tpl.replace( '{number}', choiceKey );
+
+					// Exclude the "Other" option from conditional value select.
+					if ( choice.other ) {
+						continue;
 					}
+
+					$element.append( $( '<option>', { value: choiceKey, text: wpf.sanitizeHTML( label ) } ) );
 				}
 				$operator.find( "option:not([value='=='],[value='!='],[value='e'],[value='!e'])" ).prop( 'disabled', true ).prop( 'selected', false ); // jshint ignore:line
 			} else {

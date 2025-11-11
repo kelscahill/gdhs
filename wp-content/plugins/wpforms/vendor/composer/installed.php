@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '6876325ec8ffe4b7069223771fa1e934d6d16d30',
+        'reference' => 'ccc2dd4a50c10f5ad1011274807042e20ba475fc',
         'name' => 'awesomemotive/wpforms',
         'dev' => true,
     ),
@@ -52,7 +52,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '6876325ec8ffe4b7069223771fa1e934d6d16d30',
+            'reference' => 'ccc2dd4a50c10f5ad1011274807042e20ba475fc',
             'dev_requirement' => false,
         ),
         'box/spout' => array(
@@ -65,12 +65,12 @@
             'dev_requirement' => false,
         ),
         'ezyang/htmlpurifier' => array(
-            'pretty_version' => 'v4.18.0',
-            'version' => '4.18.0.0',
+            'pretty_version' => 'v4.19.0',
+            'version' => '4.19.0.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../ezyang/htmlpurifier',
             'aliases' => array(),
-            'reference' => 'cb56001e54359df7ae76dc522d08845dc741621b',
+            'reference' => 'b287d2a16aceffbf6e0295559b39662612b77fcf',
             'dev_requirement' => false,
         ),
         'mk-j/php_xlsxwriter' => array(
@@ -108,7 +108,7 @@
             'aliases' => array(
                 0 => '9999999-dev',
             ),
-            'reference' => 'aeb989ee4f985c14504c76a0d1bcdd468046f53a',
+            'reference' => '19966d2f97bbc444bb176432754e33256a7d45bf',
             'dev_requirement' => true,
         ),
         'square/square' => array(

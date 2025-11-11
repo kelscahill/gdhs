@@ -88,7 +88,9 @@
   max-width: 100%;
 }
 
-.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container .g-recaptcha {
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container .g-recaptcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container .h-captcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container .cf-turnstile {
   padding: 10px 0 0;
 }
 
@@ -102,7 +104,13 @@
   visibility: inherit !important;
 }
 
-.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-v3 .g-recaptcha, .et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-turnstile-invisible .g-recaptcha, .et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-invisible .g-recaptcha {
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-v3 .g-recaptcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-v3 .h-captcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-v3 .cf-turnstile, .et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-turnstile-invisible .g-recaptcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-turnstile-invisible .h-captcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-turnstile-invisible .cf-turnstile, .et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-invisible .g-recaptcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-invisible .h-captcha,
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-recaptcha-container.wpforms-is-recaptcha-type-invisible .cf-turnstile {
   padding: 0;
 }
 

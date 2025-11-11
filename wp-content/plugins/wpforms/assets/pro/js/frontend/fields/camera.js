@@ -119,6 +119,10 @@ WPForms.Camera = WPForms.Camera || ( function( document, window, $ ) {
 			// Remove focus from the clicked element to avoid duplicate modal openings after the `enter` keypress.
 			event.target.blur();
 
+			// Save current scroll position to prevent page from scrolling to the top.
+			const scrollTop = window.scrollY || document.documentElement.scrollTop;
+			document.body.style.top = `-${ scrollTop }px`;
+
 			// Prepare variables.
 			const $field = $( event.target.closest( '.wpforms-field' ) );
 			const fieldId = $field.data( 'field-id' );
@@ -175,6 +179,11 @@ WPForms.Camera = WPForms.Camera || ( function( document, window, $ ) {
 			// Restore body scroll.
 			$( 'body' ).removeClass( 'wpforms-camera-modal-open' );
 
+			// Restore scroll position.
+			const scrollTop = parseInt( document.body.style.top || '0', 10 );
+			document.body.style.top = '';
+			window.scrollTo( 0, Math.abs( scrollTop ) );
+
 			$modalOverlay.css( 'display', 'none' );
 			$modalOverlay.find( '.wpforms-camera-captured-photo' ).remove();
 			$modalOverlay.find( '.wpforms-camera-captured-video' ).remove();
@@ -190,6 +199,18 @@ WPForms.Camera = WPForms.Camera || ( function( document, window, $ ) {
 			$modalOverlay.find( 'video' ).show();
 			$modalOverlay.find( '.wpforms-camera-modal-actions' ).css( 'display', 'flex' );
 			$modalOverlay.find( '.wpforms-camera-capture' ).show();
+
+			// Trigger custom event for conversational forms compatibility.
+			const formId = $modalOverlay.data( 'form-id' );
+			const fieldId = $modalOverlay.data( 'field-id' );
+
+			if ( formId && fieldId ) {
+				$( document ).trigger( 'wpforms-camera-modal-closed', {
+					formId,
+					fieldId,
+					modalOverlay: $modalOverlay,
+				} );
+			}
 		},
 
 		/**
@@ -201,11 +222,11 @@ WPForms.Camera = WPForms.Camera || ( function( document, window, $ ) {
 		 */
 		addKeyboardListener( $modalOverlay ) {
 			const keyboardHandler = function( event ) {
-				// Only trigger on spacebar (keyCode 32) and when modal is visible.
+				// Only trigger on the spacebar (keyCode 32) and when modal is visible.
 				if ( event.keyCode === 32 && $modalOverlay.css( 'display' ) === 'flex' ) {
 					event.preventDefault();
 
-					// Check if stop button is visible (during video recording).
+					// Check if the stop button is visible (during video recording).
 					const $stopButton = $modalOverlay.find( '.wpforms-camera-stop' );
 					if ( $stopButton.is( ':visible' ) ) {
 						// Trigger stop recording.
@@ -213,7 +234,7 @@ WPForms.Camera = WPForms.Camera || ( function( document, window, $ ) {
 						return;
 					}
 
-					// Check if capture button is visible and enabled.
+					// Check if the capture button is visible and enabled.
 					const $captureButton = $modalOverlay.find( '.wpforms-camera-capture' );
 					if ( $captureButton.is( ':visible' ) && ! $captureButton.prop( 'disabled' ) ) {
 						// Trigger capture.
@@ -1356,31 +1377,31 @@ WPForms.Camera = WPForms.Camera || ( function( document, window, $ ) {
 				$fileInput.removeClass( 'wpforms-error' );
 				$cameraField.find( '.wpforms-error' ).remove();
 
-				// Check if all field errors are cleared and hide general form error if needed.
+				// Check if all field errors are cleared and hide the general form error if needed.
 				app.checkAndHideGeneralFormError( $cameraField );
 			}
 
-			// Handle File Upload field with camera enabled.
+			// Handle the File Upload field with camera enabled.
 			const $fileUploadField = $fileInput.closest( '.wpforms-field-file-upload' );
 			if ( $fileUploadField.length ) {
-				// Clear validation errors when file is selected.
+				// Clear validation errors when a file is selected.
 				$fileUploadField.removeClass( 'wpforms-has-error' );
 
 				// Remove only error message elements, not the input itself.
 				$fileUploadField.find( '.wpforms-error:not(input)' ).remove();
 
-				// Remove wpforms-error class from the input element.
+				// Remove the wpforms-error class from the input element.
 				$fileInput.removeClass( 'wpforms-error' );
 
 				// Ensure the file input remains visible and functional.
 				$fileInput.show().css( 'display', 'block' );
 
-				// Trigger validation to clear any jQuery Validation errors (only if validator exists).
+				// Trigger validation to clear any jQuery Validation errors (only if the validator exists).
 				if ( $fileInput.data( 'validator' ) ) {
 					$fileInput.valid();
 				}
 
-				// Check if all field errors are cleared and hide general form error if needed.
+				// Check if all field errors are cleared and hide the general form error if needed.
 				app.checkAndHideGeneralFormError( $fileUploadField );
 			}
 		},
@@ -1434,7 +1455,7 @@ WPForms.Camera = WPForms.Camera || ( function( document, window, $ ) {
 		},
 
 		/**
-		 * Check if all field errors are cleared and hide general form error if needed.
+		 * Check if all field errors are cleared and hide the general form error if needed.
 		 *
 		 * @since 1.9.8
 		 *

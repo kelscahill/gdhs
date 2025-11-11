@@ -1462,6 +1462,15 @@
   transform: translate(-50%, -50%);
 }
 
+#wpforms-entries-single #wpforms-entry-fields .wpforms-entry-field-item .wpforms-entry-field-value-is-choice .field-value-choice-checked .wpforms-entry-other-text,
+#wpforms-entries-single #wpforms-entry-fields .wpforms-field-repeater-block .wpforms-entry-field-value-is-choice .field-value-choice-checked .wpforms-entry-other-text,
+#wpforms-entries-single #wpforms-entry-fields .wpforms-field-repeater-row .wpforms-entry-field-value-is-choice .field-value-choice-checked .wpforms-entry-other-text {
+  font-style: italic;
+  line-height: 1;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
 #wpforms-entries-single #wpforms-entry-fields .wpforms-entry-field-item.wpforms-field-entry-checkbox .wpforms-entry-field-value-is-choice .wpforms-entry-choice-wrapper, #wpforms-entries-single #wpforms-entry-fields .wpforms-entry-field-item.wpforms-field-entry-radio .wpforms-entry-field-value-is-choice .wpforms-entry-choice-wrapper, #wpforms-entries-single #wpforms-entry-fields .wpforms-entry-field-item.wpforms-field-entry-payment-multiple .wpforms-entry-field-value-is-choice .wpforms-entry-choice-wrapper, #wpforms-entries-single #wpforms-entry-fields .wpforms-entry-field-item.wpforms-field-entry-payment-checkbox .wpforms-entry-field-value-is-choice .wpforms-entry-choice-wrapper,
 #wpforms-entries-single #wpforms-entry-fields .wpforms-field-repeater-block.wpforms-field-entry-checkbox .wpforms-entry-field-value-is-choice .wpforms-entry-choice-wrapper,
 #wpforms-entries-single #wpforms-entry-fields .wpforms-field-repeater-block.wpforms-field-entry-radio .wpforms-entry-field-value-is-choice .wpforms-entry-choice-wrapper,
@@ -2055,6 +2064,11 @@
 
 #wpforms-entries-single .wpforms-entry-actions-meta .dashicons {
   padding-right: 3px;
+}
+
+#wpforms-entries-single .wpforms-entry-actions-meta .dashicons.wpforms-loading-spinner {
+  padding-right: 0;
+  inset-inline-start: 11px;
 }
 
 #wpforms-entries-single #wpforms-entry-details .trash {

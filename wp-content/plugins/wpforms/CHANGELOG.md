@@ -1,6 +1,31 @@
 # Changelog
 All notable changes to this project will be documented in this file and formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.9.8.4] - 2025-11-06
+### Fixed
+- Multiple Choice field was incorrectly previewed in the Builder when the last choice was selected.
+
+## [1.9.8.3] - 2025-11-04
+### Added
+- New tab to display published entries, excluding abandoned or unfinished ones.
+- New date formats for the Date/Time field.
+- Ability to hide choice images in entries and notifications.
+- Ability to set a user-defined choice for the Multiple Choice field.
+
+### Changed
+- Updated DOMPurify library to 3.2.7.
+- Updated Font Awesome library to 7.0.1.
+- Updated intl-tel-input library to 25.11.3.
+- Validation of Custom Meta Keys on the Form Builder > Payments > Stripe screen.
+
+### Fixed
+- Form Builder preview container height in empty state.
+- Console error when duplicating a Layout field containing a File Upload field.
+- Notice about the impossibility of using the Field Size option in a layout was always shown.
+- A conflict occurred when a non-Google captcha was used in the form and the Google reCAPTCHA API was loaded on the same page.
+- Fixed a fatal error in wpforms_is_admin_page() that occurred when the page request parameter was passed as an array instead of a string.
+- Console error when installing WPForms via a Block in the Block Editor.
+
 ## [1.9.8.2] - 2025-10-14
 ### Added
 - AI Forms can now support the Camera field.

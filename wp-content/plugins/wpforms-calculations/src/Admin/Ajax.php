@@ -112,7 +112,7 @@ class Ajax {
 	 *
 	 * @since 1.0.0
 	 */
-	public function validate_formula() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function validate_formula() {
 
 		// Run a security check.
 		if ( ! check_ajax_referer( 'wpforms-builder', 'nonce', false ) ) {

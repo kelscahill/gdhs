@@ -678,7 +678,7 @@ WPForms.Admin.Builder.FieldLayout = WPForms.Admin.Builder.FieldLayout || ( funct
 				return;
 			}
 
-			const $fieldSizeOptionRow = $( `#wpforms-field-option-row-${ fieldId }-size` );
+			const $fieldSizeOptionRow = $( `#wpforms-field-option-row-${ fieldId }-size, #wpforms-field-option-row-${ fieldId }-other_size` );
 			let	$fieldSizeOptionNotice = $fieldSizeOptionRow.find( '.wpforms-notice-field-size' );
 			const isColumnFullWidth = $column.hasClass( 'wpforms-layout-column-100' ) && $field.closest( '.wpforms-field-layout' ).length;
 
@@ -705,7 +705,7 @@ WPForms.Admin.Builder.FieldLayout = WPForms.Admin.Builder.FieldLayout || ( funct
 			const isDisabled = isFieldInColumn && ! isColumnFullWidth;
 
 			$fieldSizeOptionSelect.toggleClass( 'wpforms-disabled', isDisabled );
-			$fieldSizeOptionNotice.toggleClass( 'wpforms-hidden', ! isDisabled );
+			$fieldSizeOptionNotice.toggle( isDisabled );
 		},
 
 		/**

@@ -251,7 +251,7 @@ class FieldsVars {
 	 *
 	 * @return string
 	 */
-	private function get_sub_field_variable_value( $field, $sub_field ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function get_sub_field_variable_value( $field, $sub_field ) {
 
 		if ( ! isset( $field['type'], $field[ $sub_field ] ) ) {
 			return '';
@@ -383,7 +383,7 @@ class FieldsVars {
 	 *
 	 * @return string
 	 */
-	private function get_field_variable_line( $field_id, $sub_field, $value ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function get_field_variable_line( $field_id, $sub_field, $value ) {
 
 		if ( empty( $this->form_data['fields'][ $field_id ] ) ) {
 			return '';

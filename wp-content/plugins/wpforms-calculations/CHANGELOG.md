@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file and formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.8.0] - 2025-11-04
+- ### Added
+- Compatibility with the upcoming WPForms 1.9.8.3 release.
+
 ## [1.7.0] - 2025-07-08
 ### IMPORTANT
 - Support for PHP 7.1 has been discontinued. If you are running PHP 7.1, you MUST upgrade PHP before installing this addon. Failure to do that will disable addon functionality.
@@ -8,11 +12,11 @@ All notable changes to this project will be documented in this file and formatte
 ### Added
 - AI Forms can now generate forms that use WPForms Calculations with an auto-generated formula (requires WPForms 1.9.7).
 
-## Changed
+### Changed
 - Prompt input field now resizes when a user provides a long text.
 - Updated `luxon` library to v3.6.1.
 
-## Fixed
+### Fixed
 - Calculations involving || and && operators gave a different result in the front-end than in the computed saved entry.
 - Generated formula on RTL languages had incorrect formatting.
 - Generated formula in the calculation chat window could have the wrong width overflowing the dialog item.

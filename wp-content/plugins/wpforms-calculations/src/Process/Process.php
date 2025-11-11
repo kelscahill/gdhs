@@ -351,7 +351,7 @@ class Process {
 	 * @param array $field          Field entry data.
 	 * @param array $field_settings Field settings.
 	 */
-	private function pre_calculate_fields( $field, $field_settings ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function pre_calculate_fields( $field, $field_settings ) {
 
 		// Do not re-calculate.
 		if (
@@ -427,7 +427,7 @@ class Process {
 	 * @throws ParseError          When calculation code has parse errors.
 	 * @throws DivisionByZeroError When calculation code has division by zero.
 	 */
-	private function get_field_calculation_result( $field_settings ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	private function get_field_calculation_result( $field_settings ) {
 
 		// phpcs:disable WordPress.PHP.DiscouragedPHPFunctions, WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_error_reporting, WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler
 		$prev_reporting_level = error_reporting( 0 );

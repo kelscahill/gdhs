@@ -542,6 +542,7 @@ class WPForms_Entry_Handler extends WPForms_DB {
 
 		$results = $this->get_results(
 			"SELECT COUNT(CASE WHEN $publish THEN 1 END) as total,
+			        COUNT(CASE WHEN $this->table_name.status = '' THEN 1 END) AS published,
 					COUNT(CASE WHEN $this->table_name.viewed = 0 AND $publish THEN 1 END) AS unread,
                     COUNT(CASE WHEN $this->table_name.type = 'payment' AND $publish THEN 1 END) AS payment,
        				COUNT(CASE WHEN $this->table_name.starred = 1 AND $publish THEN 1 END) AS starred,

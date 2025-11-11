@@ -38,6 +38,10 @@
   vertical-align: text-bottom;
 }
 
+.wpforms_page_wpforms-entries .wpforms-edit-entry-container.wpforms-container .wpforms-field-radio .wpforms-other-input {
+  margin-top: 10px;
+}
+
 .wpforms_page_wpforms-entries .wpforms-edit-entry-container.wpforms-container .wpforms-field-select .choices .choices__input {
   display: inline-block;
 }

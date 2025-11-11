@@ -1346,6 +1346,7 @@ class Edit {
 		$this->date_modified = current_time( 'Y-m-d H:i:s', true );
 
 		foreach ( $this->fields as $field ) {
+			/** This filter is documented in wpforms/pro/includes/class-entry-fields.php */
 			$save_field          = apply_filters( 'wpforms_entry_save_fields', $field, $this->form_data, $this->entry_id ); // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName, WPForms.Comments.PHPDocHooks.RequiredHookDocumentation
 			$field_id            = $save_field['id'];
 			$field_type          = empty( $save_field['type'] ) ? '' : $save_field['type'];

@@ -34,7 +34,7 @@ class InnerFunctions {
 	 *
 	 * @return float|string Floating point number value OR empty string.
 	 */
-	public function parse_float( $str, $precision = 12 ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
+	public function parse_float( $str, $precision = 12 ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// If the given value is a zero, return zero.
 		if ( in_array( $str, [ 0, 0.0, '0', '0.0' ], true ) ) {

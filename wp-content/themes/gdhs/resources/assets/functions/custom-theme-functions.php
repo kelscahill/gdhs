@@ -222,12 +222,12 @@ function gdhs_build_product_choices($form_id, $preselect_id = 0) {
   // Build choices - WPForms uses 1-indexed arrays for payment-select
   $choices = [];
   $choice_index = 1;
-  $preselected_price = '';
+  $default_choice_index = '';
 
   // Add placeholder option
   $choices[$choice_index] = [
     'label'      => '--- Select a product ---',
-    'value'      => '0.00',
+    'value'      => '',
     'image'      => '',
     'icon'       => '',
     'icon_style' => ''
@@ -245,19 +245,28 @@ function gdhs_build_product_choices($form_id, $preselect_id = 0) {
       continue;
     }
 
-    $is_preselected = ($preselect_id && $preselect_id == $pid);
+    // Check if this product should be preselected (use strict comparison)
+    $is_preselected = ($preselect_id > 0 && (int)$preselect_id === (int)$pid);
 
-    $choices[$choice_index] = [
+    // Build choice array - only add 'default' key if this item is preselected
+    $choice = [
       'label'      => $title,
       'value'      => $price,
       'image'      => '',
       'icon'       => '',
       'icon_style' => '',
-      'default'    => $is_preselected ? '1' : '',
     ];
 
+    // Only set default key if this is the preselected product
     if ($is_preselected) {
-      $preselected_price = $price;
+      $choice['default'] = '1';
+    }
+
+    $choices[$choice_index] = $choice;
+
+    // Store the choice index for the default value
+    if ($is_preselected) {
+      $default_choice_index = (string)$choice_index;
     }
 
     $choice_index++;
@@ -265,7 +274,7 @@ function gdhs_build_product_choices($form_id, $preselect_id = 0) {
 
   return [
     'choices'       => $choices,
-    'default_value' => $preselected_price
+    'default_value' => $default_choice_index
   ];
 }
 
@@ -297,6 +306,27 @@ add_filter('wpforms_frontend_form_data', function ($form_data) {
 
   return $form_data;
 }, 5);
+
+/**
+ * Add inline JavaScript to clean up placeholder price display
+ */
+add_action('wp_footer', function() {
+  ?>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Clean up WPForms payment-select placeholder text (remove price display)
+    const paymentSelects = document.querySelectorAll('.wpforms-payment-price');
+    paymentSelects.forEach(function(select) {
+      const firstOption = select.querySelector('option[value="1"]');
+      if (firstOption) {
+        // Remove the price text (e.g., " - $0.00") from the label
+        firstOption.textContent = firstOption.textContent.replace(/\s*-\s*\$[\d,.]+$/, '');
+      }
+    });
+  });
+  </script>
+  <?php
+});
 
 /**
  * Populate payment-select fields with product choices (form submission/validation)

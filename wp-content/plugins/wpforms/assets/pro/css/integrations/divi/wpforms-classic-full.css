@@ -68,6 +68,8 @@
 ----------------------------------------------------------------------------- */
   /* File upload field
 ----------------------------------------------------------------------------- */
+  /* Multiple choices - other option
+----------------------------------------------------------------------------- */
   /* Camera field
 ----------------------------------------------------------------------------- */
   /* Image choices
@@ -834,12 +836,16 @@
   padding: 0;
 }
 
-.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .g-recaptcha {
+.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .g-recaptcha,
+.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .h-captcha,
+.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .cf-turnstile {
   line-height: 0;
   font-size: 0;
 }
 
-.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .g-recaptcha iframe {
+.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .g-recaptcha iframe,
+.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .h-captcha iframe,
+.et-db #et-boc .et-l .et_pb_module div.wpforms-container-full .wpforms-form .wpforms-recaptcha-container.wpforms-is-turnstile .cf-turnstile iframe {
   position: relative !important;
 }
 
@@ -1368,6 +1374,10 @@
 
 .et-db #et-boc .et-l .et_pb_module div.wpforms-field-file-upload .wpforms-file-upload-builder-modern input[type="file"] {
   display: none;
+}
+
+.et-db #et-boc .et-l .et_pb_module .wpforms-container .wpforms-field-radio .wpforms-other-input {
+  margin-top: 16px;
 }
 
 .et-db #et-boc .et-l .et_pb_module body div.wpforms-container-full .wpforms-camera-link {

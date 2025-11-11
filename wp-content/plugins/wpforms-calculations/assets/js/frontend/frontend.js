@@ -590,8 +590,14 @@ const WPFormsCalculations = window.WPFormsCalculations || ( function( document, 
 		 */
 		getFieldInputValueObjectFromDOM( $input, $field ) { // eslint-disable-line complexity
 			// Remove `wpforms` prefix, replace `]` with `` and split by `[`.
-			const name = $input.prop( 'name' ).replace( /^wpforms\[/gi, '' ).replace( /]/gi, '' ).split( '[' ),
-				isCheckbox = $input.is( ':checkbox' ),
+			const name = $input.prop( 'name' ).replace( /^wpforms\[/gi, '' ).replace( /]/gi, '' ).split( '[' );
+
+			// Exclude the Other option input.
+			if ( name.length >= 3 && name[ 0 ] === 'fields' && name[ 2 ] === 'other' ) {
+				return {};
+			}
+
+			const isCheckbox = $input.is( ':checkbox' ),
 				isSelect = $input.is( 'select' ),
 				isHiddenByCL = app.isHiddenByCL( $field );
 
@@ -691,6 +697,11 @@ const WPFormsCalculations = window.WPFormsCalculations || ( function( document, 
 				case 'radio':
 					$checkedInput = $input.closest( 'ul' ).find( 'input:checked' );
 					$label = $checkedInput.closest( 'li' ).find( `label[for="${ $checkedInput.attr( 'id' ) }"]` );
+
+					// For the Other option the value is set separately.
+					if ( $checkedInput.closest( 'li.wpforms-other-choice' ).length ) {
+						return $field.find( '.wpforms-other-input' ).val();
+					}
 
 					return $label.text().trim();
 

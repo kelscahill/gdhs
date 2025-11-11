@@ -51,7 +51,7 @@ class Helpers {
 	 *
 	 * @return bool
 	 */
-	public function has_calculation_enabled_field( $forms ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function has_calculation_enabled_field( $forms ) {
 
 		if ( ! is_array( $forms ) ) {
 			return false;

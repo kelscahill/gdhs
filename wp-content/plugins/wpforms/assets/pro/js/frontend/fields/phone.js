@@ -206,8 +206,15 @@ window.WPFormsPhoneField = window.WPFormsPhoneField || ( function( document, win
 			const iti = window.intlTelInput( $el.get( 0 ), inputOptions );
 
 			$el.on( 'validate', function() {
-				// Validate the field.
-				return iti.isValidNumber( iti.getNumber() );
+				// Get fresh instance to handle cases when field was destroyed and reinitialized.
+				const currentIti = window.intlTelInput?.getInstance( $el.get( 0 ) );
+
+				// Validate the field with defensive checks.
+				if ( ! currentIti || typeof currentIti.isValidNumber !== 'function' ) {
+					return true;
+				}
+
+				return currentIti.isValidNumber( currentIti.getNumber() );
 			} );
 
 			$el.data( 'plugin_intlTelInput', iti );

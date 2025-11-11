@@ -260,6 +260,8 @@ class ListTable extends WP_List_Table {
 			esc_html__( 'Starred', 'wpforms' ) . $starred
 		);
 
+		$views = $this->add_published_view( $views, $base );
+
 		/**
 		 * Filters the array of entries counts in different views.
 		 *
@@ -272,6 +274,34 @@ class ListTable extends WP_List_Table {
 		 * @return array
 		 */
 		return apply_filters( 'wpforms_entries_table_views', $views, $this->form_data, $this->counts ); // phpcs:ignore WPForms.PHP.ValidateHooks.InvalidHookName
+	}
+
+	/**
+	 * Add Published views to the list of views.
+	 *
+	 * @since 1.9.8.3
+	 *
+	 * @param array  $views Entries table views.
+	 * @param string $base  Base URL for the views.
+	 *
+	 * @return array $views Array of all the list table views.
+	 */
+	private function add_published_view( array $views, string $base ): array {
+
+		if ( $this->counts['total'] === $this->counts['published'] ) {
+			return $views;
+		}
+
+		$published = '&nbsp;<span class="count">(<span class="published-num">' . ( $this->counts['published'] ) . '</span>)</span>';
+
+		$views['published'] = sprintf(
+			'<a href="%s"%s>%s</a>',
+			esc_url( add_query_arg( 'status', 'published', $base ) ),
+			isset( $_GET['status'] ) && $_GET['status'] === 'published' ? ' class="current"' : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			esc_html__( 'Published', 'wpforms' ) . $published
+		);
+
+		return $views;
 	}
 
 	/**
@@ -1903,8 +1933,10 @@ class ListTable extends WP_List_Table {
 		}
 
 		if ( ! empty( $_GET['status'] ) ) {
-			$data_args['status'] = sanitize_text_field( $_GET['status'] ); // phpcs:ignore WordPress.Security
-			$total_items         = ! empty( $this->counts[ $data_args['status'] ] ) ? $this->counts[ $data_args['status'] ] : 0;
+			$status      = sanitize_text_field( $_GET['status'] ); // phpcs:ignore WordPress.Security
+			$total_items = ! empty( $this->counts[ $status ] ) ? $this->counts[ $status ] : 0;
+
+			$data_args['status'] = $status === 'published' ? [ '' ] : $status;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
