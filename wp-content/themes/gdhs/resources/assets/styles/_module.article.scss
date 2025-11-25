@@ -142,8 +142,8 @@
 ol,
 ul {
   .c-article__body & {
-    margin-left: 0;
-    margin-top: 0;
+    width: 100%;
+    margin-top: $space;
 
     li {
       list-style: none;
