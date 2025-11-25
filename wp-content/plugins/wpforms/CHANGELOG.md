@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file and formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.9.8.5] - 2025-11-11
+### Fixed
+- Conditionally hidden camera field blocked form submission.
+
 ## [1.9.8.4] - 2025-11-06
 ### Fixed
 - Multiple Choice field was incorrectly previewed in the Builder when the last choice was selected.

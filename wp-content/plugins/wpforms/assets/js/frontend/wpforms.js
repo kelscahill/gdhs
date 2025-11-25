@@ -644,7 +644,7 @@ var wpforms = window.wpforms || ( function( document, window, $ ) { // eslint-di
 						errorElement: app.isModernMarkupEnabled() ? 'em' : 'label',
 						errorClass: 'wpforms-error',
 						validClass: 'wpforms-valid',
-						ignore: ':hidden:not(textarea.wp-editor-area):not(.wpforms-field-camera input), .wpforms-conditional-hide textarea.wp-editor-area',
+						ignore: ':hidden:not(textarea.wp-editor-area):not(.wpforms-field-camera:not(.wpforms-conditional-hide) input), .wpforms-conditional-hide textarea.wp-editor-area',
 						ignoreTitle: true,
 						errorPlacement( error, element ) { // eslint-disable-line complexity
 							if ( app.isLikertScaleField( element ) ) {

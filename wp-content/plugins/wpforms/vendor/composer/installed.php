@@ -29,12 +29,12 @@
             'dev_requirement' => false,
         ),
         'apimatic/jsonmapper' => array(
-            'pretty_version' => '3.1.6',
-            'version' => '3.1.6.0',
+            'pretty_version' => '3.1.7',
+            'version' => '3.1.7.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../apimatic/jsonmapper',
             'aliases' => array(),
-            'reference' => 'c6cc21bd56bfe5d5822bbd08f514be465c0b24e7',
+            'reference' => '61e45f6021e4a4e07497be596b4787c3c6b39bea',
             'dev_requirement' => false,
         ),
         'apimatic/unirest-php' => array(

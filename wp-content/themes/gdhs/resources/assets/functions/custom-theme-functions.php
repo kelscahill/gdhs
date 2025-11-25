@@ -287,16 +287,27 @@ add_filter('wpforms_frontend_form_data', function ($form_data) {
   }
 
   $form_id = isset($form_data['id']) ? (int) $form_data['id'] : 0;
+
+  // Fields that should be populated with products
   $target_field_ids = ['21', '24', '28'];
+
+  // Only one field should be preselectable from the URL
+  $preselect_field_id = '21';
+
   $preselect = isset($_GET['product_id']) ? (int) sanitize_text_field($_GET['product_id']) : 0;
 
   foreach ($form_data['fields'] as $field_id => $field) {
-    $is_target = in_array((string) $field_id, $target_field_ids, true);
+    $field_id_str = (string) $field_id;
+    $is_target = in_array($field_id_str, $target_field_ids, true);
+
     if (!$is_target || empty($field['type']) || $field['type'] !== 'payment-select') {
       continue;
     }
 
-    $result = gdhs_build_product_choices($form_id, $preselect);
+    // Only preselect on field 21
+    $preselect_for_field = ($field_id_str === $preselect_field_id) ? $preselect : 0;
+
+    $result = gdhs_build_product_choices($form_id, $preselect_for_field);
     $form_data['fields'][$field_id]['choices'] = $result['choices'];
 
     if ($result['default_value']) {
