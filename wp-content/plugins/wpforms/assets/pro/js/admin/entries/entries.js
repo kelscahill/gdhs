@@ -1,4 +1,4 @@
-/* global flatpickr, wpforms_admin */
+/* global flatpickr, wpforms_admin, WPFormsUtils */
 
 /**
  * Entries page.
@@ -117,18 +117,27 @@ var WPFormsPagesEntries = window.WPFormsPagesEntries || ( function( document, wi
 		 *
 		 * @since 1.6.3
 		 */
-		bindResetButtons: function() {
-
+		bindResetButtons() {
 			$( '#wpforms-reset-filter .reset' ).on( 'click', function() {
+				const $resetButton = $( this );
+				const $form = $resetButton.parents( 'form' );
 
-				var $form = $( this ).parents( 'form' );
-				$form.find( $( this ).data( 'scope' ) ).find( 'input,select' ).each( function() {
+				const event = WPFormsUtils.triggerEvent( $( document ), 'wpformsEntriesFormBeforeReset', [ $resetButton, $form ] );
 
-					var $this = $( this );
-					if ( app.isIgnoredForReset( $this ) ) {
+				// Allow callbacks on `wpformsEntriesFormBeforeReset` to cancel resetting process.
+				// by triggering `event.preventDefault()`.
+				if ( event.isDefaultPrevented() ) {
+					return;
+				}
+
+				$form.find( $resetButton.data( 'scope' ) ).find( 'input,select' ).each( function() {
+					const $field = $( this );
+
+					if ( app.isIgnoredForReset( $field ) ) {
 						return;
 					}
-					app.reset( $this );
+
+					app.reset( $field );
 				} );
 
 				// Submit the form

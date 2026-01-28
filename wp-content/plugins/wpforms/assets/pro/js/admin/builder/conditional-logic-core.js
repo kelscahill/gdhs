@@ -195,6 +195,20 @@ var WPFormsConditionals = window.WPFormsConditionals || ( function( document, wi
 				return updater.fieldValuesListTemplates[ fieldSelected ];
 			}
 
+			/*
+			 * Trigger to allow rewrite value field options.
+			 *
+			 * @since 1.9.8.6
+			 *
+			 * @param {Object} fieldSelected Rule field value.
+			 * @param {Object} fields Field object.
+			 */
+			const customValuesHTML = $( '#wpforms-builder' ).triggerHandler( 'wpformsConditionalRuleRowValue', [ { fieldSelected, fields } ] );
+
+			if ( typeof customValuesHTML === 'string' ) {
+				return updater.fieldValuesListTemplates[ fieldSelected ] = customValuesHTML;
+			}
+
 			const items = wpf.orders.choices[ 'field_' + fieldSelected ],
 				// language=HTML
 				$select = $( '<select>' ),
@@ -262,6 +276,18 @@ var WPFormsConditionals = window.WPFormsConditionals || ( function( document, wi
 
 			// Remove the current item
 			$fields.find( '#option-' + fieldID ).remove();
+
+			/**
+			 * Trigger to allow addons to add custom fields to rule.
+			 *
+			 * @since 1.9.8.6
+			 *
+			 * @param {Object} $row          Row container.
+			 * @param {Object} $fields       Field object.
+			 * @param {string} fieldSelected Field selected value.
+			 * @param {Object} fieldID       Field ID.
+			 */
+			$( '#wpforms-builder' ).trigger( 'wpformsConditionalRuleRowField', [ $row, $fields, fieldID, fieldSelected ] );
 
 			if ( ! fieldSelected ) {
 				// Remove all id properties.
@@ -665,6 +691,7 @@ var WPFormsConditionals = window.WPFormsConditionals || ( function( document, wi
 
 					$element.append( $( '<option>', { value: choiceKey, text: wpf.sanitizeHTML( label ) } ) );
 				}
+				$operator.find( 'option' ).prop( 'disabled', false );
 				$operator.find( "option:not([value='=='],[value='!='],[value='e'],[value='!e'])" ).prop( 'disabled', true ).prop( 'selected', false ); // jshint ignore:line
 			} else {
 				// Text type fields (everything else) use text inputs.
@@ -687,6 +714,19 @@ var WPFormsConditionals = window.WPFormsConditionals || ( function( document, wi
 			}
 
 			$rule.find( '.value' ).empty().append( $element );
+
+			/*
+			 * Trigger to allow addons to modify operator options and the value element.
+			 *
+			 * @since 1.9.8.6
+			 *
+			 * @param {jQuery} $this The conditional field element.
+			 * @param {jQuery} $rule The conditional rule element.
+			 * @param {string} $operator The conditional operator element.
+			 * @param {Object} data The conditional data object.
+			 * @param {jQuery} $element The conditional value element.
+			 */
+			$( '#wpforms-builder' ).trigger( 'wpformsConditionalRuleRowOperator', [ $this, $rule, $operator, data, $element ] );
 		},
 
 		/**

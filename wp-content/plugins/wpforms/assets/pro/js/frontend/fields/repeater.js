@@ -228,7 +228,7 @@ const WPFormsRepeaterField = window.WPFormsRepeaterField || ( function( document
 			const $repeaterField = $button.closest( '.wpforms-field-repeater' );
 			const fieldID = $repeaterField.data( 'field-id' );
 			const formID = $repeaterField.closest( '.wpforms-form' ).data( 'formid' );
-			const template = $( '.tmpl-wpforms-field-repeater-template-' + fieldID + '-' + formID ).text();
+			const template = $( '.tmpl-wpforms-field-repeater-template-' + fieldID + '-' + formID ).first().text();
 
 			if ( ! template.length ) {
 				return;

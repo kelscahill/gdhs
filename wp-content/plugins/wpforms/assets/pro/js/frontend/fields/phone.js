@@ -40,6 +40,35 @@ window.WPFormsPhoneField = window.WPFormsPhoneField || ( function( document, win
 		},
 
 		/**
+		 * Get intlTelInput instance by element.
+		 *
+		 * @since 1.9.8.6
+		 *
+		 * @param {HTMLElement} element Phone field element.
+		 *
+		 * @return {Object|undefined} intlTelInput instance.
+		 */
+		getIti( element ) {
+			let iti;
+
+			// Check if a library has already been loaded.
+			if ( typeof window.intlTelInput?.getInstance === 'function' ) {
+				iti = window.intlTelInput?.getInstance( element );
+			}
+
+			// BC: if a library has not been loaded or loaded by 3rd-party plugins,
+			// try to get an instance from the global object.
+			if (
+				typeof window.intlTelInputGlobals?.getInstance === 'function' &&
+				typeof iti === 'undefined'
+			) {
+				iti = window.intlTelInputGlobals?.getInstance( element );
+			}
+
+			return iti;
+		},
+
+		/**
 		 * Load jQuery Validation for Smartphone field.
 		 *
 		 * @since 1.9.4
@@ -77,7 +106,7 @@ window.WPFormsPhoneField = window.WPFormsPhoneField || ( function( document, win
 					return false;
 				}
 
-				const iti = window.intlTelInput?.getInstance( element );
+				const iti = app.getIti( element );
 				const result = $( element ).triggerHandler( 'validate' );
 
 				return this.optional( element ) || iti?.isValidNumberPrecise() || result;
@@ -206,8 +235,12 @@ window.WPFormsPhoneField = window.WPFormsPhoneField || ( function( document, win
 			const iti = window.intlTelInput( $el.get( 0 ), inputOptions );
 
 			$el.on( 'validate', function() {
-				// Get fresh instance to handle cases when field was destroyed and reinitialized.
-				const currentIti = window.intlTelInput?.getInstance( $el.get( 0 ) );
+				// Get a fresh instance to handle cases when the field has been destroyed and reinitialized.
+				const currentIti = app.getIti( $el.get( 0 ) );
+
+				if ( ! currentIti && typeof iti.isValidNumber === 'function' ) {
+					return iti.isValidNumber( iti.getNumber() );
+				}
 
 				// Validate the field with defensive checks.
 				if ( ! currentIti || typeof currentIti.isValidNumber !== 'function' ) {

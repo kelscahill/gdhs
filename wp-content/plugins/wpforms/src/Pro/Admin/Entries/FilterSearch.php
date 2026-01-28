@@ -22,46 +22,21 @@ trait FilterSearch {
 	 * Watch for filtering requests from a search field.
 	 *
 	 * @since 1.6.9
+	 *
+	 * @noinspection ReturnTypeCanBeDeclaredInspection
 	 */
 	public function process_filter_search() {
 
 		$form_id = $this->get_filtered_form_id();
+		$search  = $this->get_search_data();
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-
-		// Check for run switch and that all data is present.
-		if (
-			! $form_id ||
-			! isset( $_REQUEST['search'] ) ||
-			(
-				! isset( $_REQUEST['search']['term'] ) ||
-				! isset( $_REQUEST['search']['field'] ) ||
-				empty( $_REQUEST['search']['comparison'] )
-			)
-		) {
+		if ( empty( $form_id ) || empty( $search ) ) {
 			return;
 		}
 
-		$term = sanitize_text_field( wp_unslash( $_REQUEST['search']['term'] ) );
-
-		/*
-		 * Because empty fields were not migrated to a fields table in 1.4.3, we don't have that data
-		 * and can't filter those with empty values.
-		 * The current workaround - display all entries (instead of none at all).
-		 */
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		if ( wpforms_is_empty_string( $term ) && wpforms_is_empty_string( $_REQUEST['search']['term'] ) ) {
-			return;
-		}
-
-		// Prepare the data.
-		$field      = sanitize_text_field( wp_unslash( $_REQUEST['search']['field'] ) ); // We must use as a string for the work field with id equal 0.
-		$comparison = sanitize_text_field( wp_unslash( $_REQUEST['search']['comparison'] ) );
-		$comparison = in_array( $comparison, [ 'contains', 'contains_not', 'is', 'is_not' ], true ) ? $comparison : 'contains';
-
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-		$term = $this->prepare_term( $term );
+		$field      = $search['field'];
+		$comparison = $search['comparison'];
+		$term       = $search['term'];
 
 		$args = [
 			'select'        => 'entry_ids',
@@ -98,6 +73,56 @@ trait FilterSearch {
 		$this->prepare_entry_ids_for_get_entries_args( $entries );
 
 		add_filter( 'wpforms_entry_handler_get_entries_args', [ $this, 'get_filtered_entry_table_args' ] );
+	}
+
+	/**
+	 * Get search request data.
+	 *
+	 * @since 1.9.8.6
+	 *
+	 * @return array
+	 */
+	public function get_search_data(): array {
+
+		$form_id = $this->get_filtered_form_id();
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+
+		// Check for the run switch and that all data is present.
+		if (
+			! $form_id ||
+			! isset( $_REQUEST['search'] ) ||
+			(
+				! isset( $_REQUEST['search']['term'] ) ||
+				! isset( $_REQUEST['search']['field'] ) ||
+				empty( $_REQUEST['search']['comparison'] )
+			)
+		) {
+			return [];
+		}
+
+		$term = sanitize_text_field( wp_unslash( $_REQUEST['search']['term'] ) );
+
+		/*
+		 * Because empty fields were not migrated to a field table in 1.4.3, we don't have that data
+		 * and can't filter those with empty values.
+		 * The current workaround - displays all entries (instead of none at all).
+		 */
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		if ( wpforms_is_empty_string( $term ) && wpforms_is_empty_string( $_REQUEST['search']['term'] ) ) {
+			return [];
+		}
+
+		// Prepare the data.
+		$field      = sanitize_text_field( wp_unslash( $_REQUEST['search']['field'] ) ); // We must use it as a string for the work field with id equal 0.
+		$comparison = sanitize_text_field( wp_unslash( $_REQUEST['search']['comparison'] ) );
+		$comparison = in_array( $comparison, [ 'contains', 'contains_not', 'is', 'is_not' ], true ) ? $comparison : 'contains';
+
+		return [
+			'field'      => $field,
+			'comparison' => $comparison,
+			'term'       => $this->prepare_term( $term ),
+		];
 	}
 
 	/**

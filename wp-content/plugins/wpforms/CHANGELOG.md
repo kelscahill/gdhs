@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file and formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.9.8.6] - 2025-12-09
+### Added
+- Entry ID and date can now be displayed on the Entry print preview page.
+
+### Fixed
+- Repeater field was adding duplicate rows when the same form was embedded on the page multiple times.
+- Prevented loading of Divi assets on pages not containing a form.
+- Compatibility with the LeadConnector plugin.
+- Integration icons were misaligned on the Form Builder page.
+- Password Protection > Clear icon was misaligned for File upload field in the Form Builder.
+- File upload field accessibility in multistep forms.
+- Layout field label in the Compact email notification.
+
 ## [1.9.8.5] - 2025-11-11
 ### Fixed
 - Conditionally hidden camera field blocked form submission.

@@ -1936,6 +1936,11 @@ var wpforms = window.wpforms || ( function( document, window, $ ) { // eslint-di
 					$t.flatpickr( 'close' );
 				}
 
+				// If the field is File Upload prevent change page or submit form.
+				if ( $t.hasClass( 'dropzone-input' ) ) {
+					return;
+				}
+
 				e.preventDefault();
 
 				if ( $page.hasClass( 'last' ) ) {
@@ -4155,7 +4160,10 @@ var wpforms = window.wpforms || ( function( document, window, $ ) { // eslint-di
 				.attr( 'tabindex', '-1' );
 
 			if ( $field.hasClass( 'wpforms-field-select-style-modern' ) ) {
-				$field.find( 'select' ).data( 'choicesjs' )?.disable();
+				const $select = $field.find( 'select' );
+				$select.data( 'choicesjs' )?.disable();
+				$select.removeAttr( 'disabled' );
+
 				return;
 			}
 

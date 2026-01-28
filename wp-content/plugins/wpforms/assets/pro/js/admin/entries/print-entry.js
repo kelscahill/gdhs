@@ -176,6 +176,12 @@ const WPFormsPrintEntryPage = window.WPFormsPrintEntryPage || ( function( docume
 			const $switch = $this.find( app.vars.toggleSelector );
 			const storage = app.cache.getCookie();
 
+			// Enable Entry ID mode by default.
+			if ( mode === 'entry-id' && ! Object.prototype.hasOwnProperty.call( storage, mode ) ) {
+				storage[ mode ] = true;
+				app.cache.saveCookie( mode, true );
+			}
+
 			if ( Object.prototype.hasOwnProperty.call( storage, mode ) && storage[mode] ) {
 				$switch.addClass( app.vars.activeClass );
 

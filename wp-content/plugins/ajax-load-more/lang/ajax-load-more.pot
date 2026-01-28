@@ -2,14 +2,14 @@
 # This file is distributed under the GPL.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ajax Load More 7.7.0\n"
+"Project-Id-Version: Ajax Load More 7.7.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ajax-load-more\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-13T16:41:28+00:00\n"
+"POT-Creation-Date: 2025-11-26T18:50:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: ajax-load-more\n"
@@ -323,7 +323,8 @@ msgstr ""
 msgid "Please activate the <a href=\"admin.php?page=ajax-load-more-licenses\" target=\"_blank\">license</a> to update."
 msgstr ""
 
-#: admin/classes/licensing.php:475
+#. translators: %1$s is the opening tag, %2$s is the closing tag, %3$s is the addon name, %4$s is the purchase link, %5$s is the closing tag.
+#: admin/classes/licensing.php:476
 msgid "%1$sRegister%2$s your copy of %3$s to receive access to plugin updates and support. Need a license key? %4$sPurchase Now%5$s"
 msgstr ""
 
@@ -657,12 +658,12 @@ msgstr ""
 msgid "What's a Repeater Template?"
 msgstr ""
 
-#: admin/includes/components/sidebar-repeater-templates.php:15
+#: admin/includes/components/sidebar-repeater-templates.php:16
 msgid "A <a href=\"%1$s\" target=\"_blank\">Repeater Template</a> is a snippet of code that will execute over and over within a <a href=\"%2$s\" target=\"_blank\">WordPress loop</a>."
 msgstr ""
 
-#: admin/includes/components/sidebar-repeater-templates.php:28
-#: admin/includes/components/sidebar-theme-templates.php:22
+#: admin/includes/components/sidebar-repeater-templates.php:29
+#: admin/includes/components/sidebar-theme-templates.php:23
 #: admin/includes/components/theme-templates.php:94
 #: admin/shortcode-builder/shortcode-builder.php:166
 #: admin/views/filters.php:41
@@ -674,15 +675,16 @@ msgstr ""
 msgid "What's a Theme Template?"
 msgstr ""
 
-#: admin/includes/components/sidebar-theme-templates.php:14
+#. translators: 1: URL to Repeater Templates docs.
+#: admin/includes/components/sidebar-theme-templates.php:15
 msgid "Theme Templates are <a href=\"%1$s\" target=\"_blank\">Repeater Templates</a> loaded from the active theme directory."
 msgstr ""
 
-#: admin/includes/components/sidebar-theme-templates.php:18
+#: admin/includes/components/sidebar-theme-templates.php:19
 msgid "Manage and maintain Ajax Load More templates with your favorite code editor and push updates via GIT or SFTP."
 msgstr ""
 
-#: admin/includes/components/sidebar-theme-templates.php:25
+#: admin/includes/components/sidebar-theme-templates.php:26
 #: admin/includes/components/theme-templates.php:95
 msgid "Manage Directory"
 msgstr ""
@@ -1185,7 +1187,7 @@ msgid "Adding paging parameters will allow for deep linking to a paged filter."
 msgstr ""
 
 #: admin/shortcode-builder/components/filters.php:94
-msgid "Add <span>?pg={x}</span> to the browser querystring as users load additional pages."
+msgid "Add ?pg={x} to the querystring as users load additional pages."
 msgstr ""
 
 #: admin/shortcode-builder/components/filters.php:114

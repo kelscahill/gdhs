@@ -1425,7 +1425,7 @@ body .wpforms-camera-modal-overlay.wpforms-camera-format-video .wpforms-camera-m
 }
 
 body .wpforms-camera-modal-overlay.wpforms-camera-format-video .wpforms-camera-modal-footer .wpforms-camera-modal-buttons .wpforms-camera-crop {
-  background: url(../../../images/video-cancel.svg) no-repeat center;
+  background: url(../../../images/crop.svg) no-repeat center;
 }
 
 body .wpforms-camera-modal {

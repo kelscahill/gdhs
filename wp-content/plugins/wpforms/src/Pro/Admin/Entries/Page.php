@@ -650,8 +650,23 @@ class Page {
 	 * @since 1.8.6
 	 *
 	 * @return array
+	 *
+	 * @noinspection PhpMissingReturnTypeInspection
 	 */
 	private function get_filtered_dates() {
+
+		/**
+		 * Filter the date range for the entry list page.
+		 *
+		 * @since 1.9.8.6
+		 *
+		 * @param array $dates Date range in the Y-m-d format. The 1st element is the start date, the 2nd element is the end date.
+		 */
+		$dates = (array) apply_filters( 'wpforms_pro_admin_entries_page_get_filtered_dates', [] );
+
+		if ( ! empty( $dates ) ) {
+			return array_map( 'sanitize_text_field', $dates );
+		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( empty( $_GET['date'] ) ) {
@@ -878,7 +893,8 @@ class Page {
 			<?php
 
 			// Show empty entries table after delete bulk action.
-			$is_deleted = isset( $_REQUEST['deleted'] ) && $_REQUEST['deleted'] === '1'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$is_deleted  = isset( $_REQUEST['deleted'] ) && $_REQUEST['deleted'] === '1'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$is_filtered = $this->is_list_filtered();
 
 			if (
 				empty( $this->entries->items ) &&
@@ -886,7 +902,7 @@ class Page {
 				$this->entries->counts['trash'] === 0 &&
 				! $is_deleted &&
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				! isset( $_GET['search'] ) && ! isset( $_GET['date'] ) && ! isset( $_GET['type'] ) && ! isset( $_GET['status'] )
+				! $is_filtered && ! isset( $_GET['type'] ) && ! isset( $_GET['status'] )
 			) {
 
 				// Output no entries screen.
@@ -1098,8 +1114,22 @@ class Page {
 	 * @since 1.8.6
 	 *
 	 * @param array $form_data Form data and settings.
+	 *
+	 * @noinspection PhpMissingParamTypeInspection, ReturnTypeCanBeDeclaredInspection
 	 */
 	public function list_form_actions( $form_data ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity
+
+		$actions = [ 'all_entries', 'payments', 'edit_form', 'view_form', 'export_entries', 'read_entries', 'delete_entries' ];
+
+		/**
+		 * Filter the list of entries list form actions.
+		 *
+		 * @since 1.9.8.6
+		 *
+		 * @param array $actions   List of entries list form actions.
+		 * @param array $form_data Form data and settings.
+		 */
+		$actions = (array) apply_filters( 'wpforms_pro_admin_entries_page_actions', $actions, $form_data );
 
 		$base = add_query_arg(
 			[
@@ -1201,47 +1231,48 @@ class Page {
 
 			<div class="form-details-actions">
 
-				<?php if ( $this->is_list_filtered() ) : ?>
+				<?php if ( in_array( 'all_entries', $actions, true ) && $this->is_list_filtered() ) : ?>
 					<a href="<?php echo esc_url( $base ); ?>" class="form-details-actions-entries">
 						<span class="dashicons dashicons-list-view"></span>
 						<?php esc_html_e( 'All Entries', 'wpforms' ); ?>
 					</a>
 				<?php endif; ?>
-
-				<?php if ( isset( $payments_url ) ) : ?>
+				<?php if ( in_array( 'payments', $actions, true ) && isset( $payments_url ) ) : ?>
 					<a href="<?php echo esc_url( $payments_url ); ?>" class="form-details-actions-view-payments">
 						<span class="fa fa-credit-card"></span>
 						<?php esc_html_e( 'View Payments', 'wpforms' ); ?>
 					</a>
 				<?php endif; ?>
 
-				<?php if ( wpforms_current_user_can( 'edit_form_single', $this->form_id ) ) : ?>
+				<?php if ( in_array( 'edit_form', $actions, true ) && wpforms_current_user_can( 'edit_form_single', $this->form_id ) ) : ?>
 					<a href="<?php echo esc_url( $edit_url ); ?>" class="form-details-actions-edit">
 						<span class="dashicons dashicons-edit"></span>
 						<?php $is_form_template ? esc_html_e( 'Edit This Template', 'wpforms' ) : esc_html_e( 'Edit This Form', 'wpforms' ); ?>
 					</a>
 				<?php endif; ?>
 
-				<?php if ( wpforms_current_user_can( 'view_form_single', $this->form_id ) ) : ?>
+				<?php if ( in_array( 'view_form', $actions, true ) && wpforms_current_user_can( 'view_form_single', $this->form_id ) ) : ?>
 					<a href="<?php echo esc_url( $preview_url ); ?>" class="form-details-actions-preview" target="_blank" rel="noopener noreferrer">
 						<span class="dashicons dashicons-visibility"></span>
 						<?php $is_form_template ? esc_html_e( 'Preview Template', 'wpforms' ) : esc_html_e( 'Preview Form', 'wpforms' ); ?>
 					</a>
 				<?php endif; ?>
 
-				<?php if ( ! $is_form_template ) : ?>
+				<?php if ( in_array( 'export_entries', $actions, true ) && ! $is_form_template ) : ?>
 					<a href="<?php echo esc_url( $export_url ); ?>" class="form-details-actions-export">
 						<span class="dashicons dashicons-migrate"></span>
 						<?php echo $this->is_list_filtered() ? esc_html__( 'Export Filtered', 'wpforms' ) : esc_html__( 'Export All', 'wpforms' ); ?>
 					</a>
 				<?php endif; ?>
 
-				<a href="<?php echo esc_url( $read_url ); ?>" class="form-details-actions-read">
-					<span class="dashicons dashicons-marker"></span>
-					<?php esc_html_e( 'Mark All Read', 'wpforms' ); ?>
-				</a>
+				<?php if ( in_array( 'read_entries', $actions, true ) ) : ?>
+					<a href="<?php echo esc_url( $read_url ); ?>" class="form-details-actions-read">
+						<span class="dashicons dashicons-marker"></span>
+						<?php esc_html_e( 'Mark All Read', 'wpforms' ); ?>
+					</a>
+				<?php endif; ?>
 
-				<?php if ( wpforms_current_user_can( 'delete_entries_form_single', $this->form_id ) ) : ?>
+				<?php if ( in_array( 'delete_entries', $actions, true ) && wpforms_current_user_can( 'delete_entries_form_single', $this->form_id ) ) : ?>
 					<?php $status = ! empty( $_GET['status'] ) ? sanitize_key( $_GET['status'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 
 					<a href="<?php echo esc_url( $delete_url ); ?>" class="form-details-actions-removeall" data-page="<?php echo esc_attr( $status ); ?>">

@@ -17276,7 +17276,6 @@ function singlepostsCreateParams(alm) {
     alm.addons.single_post_permalink = '';
     alm.addons.single_post_title = '';
     alm.addons.single_post_slug = '';
-    alm.addons.single_post_cache = false;
     alm.addons.single_post_title_template = listing.dataset.singlePostTitleTemplate;
     alm.addons.single_post_siteTitle = listing.dataset.singlePostSiteTitle;
     alm.addons.single_post_siteTagline = listing.dataset.singlePostSiteTagline;
@@ -17286,6 +17285,27 @@ function singlepostsCreateParams(alm) {
     alm.addons.single_post_controls = listing.dataset.singlePostControls;
   }
   return alm;
+}
+
+/**
+ * Build the data object to send with the Ajax request.
+ *
+ * @param {Object} alm The ALM object.
+ * @return {Object}    The data object.
+ */
+function singlepostsQueryParams(alm) {
+  var addons = alm.addons;
+  var params = {
+    action: 'alm_get_single',
+    id: parseInt(addons.single_post_id),
+    initial_id: parseInt(addons.single_post_init_id),
+    order: addons.single_post_order,
+    taxonomy: addons.single_post_taxonomy,
+    excluded_terms: addons.single_post_excluded_terms,
+    post_type: alm.post_type,
+    init: addons.single_post_init
+  };
+  return params;
 }
 
 /**
@@ -18015,7 +18035,7 @@ function _display() {
           delay = alm.transition_delay, images_loaded = alm.images_loaded;
           offset = useTransition ? parseInt(delay) : 0; // Delay offset timing.
           _context3.next = 5;
-          return timeout(100);
+          return timeout(50);
         case 5:
           // Add short delay for effect.
 
@@ -18630,7 +18650,8 @@ function getTypeParams(alm, type) {
  * @return {Object}    The data object.
  * @since 3.6
  */
-function getRestAPIParams(alm) {
+function getRestParams(alm) {
+  var addons = alm.addons;
   var data = {
     id: alm.id,
     post_id: parseInt(alm.post_id),
@@ -18680,6 +18701,17 @@ function getRestAPIParams(alm) {
     preloaded_amount: alm.addons.preloaded_amount,
     seo_start_page: alm.start_page
   };
+
+  // Get the actual current page number.
+  alm.currentPage = getCurrentPage(alm, data);
+  data.currentPage = alm.currentPage;
+
+  // Cache Params
+  if (addons.cache) {
+    data.cache = true;
+    data.cache_logged_in = addons.cache_logged_in;
+    data.cache_id = getCacheId(alm, data);
+  }
   return data;
 }
 ;// CONCATENATED MODULE: ./src/frontend/js/functions/windowResize.js
@@ -20080,8 +20112,9 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
              * @since 2.6.0
              */
             alm.AjaxLoadMore.ajax = /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee() {
+              var _alm26;
               var type,
-                _alm26,
+                is_restapi,
                 params,
                 cache,
                 _args = arguments;
@@ -20089,34 +20122,39 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
                 while (1) switch (_context.prev = _context.next) {
                   case 0:
                     type = _args.length > 0 && _args[0] !== undefined ? _args[0] : 'standard';
-                    if (!alm.extensions.restapi) {
-                      _context.next = 5;
-                      break;
-                    }
-                    alm.AjaxLoadMore.restapi(alm); // REST API.
-                    _context.next = 14;
-                    break;
-                  case 5:
-                    params = getAjaxParams(alm, type); // Cache.
+                    is_restapi = alm.extensions.restapi ? true : false;
+                    params = is_restapi ? getRestParams(alm) : getAjaxParams(alm, type); // Cache.
                     if (!((_alm26 = alm) !== null && _alm26 !== void 0 && (_alm26 = _alm26.addons) !== null && _alm26 !== void 0 && _alm26.cache)) {
-                      _context.next = 13;
+                      _context.next = 10;
                       break;
                     }
-                    _context.next = 9;
+                    _context.next = 6;
                     return getCache(alm, Object.assign({}, params));
-                  case 9:
+                  case 6:
                     cache = _context.sent;
                     if (cache) {
                       // Render cache results.
                       alm.AjaxLoadMore.render(cache, type);
                     } else {
+                      if (is_restapi) {
+                        // REST API request.
+                        alm.AjaxLoadMore.restapi(params);
+                      } else {
+                        // Standard admin-ajax.php request.
+                        alm.AjaxLoadMore.adminajax(params, type);
+                      }
+                    }
+                    _context.next = 11;
+                    break;
+                  case 10:
+                    if (is_restapi) {
+                      // REST API request.
+                      alm.AjaxLoadMore.restapi(params);
+                    } else {
+                      // Standard admin-ajax.php request.
                       alm.AjaxLoadMore.adminajax(params, type);
                     }
-                    _context.next = 14;
-                    break;
-                  case 13:
-                    alm.AjaxLoadMore.adminajax(params, type);
-                  case 14:
+                  case 11:
                   case "end":
                     return _context.stop();
                 }
@@ -20223,8 +20261,7 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
                       return _context8.abrupt("return");
                     case 4:
                       if (alm.addons.single_post) {
-                        // Fetch the next post for the Single Post add-on.
-                        alm.AjaxLoadMore.getSinglePost();
+                        alm.AjaxLoadMore.getSinglePost(); // Fetch the next post for the Single Post add-on.
                       }
 
                       // Deconstruct render data.
@@ -20602,10 +20639,13 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
             /**
              * Send request to the WP REST API
              *
-             * @param {Object} alm The Ajax Load More object.
+             * @param {Object} params The query parameters object.
              * @since 5.0.0
              */
-            alm.AjaxLoadMore.restapi = function (alm) {
+            alm.AjaxLoadMore.restapi = function (params) {
+              var _params$cache_id2 = params.cache_id,
+                cache_id = _params$cache_id2 === void 0 ? '' : _params$cache_id2; // Deconstruct query params.
+
               var _alm_localize4 = alm_localize,
                 rest_api_url = _alm_localize4.rest_api_url; // Get Rest API URL
               var _alm$extensions = alm.extensions,
@@ -20615,7 +20655,6 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
                 restapi_template_id = _alm$extensions.restapi_template_id;
               var alm_rest_template = wp.template(restapi_template_id);
               var alm_rest_url = "".concat(rest_api_url).concat(restapi_base_url, "/").concat(restapi_namespace, "/").concat(restapi_endpoint);
-              var params = getRestAPIParams(alm);
               lib_axios.get(alm_rest_url, {
                 params: params
               }).then(function (response) {
@@ -20648,6 +20687,9 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
                     totalposts: totalposts
                   }
                 };
+
+                // Cache.
+                createCache(alm, data, cache_id);
                 alm.AjaxLoadMore.render(data);
               })["catch"](function (error) {
                 alm.AjaxLoadMore.error(error);
@@ -20785,7 +20827,7 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
              *  @since 2.7.4
              */
             alm.AjaxLoadMore.getSinglePost = /*#__PURE__*/ajax_load_more_asyncToGenerator( /*#__PURE__*/ajax_load_more_regeneratorRuntime().mark(function _callee9() {
-              var params, singlePostData;
+              var params;
               return ajax_load_more_regeneratorRuntime().wrap(function _callee9$(_context9) {
                 while (1) switch (_context9.prev = _context9.next) {
                   case 0:
@@ -20798,55 +20840,44 @@ var isBlockEditor = document.body.classList.contains('wp-admin');
                     alm.fetchingPreviousPost = true; // Set loading flag.
 
                     // Create data params.
-                    params = {
-                      action: 'alm_get_single',
-                      id: alm.addons.single_post_id,
-                      initial_id: alm.addons.single_post_init_id,
-                      order: alm.addons.single_post_order,
-                      taxonomy: alm.addons.single_post_taxonomy,
-                      excluded_terms: alm.addons.single_post_excluded_terms,
-                      post_type: alm.post_type,
-                      init: alm.addons.single_post_init
-                    }; // Send HTTP request via Axios.
+                    params = singlepostsQueryParams(alm); // Send HTTP request via Axios.
                     _context9.next = 6;
                     return lib_axios.get(alm_localize.ajaxurl, {
                       params: params
                     }).then(function (response) {
-                      // Get data from response.
-                      var data = response.data;
+                      var data = response.data; // Deconstruct data from response.
+
                       if (data.has_previous_post) {
-                        alm.listing.dataset.singlePostId = data.prev_id; // Update single-post-id on instance
+                        // Update ALM instance variables.
+                        alm.listing.dataset.singlePostId = data.prev_id; // Update single-post-id on HTML instance.
                         alm.addons.single_post_id = data.prev_id;
                         alm.addons.single_post_permalink = data.prev_permalink;
                         alm.addons.single_post_title = data.prev_title;
                         alm.addons.single_post_slug = data.prev_slug;
-                        alm.addons.single_post_cache = data.cache;
-                      } else {
-                        alm.addons.single_post_cache = false;
-                        if (!data.has_previous_post) {
-                          alm.AjaxLoadMore.triggerDone();
+                        if (typeof window.almSetSinglePost === 'function' && data !== null && data !== void 0 && data.current_id) {
+                          window.almSetSinglePost(alm, data.current_id);
                         }
+                      } else {
+                        alm.AjaxLoadMore.triggerDone(); // No more posts.
                       }
-                      if (typeof window.almSetSinglePost === 'function') {
-                        window.almSetSinglePost(alm, data.current_id);
-                      }
-                      alm.fetchingPreviousPost = false;
-                      alm.addons.single_post_init = false;
+
+                      alm.fetchingPreviousPost = false; // Set loading flag to false.
+                      alm.addons.single_post_init = false; // Reset init flag.
+
                       return data;
                     })["catch"](function (error) {
-                      // Error
+                      // Handle error.
                       alm.AjaxLoadMore.error(error);
                       alm.fetchingPreviousPost = false;
                     });
                   case 6:
-                    singlePostData = _context9.sent;
-                    return _context9.abrupt("return", singlePostData);
-                  case 8:
                   case "end":
                     return _context9.stop();
                 }
               }, _callee9);
             }));
+
+            // Initialize Single Post add-on variables.
             if (alm.addons.single_post_id) {
               alm.fetchingPreviousPost = false;
               alm.addons.single_post_init = true;

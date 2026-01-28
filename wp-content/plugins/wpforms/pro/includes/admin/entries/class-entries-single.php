@@ -1045,6 +1045,16 @@ class WPForms_Entries_Single {
 					// Wrap the fields.
 					echo '<div class="wpforms-entries-fields-wrapper' . esc_attr( $view ) . '">';
 
+						/**
+						 * Fires before the entry fields.
+						 *
+						 * @since 1.9.8.6
+						 *
+						 * @param object $entry     Entry.
+						 * @param array  $form_data Form data.
+						 */
+						do_action( 'wpforms_entries_single_before_fields', $entry, $form_data );
+
 						// Display the fields and their values.
 						foreach ( $fields as $field ) {
 
@@ -1071,6 +1081,16 @@ class WPForms_Entries_Single {
 
 							$this->print_field( $field, $form_data );
 						}
+
+						/**
+						 * Fires after the entry fields.
+						 *
+						 * @since 1.9.8.6
+						 *
+						 * @param object $entry     Entry.
+						 * @param array  $form_data Form data.
+						 */
+						do_action( 'wpforms_entries_single_after_fields', $entry, $form_data );
 
 					echo '</div>';
 					remove_filter( 'wp_kses_allowed_html', [ $this, 'modify_allowed_tags_entry_field_value' ] );
