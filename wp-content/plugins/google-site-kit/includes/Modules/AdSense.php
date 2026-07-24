@@ -6,6 +6,8 @@
  * @copyright 2021 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 // phpcs:disable Generic.Metrics.CyclomaticComplexity.MaxExceeded
@@ -46,6 +48,7 @@ use Google\Site_Kit\Modules\AdSense\Auto_Ad_Guard;
 use Google\Site_Kit\Modules\AdSense\Web_Tag;
 use Google\Site_Kit_Dependencies\Google\Model as Google_Model;
 use Google\Site_Kit_Dependencies\Google\Service\Adsense as Google_Service_Adsense;
+use Google\Site_Kit_Dependencies\Google\Service\Adsense\Account;
 use Google\Site_Kit_Dependencies\Google\Service\Adsense\Alert as Google_Service_Adsense_Alert;
 use Google\Site_Kit_Dependencies\Psr\Http\Message\RequestInterface;
 use Exception;
@@ -546,7 +549,7 @@ final class AdSense extends Module implements Module_With_Scopes, Module_With_Se
 	 *
 	 * @since 1.73.0
 	 *
-	 * @param Google_Model $account Account model.
+	 * @param Account $account Account model.
 	 * @return bool Whether the account is not closed.
 	 */
 	public static function is_account_not_closed( $account ) {

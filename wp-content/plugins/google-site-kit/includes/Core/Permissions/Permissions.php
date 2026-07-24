@@ -6,6 +6,8 @@
  * @copyright 2021 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Core\Permissions;
@@ -391,9 +393,7 @@ final class Permissions {
 	 * @return array Array with a 'do_not_allow' element if checks fail, empty array if checks pass.
 	 */
 	private function check_dashboard_sharing_capability( $cap, $user_id, $args ) {
-		if ( isset( $args[0] ) ) {
-			$module_slug = $args[0];
-		}
+		$module_slug = $args[0] ?? '';
 
 		switch ( $cap ) {
 			case self::VIEW_SHARED_DASHBOARD:

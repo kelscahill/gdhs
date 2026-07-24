@@ -437,7 +437,10 @@ const WPFormsCalculations = window.WPFormsCalculations || ( function( document, 
 					return ! item ? '' : item.toString().padStart( 2, '0' );
 				} );
 
-				formFieldsValues.fields[ fieldId ].date = dateAry.join( '/' );
+				const dateFormat = app.getFormFieldData( formId, fieldId )?.date_format || '',
+					joinSeparator = dateFormat.includes( '.' ) ? '.' : '/';
+
+				formFieldsValues.fields[ fieldId ].date = dateAry.join( joinSeparator );
 				fieldValueCombine.date = formFieldsValues.fields[ fieldId ].date;
 
 				return { separator, formFieldsValues, fieldValueCombine };

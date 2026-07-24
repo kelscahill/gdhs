@@ -41,6 +41,12 @@ class DateTime {
 		'm-d-Y',
 		'm-d-Y g:i A',
 		'm-d-Y H:i',
+		'Y-m-d',
+		'Y-m-d g:i A',
+		'Y-m-d H:i',
+		'd.m.Y',
+		'd.m.Y g:i A',
+		'd.m.Y H:i',
 		'F j, Y',
 		'F j, Y g:i A',
 		'F j, Y H:i',
@@ -126,7 +132,7 @@ class DateTime {
 	 *
 	 * @return string Date time string format.
 	 */
-	private function get_format_from_fields( $datetime_str ) {
+	private function get_format_from_fields( $datetime_str ): string {
 
 		$process      = wpforms_calculations()->process;
 		$fields_entry = $process->get_fields_entry();
@@ -135,7 +141,6 @@ class DateTime {
 			return '';
 		}
 
-		$format    = '';
 		$form_data = $process->get_form_data();
 
 		// Loop through the fields and try to find the right format.
@@ -144,39 +149,105 @@ class DateTime {
 				continue;
 			}
 
-			$field_entry = $fields_entry[ $field_id ];
-			$date_format = $field_data['date_format'] === 'd/m/Y' ? 'm/d/Y' : $field_data['date_format'];
-			$date_value  = $this->convert_format( $datetime_str, $field_data['date_format'], $date_format );
-			$time_value  = $this->convert_format( $datetime_str, $field_data['time_format'], 'g:i A' );
+			$format = $this->match_field_format( $datetime_str, $field_data, $fields_entry[ $field_id ] );
 
-			if (
-				$field_entry['value'] !== $datetime_str &&
-				$field_entry['date'] !== $date_value &&
-				$field_entry['time'] !== $time_value
-			) {
-				continue;
-			}
-
-			if ( ! empty( $date_value ) && $field_entry['date'] === $date_value ) {
-				$format = $field_data['date_format'];
-
-				break;
-			}
-
-			if ( ! empty( $time_value ) && $field_entry['time'] === $time_value ) {
-				$format = $field_data['time_format'];
-
-				break;
-			}
-
-			if ( $field_entry['value'] === $datetime_str ) {
-				$format = $field_data['date_format'] . ' ' . $field_data['time_format'];
-
-				break;
+			if ( ! empty( $format ) ) {
+				return $format;
 			}
 		}
 
-		return $format;
+		return '';
+	}
+
+	/**
+	 * Match a datetime string against a specific field to determine its format.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param string $datetime_str The datetime string.
+	 * @param array  $field_data   Field configuration data.
+	 * @param array  $field_entry  Field entry data.
+	 *
+	 * @return string Date time string format or empty string if no match.
+	 */
+	private function match_field_format( $datetime_str, $field_data, $field_entry ): string {
+
+		$default_format = 'm/d/Y';
+		$date_format    = $field_data['date_format'] ?? $default_format;
+		$date_value     = $this->convert_format( $datetime_str, $field_data['date_format'], $date_format );
+		$time_value     = $this->convert_format( $datetime_str, $field_data['time_format'], 'g:i A' );
+
+		if ( ! $this->is_potential_match( $datetime_str, $field_entry, $date_value, $time_value ) ) {
+			return '';
+		}
+
+		/**
+		 * We should compare date value with field entry date and value fields.
+		 * In the ` date ` field stored value in m/d/Y format (always, regardless of builder settings).
+		 * In the ` value ` field stored value in builder format with time.
+		 * See more: wpforms/src/Pro/Forms/Fields/DateTime/Field.php method format().
+		 */
+		// Check if datetime_str directly matches the 'date' subfield.
+		if ( $datetime_str === $field_entry['date'] ) {
+			return $this->get_date_subfield_format( $field_data['date_format'], $default_format );
+		}
+
+		// Check if datetime_str matches the 'value' field when a format is date-only (builder format).
+		if ( $datetime_str === $field_entry['value'] && empty( $field_entry['time'] ) ) {
+			return $field_data['date_format'];
+		}
+
+		// Check if datetime_str matches time field.
+		if ( ! empty( $time_value ) && $field_entry['time'] === $time_value ) {
+			return $field_data['time_format'];
+		}
+
+		// Check if datetime_str matches the 'value' field with time (builder format with time).
+		if ( $field_entry['value'] === $datetime_str ) {
+			return $field_data['date_format'] . ' ' . $field_data['time_format'];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Check if datetime string is a potential match for field entry.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param string $datetime_str The datetime string.
+	 * @param array  $field_entry  Field entry data.
+	 * @param string $date_value   Converted date value.
+	 * @param string $time_value   Converted time value.
+	 *
+	 * @return bool True if potential match, false otherwise.
+	 */
+	private function is_potential_match( $datetime_str, $field_entry, $date_value, $time_value ): bool {
+
+		return $field_entry['value'] === $datetime_str ||
+			$field_entry['date'] === $date_value ||
+			$field_entry['time'] === $time_value;
+	}
+
+	/**
+	 * Get format for date subfield match.
+	 *
+	 * For formats with / or . separator, date is converted to m/d/Y.
+	 * For other formats (like 'F j, Y'), date remains in builder format.
+	 * See: convert_date_to_mdy() in Field.php:907-939.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param string $date_format    Date format from field data.
+	 * @param string $default_format Default date format (m/d/Y).
+	 *
+	 * @return string Appropriate date format.
+	 */
+	private function get_date_subfield_format( $date_format, $default_format ): string {
+
+		$has_separator = strpos( $date_format, '/' ) !== false || strpos( $date_format, '.' ) !== false;
+
+		return $has_separator ? $default_format : $date_format;
 	}
 
 	/**

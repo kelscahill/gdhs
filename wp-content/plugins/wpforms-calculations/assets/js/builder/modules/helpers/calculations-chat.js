@@ -9,7 +9,7 @@
  *
  * @param {WPFormsAIChatHTMLElement} chat The chat element.
  *
- * @return {Object} The calculations chat helpers object.
+ * @return {Object} The calculations chat helper object.
  */
 export default function( chat ) { // eslint-disable-line max-lines-per-function
 	/**
@@ -221,8 +221,8 @@ export default function( chat ) { // eslint-disable-line max-lines-per-function
 		insertButtonClick( e ) {
 			const editor = this.getCodeMirrorInstance( chat.fieldId ),
 				$message = jQuery( e.target ).closest( '.wpforms-chat-item.wpforms-chat-item-answer' ),
-				responseId = $message.data( 'response-id' ),
-				formula = this.newCodeEditorContent[ responseId ] ?? '';
+				responseId = $message.data( 'response-id' );
+			let formula = this.newCodeEditorContent[ responseId ] ?? '';
 
 			if ( ! editor ) {
 				return;
@@ -236,11 +236,15 @@ export default function( chat ) { // eslint-disable-line max-lines-per-function
 			Promise.all( [
 				// Click on the field in the preview area, so the settings panel will be opened.
 				jQuery( `#wpforms-field-${ chat.fieldId }` ).click().promise(),
-				// Toggle settings to advanced tab.
+				// Toggle settings to the advanced tab.
 				jQuery( `#wpforms-field-option-advanced-${ chat.fieldId } a.wpforms-field-option-group-toggle` ).click().promise(),
 			] ).then( () => {
-				editor.setValue( formula + ' ' );
+				formula += ' ';
+				editor.setValue( formula );
 				editor.setCursor( editor.lineCount(), 0 );
+
+				// Trigger the formula inserted event.
+				chat.triggerEvent( 'wpformsAiCalculationsFormulaInserted', { fieldId: chat.fieldId, formula } );
 			} );
 		},
 
@@ -268,7 +272,7 @@ export default function( chat ) { // eslint-disable-line max-lines-per-function
 		},
 
 		/**
-		 * Get CodeMirror instance.
+		 * Get a CodeMirror instance.
 		 *
 		 * @since 1.6.0
 		 *
@@ -306,7 +310,7 @@ export default function( chat ) { // eslint-disable-line max-lines-per-function
 					continue;
 				}
 
-				// Delete some values which are not important in calculation.
+				// Delete some values that are not important in calculation.
 				if (
 					serializedFormData[ key ].name.startsWith( `fields[${ chat.fieldId }][size]` ) ||
 					serializedFormData[ key ].name.startsWith( `fields[${ chat.fieldId }][map_position]` ) ||
@@ -334,7 +338,7 @@ export default function( chat ) { // eslint-disable-line max-lines-per-function
 					continue;
 				}
 
-				// Delete any calculation related settings from the field but not for the current field.
+				// Delete any calculation-related settings from the field but not for the current field.
 				if ( ! serializedFormData[ key ].name.startsWith( `fields[${ chat.fieldId }][calculation_` ) ) {
 					delete serializedFormData[ key ];
 				}
@@ -380,7 +384,7 @@ export default function( chat ) { // eslint-disable-line max-lines-per-function
 
 				const fieldId = serializedFormData[ key ].name.split( '[' )[ 1 ].split( ']' )[ 0 ];
 
-				// Delete all serializedFormData where name starts with `fields[${fieldId}]`.
+				// Delete all serializedFormData where the name starts with `fields[${fieldId}]`.
 				if ( ! toDelete.includes( `fields[${ fieldId }]` ) ) {
 					toDelete.push( `fields[${ fieldId }]` );
 				}

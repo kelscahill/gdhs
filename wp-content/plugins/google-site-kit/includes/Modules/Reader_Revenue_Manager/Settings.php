@@ -6,6 +6,8 @@
  * @copyright 2021 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Modules\Reader_Revenue_Manager;
@@ -68,7 +70,9 @@ class Settings extends Module_Settings implements Setting_With_Owned_Keys_Interf
 	 * @return array
 	 */
 	protected function get_default() {
-		$defaults = array(
+		return array(
+			'contentPolicyState'                => '',
+			'policyInfoLink'                    => '',
 			'ownerID'                           => 0,
 			'publicationID'                     => '',
 			'publicationOnboardingState'        => '',
@@ -79,8 +83,6 @@ class Settings extends Module_Settings implements Setting_With_Owned_Keys_Interf
 			'postTypes'                         => array( 'post' ),
 			'productID'                         => 'openaccess',
 		);
-
-		return $defaults;
 	}
 
 	/**
@@ -181,6 +183,14 @@ class Settings extends Module_Settings implements Setting_With_Owned_Keys_Interf
 				if ( ! is_string( $option['productID'] ) ) {
 					$option['productID'] = 'openaccess';
 				}
+			}
+
+			if ( isset( $option['contentPolicyState'] ) && ! is_string( $option['contentPolicyState'] ) ) {
+				$option['contentPolicyState'] = '';
+			}
+
+			if ( isset( $option['policyInfoLink'] ) && ! is_string( $option['policyInfoLink'] ) ) {
+				$option['policyInfoLink'] = '';
 			}
 
 			return $option;

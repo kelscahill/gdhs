@@ -1,4 +1,4 @@
-/* global wpforms_calculations, wpf, WPForms, wpforms_builder, CodeMirror, DropdownList, WPFormsAIModal, wpFormsAIDock */
+/* global wpforms_calculations, wpf, WPForms, WPFormsUtils, wpforms_builder, CodeMirror, DropdownList, WPFormsAIModal, wpFormsAIDock */
 
 /**
  * @name CodeMirror
@@ -13,29 +13,34 @@
 
 /**
  * @param wpforms_builder.ajax_url
+ * @param wpforms_calculations.calculationIsPossibleFields
+ * @param wpforms_calculations.functionsList
+ * @param wpforms_calculations.isAiDisabled
+ * @param wpforms_calculations.isLicenseActive
+ * @param wpforms_calculations.strings.aiCalculations
  * @param wpforms_calculations.strings.ajaxFail
  * @param wpforms_calculations.strings.allowedFieldsTypes
  * @param wpforms_calculations.strings.calculation_code
  * @param wpforms_calculations.strings.display
- * @param wpforms_calculations.functionsList
- * @param wpforms_calculations.isLicenseActive
- * @param wpforms_calculations.isAiDisabled
- * @param wpforms_calculations.calculationIsPossibleFields
+ * @param wpforms_calculations.strings.fixWithAi
+ * @param wpforms_calculations.strings.fixWithAiInitialPrompt
  * @param wpforms_calculations.strings.insertFieldDropdownTitle
+ * @param wpforms_calculations.strings.thisFieldUsedInField
+ * @param wpforms_calculations.strings.thisFieldUsedInFields
  * @param wpforms_calculations.strings.validateButtonAjaxError
  * @param wpforms_calculations.strings.validateButtonErrors
  * @param wpforms_calculations.strings.validateButtonSuccess
  * @param wpforms_calculations.strings.validationFieldDoesntExist
  * @param wpforms_calculations.strings.validationFieldNotAllowed
- * @param wpforms_calculations.strings.validationSubfieldNotAllowed
+ * @param wpforms_calculations.strings.validationFieldTotalInSingleItem
  * @param wpforms_calculations.strings.validationModalErrorMsg
  * @param wpforms_calculations.strings.validationModalErrorTitle
+ * @param wpforms_calculations.strings.validationRepeaterFieldNotAllowed
+ * @param wpforms_calculations.strings.validationSubfieldNotAllowed
  * @param wpforms_calculations.strings.validationVariableNotAllowed
- * @param wpforms_calculations.strings.thisFieldUsedInField
- * @param wpforms_calculations.strings.thisFieldUsedInFields
- * @param wpforms_calculations.strings.validationFieldTotalInSingleItem
- * @param wpforms_calculations.strings.fixWithAiInitialPrompt
- * @param wpforms_calculations.strings.aiCalculations
+ * @param fieldSettings.calculation_is_enabled
+ * @param fieldData.postal_hide
+ * @param fieldData.address2_hide
  */
 
 /**
@@ -153,7 +158,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		 * @since 1.0.0
 		 */
 		events() {
-			// Update field variables registry.
+			// Update the field variables registry.
 			el.$builder
 				.on( 'wpformsFieldAdd', fields.add )
 				.on( 'wpformsFieldDelete', fields.delete )
@@ -229,7 +234,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 
 			const $fieldOptions = $( '#wpforms-field-option-' + fieldId ),
 				fieldSettings = wpf.getField( fieldId ),
-				isCalculationEnabled = fieldSettings && fieldSettings.calculation_is_enabled && fieldSettings.calculation_code?.length;
+				isCalculationEnabled = fieldSettings?.calculation_is_enabled;
 
 			if ( ! $fieldOptions.length || ! isCalculationEnabled ) {
 				return;
@@ -264,7 +269,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Click on the fix with AI button.
+		 * Click on the fix with the AI button.
 		 *
 		 * @since 1.6.0
 		 *
@@ -286,9 +291,9 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		 *
 		 * @since 1.6.0
 		 *
-		 * @param {Object} button        Button element.
-		 * @param {Array}  errorMessages Formula validation error messages.
-		 * @param {number} fieldId       Field ID.
+		 * @param {Object}             button        Button element.
+		 * @param {Array}              errorMessages Formula validation error messages.
+		 * @param {number|string|null} fieldId       Field ID.
 		 *
 		 * @return {Object|null} Modal arguments, empty if modal is disabled or not present.
 		 */
@@ -342,7 +347,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Get initial prompt for AI modal with error messages.
+		 * Get an initial prompt for AI modal with error messages.
 		 *
 		 * @since 1.6.0
 		 *
@@ -574,7 +579,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Setup and configure all the Codemirror instances.
+		 * Set up and configure all the Codemirror instances.
 		 *
 		 * @since 1.0.0
 		 *
@@ -584,13 +589,13 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 			$scope = $scope || el.$builder;
 
 			// Initialize all the Codemirror editors.
-			$( 'textarea.wpforms-codemirror-editor', $scope ).each( function() {
+			$scope.find( 'textarea.wpforms-codemirror-editor' ).each( function() {
 				app.setupSingleEditor( $( this ) );
 			} );
 		},
 
 		/**
-		 * Setup and configure single Codemirror instance.
+		 * Set up and configure a single Codemirror instance.
 		 *
 		 * @since 1.0.0
 		 *
@@ -631,6 +636,8 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 			vars.codemirror.editors[ id ] = editor;
 
 			app.singleEditorEvents( editor.codemirror, $editorWrap );
+
+			WPFormsUtils.triggerEvent( el.$builder, 'wpformsCalculationsEditorReady', [ editor, $textarea ] );
 		},
 
 		/**
@@ -728,7 +735,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 
 			// On mouse click, maybe show autocomplete.
 			codemirror.on( 'mousedown', function( cm, event ) {
-				// Check if variable name has been clicked.
+				// Check if the variable name has been clicked.
 				if ( event.target.classList.contains( 'cm-variable-2' ) ) {
 					setTimeout( () => {
 						app.autocompleteTriggeredBy = 'mousedown';
@@ -778,7 +785,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 
 					if ( app.autocompleteTriggeredBy === 'mousedown' && word.startsWith( '$f' ) ) {
 						// If this is autocomplete triggered by mouse click,
-						// trim word to just $f so the dropdown will contain all possible variables.
+						// trim the word to just $f so the dropdown will contain all possible variables.
 						word = '$f';
 					}
 
@@ -825,10 +832,10 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 						selectedHint,
 					};
 
-					// Add event listener for the `pick` event.
+					// Add an event listener for the `pick` event.
 					wp.CodeMirror.on( result, 'pick', app.autocompletePick );
 
-					// Add event listener for when hints are shown.
+					// Add an event listener for when hints are shown.
 					wp.CodeMirror.on( result, 'shown', function() {
 						const $hints = $( '.CodeMirror-hints' );
 						const $selected = $hints.find( 'li.CodeMirror-hint-active' );
@@ -837,7 +844,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 							return;
 						}
 
-						// Get position of hints and editor.
+						// Get the position of hints and editor.
 						const hintsPosition = $hints.offset().top;
 						const editorPosition = $( cm.getWrapperElement() ).offset().top;
 
@@ -925,7 +932,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 				indent = matchIndent ? matchIndent[ 0 ] : '',
 				textLines = completion.text ? completion.text.split( '\n' ) : [];
 
-			// Put cursor to the condition parentheses.
+			// Put the cursor to the condition parentheses.
 			doc.setCursor( {
 				line: event.from.line,
 				ch: event.from.ch + 5,
@@ -1062,7 +1069,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		 *
 		 * @since 1.0.0
 		 */
-		validateFormula() {
+		validateFormula() { // eslint-disable-line max-lines-per-function
 			const $button = $( this );
 			const aiFixableErrors = [
 				'validation_variable_not_allowed',
@@ -1203,7 +1210,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 					};
 				}
 
-				// Check if field is in repeater
+				// Check if the field is in repeater
 				if ( app.isFieldInRepeater( fieldId$F ) ) {
 					return {
 						text: wpforms_calculations.strings.validationRepeaterFieldNotAllowed.replaceAll( '%1$s', fieldId$F.toString() ),
@@ -1227,7 +1234,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 					};
 				}
 
-				// The Total field is not allowed in Single Item field (circular reference).
+				// The Total field is not allowed in the Single Item field (circular reference).
 				if ( formFields[ fieldId$F ].type === 'payment-total' && formFields[ fieldId ].type === 'payment-single' ) {
 					return {
 						text: wpforms_calculations.strings.validationFieldTotalInSingleItem
@@ -1386,7 +1393,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Press Enter key toolbar button event handler.
+		 * Press the Enter key toolbar button event handler.
 		 *
 		 * @since 1.0.0
 		 */
@@ -1395,7 +1402,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Press Enter key toolbar button event handler.
+		 * Press the Enter key toolbar button event handler.
 		 *
 		 * @since 1.0.0
 		 *
@@ -1594,7 +1601,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Re-init code editor of the duplicated field.
+		 * Re-init the code editor of the duplicated field.
 		 *
 		 * @since 1.0.0
 		 *
@@ -1623,7 +1630,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Re-init code editor of the fields inside the duplicated Layout field.
+		 * Re-init the code editor of the fields inside the duplicated Layout field.
 		 *
 		 * @since 1.1.0
 		 *
@@ -1639,13 +1646,13 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Check if argument is object.
+		 * Check if an argument is an object.
 		 *
 		 * @since 1.0.0
 		 *
 		 * @param {Object} obj Object to check.
 		 *
-		 * @return {boolean} True when argument is object.
+		 * @return {boolean} True when argument is an object.
 		 */
 		isObject( obj ) {
 			return typeof obj === 'object' && ! Array.isArray( obj ) && obj !== null;
@@ -1670,16 +1677,27 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Get editor instance by field ID.
+		 * Get an editor instance by field ID.
 		 *
 		 * @since 1.6.0
 		 *
-		 * @param {number} id Field ID.
+		 * @param {string} id Field ID.
 		 *
 		 * @return {Object|null} Editor instance.
 		 */
 		getEditorInstance( id ) {
 			return vars.codemirror.editors[ id ] || null;
+		},
+
+		/**
+		 * Remove editor instance by field ID.
+		 *
+		 * @since 1.10.0
+		 *
+		 * @param {string} id Field ID.
+		 */
+		removeEditorInstance( id ) {
+			vars.codemirror.editors[ id ] = null;
 		},
 
 		/**
@@ -1798,7 +1816,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		 * @since 1.0.0
 		 *
 		 * @param {string} subfield  Subfield slug.
-		 * @param {number} fieldId   Field Id.
+		 * @param {number} fieldId   Field ID.
 		 * @param {Object} formField Form field.
 		 *
 		 * @return {boolean} True when field is allowed.
@@ -1837,7 +1855,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 					return formField?.additional && formField?.additional.includes( subfield );
 
 				default:
-					// Field has subfield but is not one of the types above. Return false as it's not allowed.
+					// Field has a subfield but is not one of the types above. Return false as it's not allowed.
 					return false;
 			}
 		},
@@ -1847,7 +1865,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param {number} fieldId Field Id.
+		 * @param {number} fieldId Field ID.
 		 *
 		 * @return {Array|boolean} Array of fields in which the field is used in formula. False if not used.
 		 */
@@ -1902,7 +1920,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Get field variables as flattened array.
+		 * Get field variables as a flattened array.
 		 *
 		 * @since 1.0.0
 		 *
@@ -1921,7 +1939,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Get field variables order.
+		 * Get field variables in order.
 		 *
 		 * @since 1.0.0
 		 *
@@ -1959,7 +1977,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Get field variables as array of objects.
+		 * Get field variables as an array of objects.
 		 *
 		 * @since 1.0.0
 		 *
@@ -2050,7 +2068,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 			const fieldData = wpf.getField( id ),
 				subFields = wpforms_calculations.allowedFields[ type ];
 
-			// Update variables order in case if it is the add field event (single field operation).
+			// Update variable order in case if it is the added field event (single field operation).
 			if ( event.type ) {
 				fields.updateVarsOrder();
 			}
@@ -2117,7 +2135,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 				delete fields.variables[ id ];
 			}
 
-			// Remove element from the variables order array.
+			// Remove element from the variable order array.
 			const index = fields.variablesOrder ? fields.variablesOrder.indexOf( id ) : -1;
 			if ( index !== -1 ) {
 				fields.variablesOrder.splice( index, 1 );
@@ -2155,7 +2173,7 @@ const WPFormsCalculationsBuilder = window.WPFormsCalculationsBuilder || ( functi
 		},
 
 		/**
-		 * Update Checkboxes field choices subfields variable to the registry.
+		 * Update Checkboxes field choice subfields variable to the registry.
 		 *
 		 * @since 1.0.0
 		 */

@@ -50,8 +50,29 @@ class EntriesEdit {
 			return $is_editable;
 		}
 
+		// This filter is invoked once per field rendered on the Entry Edit page.
+		// Without caching, get_form_data_with_layout_fields() and the two helpers
+		// would each run N times — one per field — resulting in O(N²) complexity.
+		// The static cache stores the per-form results across all filter invocations
+		// for the same request, reducing the total work to O(N).
+		static $cache = [];
+
+		$form_id = $form_data['id'] ?? 0;
+
+		if ( ! isset( $cache[ $form_id ] ) ) {
+			// Include fields nested inside Layout columns for accurate calculation checks.
+			$extended_form_data = $this->get_form_data_with_layout_fields( $form_data );
+			$has_calc           = wpforms_calculations()->helpers->has_calculation_enabled_field( $extended_form_data );
+			$used_fields        = $has_calc ? wpforms_calculations()->helpers->get_fields_used_in_form_calculations( $extended_form_data ) : [];
+
+			$cache[ $form_id ] = [
+				'has_calc'        => $has_calc,
+				'disabled_fields' => $used_fields ? array_merge( ...$used_fields ) : [],
+			];
+		}
+
 		// Whether the form has enabled calculation.
-		if ( ! wpforms_calculations()->helpers->has_calculation_enabled_field( $form_data ) ) {
+		if ( ! $cache[ $form_id ]['has_calc'] ) {
 			return $is_editable;
 		}
 
@@ -60,11 +81,8 @@ class EntriesEdit {
 			return false;
 		}
 
-		// Get fields used in calculations in the form.
-		$used_fields     = wpforms_calculations()->helpers->get_fields_used_in_form_calculations( $form_data );
-		$disabled_fields = array_merge( ...$used_fields );
-
-		if ( in_array( $field['id'], $disabled_fields, true ) ) {
+		// Check if the field is used as a source in any calculation.
+		if ( in_array( $field['id'], $cache[ $form_id ]['disabled_fields'], true ) ) {
 			return false;
 		}
 
@@ -118,5 +136,52 @@ class EntriesEdit {
 			$entry_obj->update( $entry->entry_id, $update_entry_data );
 			$entry_fields_obj->save( $updated_fields_entry, $form_data, $entry->entry_id, true );
 		}
+	}
+
+	/**
+	 * Get form data with layout-nested child fields merged into the top-level fields list.
+	 *
+	 * The entry edit form data filter moves child fields out of $form_data['fields'] into
+	 * the layout's column data. This method restores a complete fields list so helpers
+	 * that only iterate $form_data['fields'] can see calculation fields inside layouts.
+	 *
+	 * @since 1.11.0
+	 *
+	 * @param array $form_data Form data.
+	 *
+	 * @return array
+	 */
+	private function get_form_data_with_layout_fields( array $form_data ): array { // phpcs:ignore Generic.Metrics.NestingLevel.MaxExceeded
+
+		// Iterate a snapshot of top-level fields; newly merged child fields are not re-visited.
+		foreach ( $form_data['fields'] as $field ) {
+
+			// Skip non-layout fields and layout fields with no columns defined.
+			if ( empty( $field['type'] ) || $field['type'] !== 'layout' || empty( $field['columns'] ) ) {
+				continue;
+			}
+
+			foreach ( $field['columns'] as $column ) {
+
+				// Skip columns that carry no child field data.
+				if ( empty( $column['fields'] ) || ! is_array( $column['fields'] ) ) {
+					continue;
+				}
+
+				foreach ( $column['fields'] as $child_field ) {
+
+					// Skip malformed entries that lack a field ID.
+					if ( ! is_array( $child_field ) || empty( $child_field['id'] ) ) {
+						continue;
+					}
+
+					// Register the child field at the top level so it is visible to helpers
+					// that only iterate $form_data['fields'].
+					$form_data['fields'][ $child_field['id'] ] = $child_field;
+				}
+			}
+		}
+
+		return $form_data;
 	}
 }

@@ -5,7 +5,7 @@
  * Description:       Adds calculations feature to WPForms.
  * Author:            WPForms
  * Author URI:        https://wpforms.com
- * Version:           1.8.0
+ * Version:           1.11.0
  * Requires at least: 5.5
  * Requires PHP:      7.2
  * License:           GPL v2 or later
@@ -45,7 +45,7 @@ use WPFormsCalculations\Plugin;
  *
  * @since 1.0.0
  */
-const WPFORMS_CALCULATIONS_VERSION = '1.8.0';
+const WPFORMS_CALCULATIONS_VERSION = '1.11.0';
 
 /**
  * Plugin FILE.
@@ -77,7 +77,7 @@ function wpforms_calculations_load() {
 
 	$requirements = [
 		'file'    => WPFORMS_CALCULATIONS_FILE,
-		'wpforms' => '1.9.4',
+		'wpforms' => '1.9.5',
 	];
 
 	if ( ! function_exists( 'wpforms_requirements' ) || ! wpforms_requirements( $requirements ) ) {

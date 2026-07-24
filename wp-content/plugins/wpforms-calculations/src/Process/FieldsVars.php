@@ -270,10 +270,19 @@ class FieldsVars {
 		$field_data  = $this->form_data['fields'][ $field['id'] ];
 		$format_key  = $sub_field === 'date' ? 'date_format' : 'time_format';
 		$from_format = 'g:i A';
-		$to_format   = isset( $field_data[ $format_key ] ) ? $field_data[ $format_key ] : '';
+		$to_format   = $field_data[ $format_key ] ?? '';
 
 		if ( $sub_field === 'date' ) {
-			$from_format = $to_format === 'd/m/Y' ? 'm/d/Y' : $to_format;
+			/**
+			 * WPForms core always stores the 'date' subfield in m/d/Y format,
+			 * regardless of the date_format setting.
+			 * See: wpforms/src/Pro/Forms/Fields/DateTime/Field.php method convert_date_to_mdy
+			 * Keep it in m/d/Y for calculations since:
+			 * 1) It's strtotime() compatible
+			 * 2) It's in DEFAULT_FORMATS for auto-detection
+			 * 3) DateTime::get_format_from_fields() now correctly returns 'm/d/Y' for date subfield
+			 */
+			return $field[ $sub_field ];
 		}
 
 		return $this->datetime->convert_format( $field[ $sub_field ], $from_format, $to_format );
@@ -383,7 +392,7 @@ class FieldsVars {
 	 *
 	 * @return string
 	 */
-	private function get_field_variable_line( $field_id, $sub_field, $value ) {
+	private function get_field_variable_line( $field_id, $sub_field, $value ): string {
 
 		if ( empty( $this->form_data['fields'][ $field_id ] ) ) {
 			return '';
@@ -412,27 +421,33 @@ class FieldsVars {
 
 		// Prepare value.
 		$value = is_null( $value ) ? '' : $value;
-		$value = is_string( $value ) && ! is_numeric( $value )
-			? addslashes( sanitize_text_field( $value ) )
-			: $value;
+
+		// Non-numeric strings: preserve the exact value the legacy double-quoted eval produced
+		// (apostrophes kept backslash-escaped) so existing formulas are byte-for-byte unaffected.
+		// This is backward-compatibility preservation, not source escaping — var_export() below
+		// emits a single-quoted literal that cannot be parsed as code.
+		if ( is_string( $value ) && ! is_numeric( $value ) ) {
+			$value = str_replace( "'", "\\'", sanitize_text_field( $value ) );
+		}
 
 		// Number field variables should have numeric value.
 		if ( in_array( $field['type'], [ 'number', 'number-slider' ], true ) ) {
 			$value = (float) $value;
 		}
 
-		if ( is_bool( $value ) ) {
-			// Boolean values should be printed without quotes.
-			$value = $value ? 'true' : 'false';
-		} else {
-			$value = '"' . $value . '"';
+		// Booleans were emitted unquoted; every other value was emitted as a quoted string.
+		// Cast non-booleans to string so var_export() always yields a single-quoted literal,
+		// never an array() literal or a bare numeric/expression token.
+		if ( ! is_bool( $value ) ) {
+			$value = (string) $value;
 		}
 
-		// Compile line.
+		// Compile line. var_export() emits a safe single-quoted literal (or true/false),
+		// never an interpolating double-quoted string.
 		return sprintf(
 			'$F%1$s = %2$s; // %3$s',
 			$slug,
-			$value,
+			var_export( $value, true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Intentional: produces a safe single-quoted literal to prevent eval injection.
 			$comment
 		);
 	}

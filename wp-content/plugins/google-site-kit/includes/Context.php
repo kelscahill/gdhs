@@ -6,6 +6,8 @@
  * @copyright 2021 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit;
@@ -257,7 +259,7 @@ class Context {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int|WP_Post $post Optional. Post ID or post object. Default is the global `$post`.
+	 * @param int|\WP_Post $post Optional. Post ID or post object. Default is the global `$post`.
 	 *
 	 * @return string|false The reference permalink URL or false if post does not exist.
 	 */
@@ -378,7 +380,7 @@ class Context {
 		if ( $exposes_support_mode ) {
 			// If recent version, we can properly detect the mode.
 			if ( $amp_plugin_version_2_or_higher ) {
-				$mode = AMP_Options_Manager::get_option( 'theme_support' );
+				$mode = AMP_Options_Manager::get_option( 'theme_support' ); // @phpstan-ignore class.notFound
 			} else {
 				$mode = AMP_Theme_Support::get_support_mode();
 			}

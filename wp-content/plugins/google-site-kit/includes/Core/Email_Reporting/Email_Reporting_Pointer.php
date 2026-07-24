@@ -6,6 +6,8 @@
  * @copyright 2025 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Core\Email_Reporting;
@@ -123,14 +125,26 @@ final class Email_Reporting_Pointer {
 						return false;
 					}
 
+					// Check if user has access to at least one email report data module.
+					// Admins can authenticate and have full access; view-only users need
+					// READ_SHARED_MODULE_DATA capability for at least one module.
+					$has_analytics_access      = current_user_can( Permissions::AUTHENTICATE )
+						|| current_user_can( Permissions::READ_SHARED_MODULE_DATA, 'analytics-4' );
+					$has_search_console_access = current_user_can( Permissions::AUTHENTICATE )
+						|| current_user_can( Permissions::READ_SHARED_MODULE_DATA, 'search-console' );
+
+					if ( ! $has_analytics_access && ! $has_search_console_access ) {
+						return false;
+					}
+
 					// Do not show if this pointer was already dismissed via core 'dismiss-wp-pointer'.
 					$user_id               = get_current_user_id();
 					$dismissed_wp_pointers = get_user_meta( $user_id, 'dismissed_wp_pointers', true );
-					if ( $dismissed_wp_pointers ) {
-						$dismissed_wp_pointers = explode( ',', $dismissed_wp_pointers );
-						if ( in_array( self::SLUG, $dismissed_wp_pointers, true ) ) {
-							return false;
-						}
+					if ( ! is_array( $dismissed_wp_pointers ) ) {
+						$dismissed_wp_pointers = explode( ',', (string) $dismissed_wp_pointers );
+					}
+					if ( in_array( self::SLUG, $dismissed_wp_pointers, true ) ) {
+						return false;
 					}
 
 					// If user is already subscribed to email reporting, bail early.
@@ -139,17 +153,31 @@ final class Email_Reporting_Pointer {
 					}
 
 					// If the overlay notification has already been dismissed, bail early.
-					if ( $this->dismissed_items->is_dismissed( 'email-reporting-overlay-notification' ) ) {
+					if ( $this->dismissed_items->is_dismissed( 'email_reports_setup_overlay_notification' ) ) {
 						return false;
 					}
 
 					return true;
 				},
 				'class'           => 'googlesitekit-email-pointer',
+				'tracking'        => array(
+					'view'    => array(
+						'category' => 'wpDashboard_pointer_email_reports_setup_cta',
+						'action'   => 'view_notification',
+					),
+					'dismiss' => array(
+						'category' => 'wpDashboard_pointer_email_reports_setup_cta',
+						'action'   => 'dismiss_notification',
+					),
+					'click'   => array(
+						'category' => 'wpDashboard_pointer_email_reports_setup_cta',
+						'action'   => 'confirm_notification',
+					),
+				),
 				// Inline JS function to render CTA button and add delegated handlers for CTA and dismiss.
 				'buttons'         => sprintf(
 					'<a class="googlesitekit-pointer-cta button-primary" data-action="dismiss" href="%s">%s</a>',
-					$this->context->admin_url( 'dashboard', array( 'email-reporting-panel' => 1 ) ),
+					$this->context->admin_url( 'dashboard', array( 'panel' => 'email-reporting' ) ),
 					esc_html__( 'Set up', 'google-site-kit' )
 				),
 			),

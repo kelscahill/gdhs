@@ -16,7 +16,6 @@ use WP_Post;
 use WP_Term;
 use WP_User;
 use WP_Post_Type;
-use WP_Screen;
 
 /**
  * Class providing access to entities.
@@ -46,8 +45,8 @@ final class Entity_Factory {
 
 		// If currently in WP admin, run admin-specific checks.
 		if ( is_admin() ) {
-			$screen = get_current_screen();
-			if ( ! $screen instanceof WP_Screen || 'post' !== $screen->base ) {
+			$screen = Current_Screen::get();
+			if ( null === $screen || 'post' !== $screen->base ) {
 				return null;
 			}
 
@@ -265,13 +264,13 @@ final class Entity_Factory {
 	private static function create_entity_for_term( WP_Term $term, $page ) {
 		// See WordPress's `get_the_archive_title()` function for this behavior. The strings here intentionally omit
 		// the 'google-site-kit' text domain since they should use WordPress core translations.
+		$title = $term->name;
+
 		switch ( $term->taxonomy ) {
 			case 'category':
-				$title  = $term->name;
 				$prefix = _x( 'Category:', 'category archive title prefix', 'default' );
 				break;
 			case 'post_tag':
-				$title  = $term->name;
 				$prefix = _x( 'Tag:', 'tag archive title prefix', 'default' );
 				break;
 			case 'post_format':
@@ -308,7 +307,6 @@ final class Entity_Factory {
 				break;
 			default:
 				$tax    = get_taxonomy( $term->taxonomy );
-				$title  = $term->name;
 				$prefix = sprintf(
 					/* translators: %s: Taxonomy singular name. */
 					_x( '%s:', 'taxonomy term archive title prefix', 'default' ),

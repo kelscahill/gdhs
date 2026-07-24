@@ -1,22 +1,22 @@
 <?php
 /**
  * Plugin Name: Ajax Load More
- * Plugin URI: https://connekthq.com/plugins/ajax-load-more
+ * Plugin URI: https://ajaxloadmore.com
  * Description: The ultimate solution to add infinite scroll and load more functionality to your website.
  * Text Domain: ajax-load-more
  * Author: Darren Cooney
  * Twitter: @KaptonKaos
  * Author URI: https://connekthq.com
- * Version: 7.7.1
+ * Version: 8.0.1
  * License: GPL
  * Copyright: Darren Cooney & Connekt Media
  *
  * @package AjaxLoadMore
  */
 
-define( 'ALM_VERSION', '7.7.1' );
-define( 'ALM_RELEASE', 'November 26, 2025' );
-define( 'ALM_STORE_URL', 'https://connekthq.com' );
+define( 'ALM_VERSION', '8.0.1' );
+define( 'ALM_RELEASE', 'July 22, 2026' );
+define( 'ALM_STORE_URL', 'https://ajaxloadmore.com' );
 
 require_once plugin_dir_path( __FILE__ ) . 'core/functions/install.php';
 
@@ -246,8 +246,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			$content = '';
 			$file    = ALM_PATH . 'admin/includes/layout/default.php';
 			if ( file_exists( $file ) ) {
-				// phpcs:ignore
-				$content = file_get_contents( $file );
+				$content = file_get_contents( $file ); // phpcs:ignore
 			}
 			return $content;
 		}
@@ -394,7 +393,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 		 * @return array
 		 */
 		public static function alm_get_localized_defaults() {
-			return [
+			$params = [
 				'pluginurl'          => ALM_URL,
 				'version'            => ALM_VERSION,
 				'adminurl'           => get_admin_url(),
@@ -415,6 +414,26 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 				'site_tagline'       => get_bloginfo( 'description' ),
 				'button_label'       => self::alm_default_button_label(),
 			];
+
+			// Single Posts API endpoint.
+			if ( has_action( 'alm_single_post_installed' ) && defined( 'ALM_PREV_POST_VERSION' ) ) {
+				if ( method_exists( 'ALM_Single_Post', 'alm_single_post_get_route' ) && apply_filters( 'alm_single_posts_use_rest_api', true ) ) {
+					$params['single_posts_endpoint'] = ALM_Single_Post::alm_single_post_get_route();
+				} else {
+					$params['single_posts_endpoint'] = $params['ajaxurl'];
+				}
+			}
+
+			// Next Page/Pagebreak API endpoint.
+			if ( has_action( 'alm_nextpage_installed' ) && defined( 'ALM_NEXTPAGE_VERSION' ) ) {
+				if ( method_exists( 'ALM_Nextpage', 'alm_nextpage_get_route' ) && apply_filters( 'alm_nextpage_use_rest_api', true ) ) {
+					$params['nextpage_endpoint'] = ALM_Nextpage::alm_nextpage_get_route();
+				} else {
+					$params['nextpage_endpoint'] = $params['ajaxurl'];
+				}
+			}
+
+			return $params;
 		}
 
 		/**
@@ -481,7 +500,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			$filters_facets = $is_filters && $filters_target && isset( $params['facets'] ) && $params['facets'] === 'true' ? true : false;
 
 			// Offset.
-			$offset = isset( $params['offset'] ) ? $params['offset'] : 0;
+			$offset = isset( $params['offset'] ) ? (int) $params['offset'] : 0;
 
 			// Repeater Templates.
 			$repeater       = isset( $params['repeater'] ) ? sanitize_file_name( $params['repeater'] ) : 'default';
@@ -489,15 +508,15 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 
 			// Post Parameters.
 			$post_type      = isset( $params['post_type'] ) ? $params['post_type'] : 'post';
-			$posts_per_page = isset( $params['posts_per_page'] ) ? $params['posts_per_page'] : 5;
-			$page           = isset( $params['page'] ) ? $params['page'] : 0;
+			$posts_per_page = isset( $params['posts_per_page'] ) ? (int) $params['posts_per_page'] : 5;
+			$page           = isset( $params['page'] ) ? (int) $params['page'] : 0;
 
 			// Paging Add-on.
 			$paging = isset( $params['paging'] ) ? $params['paging'] : 'false';
 
 			// Preload Add-on.
 			$preloaded        = isset( $params['preloaded'] ) ? $params['preloaded'] : 'false';
-			$preloaded_amount = isset( $params['preloaded_amount'] ) ? $params['preloaded_amount'] : '5';
+			$preloaded_amount = isset( $params['preloaded_amount'] ) ? (int) $params['preloaded_amount'] : 5;
 			if ( has_action( 'alm_preload_installed' ) && $preloaded === 'true' ) {
 				// If preloaded - offset the ajax posts by posts_per_page + preload_amount val.
 				$old_offset = $preloaded_amount;
@@ -562,7 +581,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 			/**
 			 * ALM Core Query Filter Hook.
 			 *
-			 * @see https://connekthq.com/plugins/ajax-load-more/docs/filter-hooks/#alm_query_args
+			 * @see https://ajaxloadmore.com/docs/filter-hooks/#alm_query_args
 			 * @return array
 			 */
 			$args = apply_filters( 'alm_query_args_' . $id, $args, $post_id );
@@ -599,7 +618,7 @@ if ( ! class_exists( 'AjaxLoadMore' ) ) :
 				/**
 				 * ALM Core Filter Hook
 				 *
-				 * @see https://connekthq.com/plugins/ajax-load-more/docs/filter-hooks/#alm_debug
+				 * @see https://ajaxloadmore.com/docs/filter-hooks/#alm_debug
 				 */
 				$debug = apply_filters( 'alm_debug', false ) ? $args : false;
 

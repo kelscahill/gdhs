@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file and formatted via [this recommendation](https://keepachangelog.com/).
 
+## [1.11.0] - 2026-06-15
+### Fixed
+- Formula field processing during form submission was hardened to prevent unsafe input from being evaluated.
+- Source fields were incorrectly shown as editable on the entry edit screen when the calculation handler was placed inside a Layout field.
+
+## [1.10.0] - 2026-01-27
+### Added
+- Copy/Paste and Undo/Redo compatibility.
+
+## [1.9.0] - 2026-01-13
+### Fixed
+- Calculations for custom date formats.
+- Incorrect date field calculations when custom date formats were applied.
+
 ## [1.8.0] - 2025-11-04
 - ### Added
 - Compatibility with the upcoming WPForms 1.9.8.3 release.
@@ -13,6 +27,7 @@ All notable changes to this project will be documented in this file and formatte
 - AI Forms can now generate forms that use WPForms Calculations with an auto-generated formula (requires WPForms 1.9.7).
 
 ### Changed
+- The minimum WPForms version supported is 1.9.5.
 - Prompt input field now resizes when a user provides a long text.
 - Updated `luxon` library to v3.6.1.
 

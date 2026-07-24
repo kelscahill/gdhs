@@ -95,7 +95,7 @@ if ( ! class_exists( 'ALM_QUERY_ARGS' ) ) :
 			$date_query_relation  = isset( $a['date_query_relation'] ) ? $a['date_query_relation'] : '';
 
 			// Search.
-			$s      = isset( $a['search'] ) ? trim( $a['search'] ) : '';
+			$s      = isset( $a['search'] ) ? trim( urldecode( $a['search'] ) ) : '';
 			$engine = isset( $a['engine'] ) ? $a['engine'] : '';
 
 			// Custom Args.
@@ -489,7 +489,6 @@ if ( ! class_exists( 'ALM_QUERY_ARGS' ) ) :
 			return $args;
 		}
 
-
 		/**
 		 * Parse `custom_args` string parameter into array.
 		 *
@@ -497,22 +496,58 @@ if ( ! class_exists( 'ALM_QUERY_ARGS' ) ) :
 		 * @param  string $param The parameter to parse.
 		 * @return array         The modified arguments.
 		 */
-		public static function parse_custom_args( $args, $param ) {
-			$array = explode( ';', $param ); // Split the $param at `;`.
+		private static function parse_custom_args( $args, $param ) {
+			$array = explode( ';', $param );
+
+			// Exclude certain keys from being added via custom_args.
+			$exlude_keys = [
+				'suppress_filters',
+				'has_password',
+				'paged',
+				'page',
+				'post_status',
+				'perm',
+				'post_password',
+				'post__in',
+				'meta_query',
+				'tax_query',
+				'date_query',
+				'alm_vars',
+			];
+
+			$numbered_vars = [ 'author__in', 'author__not_in', 'post__not_in', 'post__in' ];
 
 			// Loop each $argument.
 			foreach ( $array as $arg ) {
-				$arg     = preg_replace( '/\s+/', '', $arg ); // Remove all whitespace.
-				$arg     = explode( ':', $arg );  // Split at each colon.
-				$arg_arr = explode( ',', $arg[1] );  // Split at each comma.
-				if ( count( $arg_arr ) > 1 ) {
-					$args[ $arg[0] ] = $arg_arr;
+				$arg = explode( ':', preg_replace( '/\s+/', '', $arg ) );  // Split at each colon & remove whitespace.
+
+				// Skip malformed pairs (missing key or `:value`).
+				if ( count( $arg ) < 2 || $arg[0] === '' ) {
+					continue;
+				}
+
+				$key = $arg[0];
+
+				// Skip excluded keys.
+				if ( in_array( $key, $exlude_keys, true ) ) {
+					continue;
+				}
+
+				// Force ID-list arguments to arrays of positive integers.
+				if ( in_array( $key, $numbered_vars, true ) ) {
+					$args[ $key ] = wp_parse_id_list( $arg[1] );
+					continue;
+				}
+
+				$value = explode( ',', $arg[1] );  // Split at each comma.
+
+				if ( count( $value ) > 1 ) {
+					$args[ $key ] = $value;
 				} else {
-					$args[ $arg[0] ] = $arg[1];
+					$args[ $key ] = $arg[1];
 				}
 			}
 
-			// Return parsed $args.
 			return $args;
 		}
 	}

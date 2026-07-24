@@ -6,9 +6,9 @@
  * @copyright 2021 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
-
-// phpcs:disable Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 namespace Google\Site_Kit\Modules;
 
@@ -31,7 +31,6 @@ use Google\Site_Kit\Core\Modules\Module_With_Assets_Trait;
 use Google\Site_Kit\Core\Modules\Module_With_Data_Available_State;
 use Google\Site_Kit\Core\Modules\Module_With_Data_Available_State_Trait;
 use Google\Site_Kit\Core\Modules\Module_With_Inline_Data;
-use Google\Site_Kit\Core\Modules\Module_With_Inline_Data_Trait;
 use Google\Site_Kit\Core\Modules\Module_With_Scopes;
 use Google\Site_Kit\Core\Modules\Module_With_Scopes_Trait;
 use Google\Site_Kit\Core\Modules\Module_With_Settings;
@@ -43,10 +42,6 @@ use Google\Site_Kit\Core\Permissions\Permissions;
 use Google\Site_Kit\Core\Modules\Module_With_Tag;
 use Google\Site_Kit\Core\Modules\Module_With_Tag_Trait;
 use Google\Site_Kit\Core\Modules\Tags\Module_Tag_Matchers;
-use Google\Site_Kit\Core\REST_API\Exception\Invalid_Datapoint_Exception;
-use Google\Site_Kit\Core\REST_API\Data_Request;
-use Google\Site_Kit\Core\REST_API\Exception\Invalid_Param_Exception;
-use Google\Site_Kit\Core\REST_API\Exception\Missing_Required_Param_Exception;
 use Google\Site_Kit\Core\Site_Health\Debug_Data;
 use Google\Site_Kit\Core\Storage\Options;
 use Google\Site_Kit\Core\Storage\User_Options;
@@ -54,57 +49,80 @@ use Google\Site_Kit\Core\Tags\Guards\Tag_Environment_Type_Guard;
 use Google\Site_Kit\Core\Tags\Guards\Tag_Verify_Guard;
 use Google\Site_Kit\Core\Util\BC_Functions;
 use Google\Site_Kit\Core\Util\Method_Proxy_Trait;
-use Google\Site_Kit\Core\Util\Sort;
 use Google\Site_Kit\Core\Util\URL;
 use Google\Site_Kit\Modules\AdSense\Settings as AdSense_Settings;
 use Google\Site_Kit\Modules\Analytics_4\Account_Ticket;
 use Google\Site_Kit\Modules\Analytics_4\Advanced_Tracking;
 use Google\Site_Kit\Modules\Analytics_4\AMP_Tag;
+use Google\Site_Kit\Modules\Analytics_4\Audience_Utilities;
 use Google\Site_Kit\Modules\Analytics_4\Custom_Dimensions_Data_Available;
 use Google\Site_Kit\Modules\Analytics_4\Datapoints\Create_Account_Ticket;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Create_Audience;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Create_Custom_Dimension;
 use Google\Site_Kit\Modules\Analytics_4\Datapoints\Create_Property;
 use Google\Site_Kit\Modules\Analytics_4\Datapoints\Create_Webdatastream;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Account_Summaries;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Accounts;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Advanced_Data_Breakdowns_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Ads_Links;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Adsense_Links;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Audience_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Batch_Report;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Container_Lookup;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Container_Destinations;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Custom_Dimensions;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Enhanced_Measurement_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Form_Metadata;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Google_Tag_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Properties;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Property;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Has_Property_Access;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Key_Events;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Report;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Site_Goals_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Webdatastreams;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Get_Webdatastreams_Batch;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Save_Advanced_Data_Breakdowns_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Save_Audience_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Sync_Audiences;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Save_Custom_Dimension_Data_Available;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Save_Resource_Data_Availability_Date;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Save_Site_Goals_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Set_Google_Tag_ID_Mismatch;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Set_Is_Web_Data_Stream_Unavailable;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Sync_Custom_Dimensions;
+use Google\Site_Kit\Modules\Analytics_4\Datapoints\Update_Enhanced_Measurement_Settings;
 use Google\Site_Kit\Modules\Analytics_4\Synchronize_Property;
 use Google\Site_Kit\Modules\Analytics_4\Synchronize_AdSenseLinked;
 use Google\Site_Kit\Modules\Analytics_4\GoogleAnalyticsAdmin\AccountProvisioningService;
-use Google\Site_Kit\Modules\Analytics_4\GoogleAnalyticsAdmin\EnhancedMeasurementSettingsModel;
-use Google\Site_Kit\Modules\Analytics_4\GoogleAnalyticsAdmin\PropertiesAdSenseLinksService;
-use Google\Site_Kit\Modules\Analytics_4\GoogleAnalyticsAdmin\PropertiesAudiencesService;
-use Google\Site_Kit\Modules\Analytics_4\GoogleAnalyticsAdmin\PropertiesEnhancedMeasurementService;
-use Google\Site_Kit\Modules\Analytics_4\Report\Request as Analytics_4_Report_Request;
-use Google\Site_Kit\Modules\Analytics_4\Report\Response as Analytics_4_Report_Response;
 use Google\Site_Kit\Modules\Analytics_4\Resource_Data_Availability_Date;
 use Google\Site_Kit\Modules\Analytics_4\Settings;
+use Google\Site_Kit\Modules\Analytics_4\Site_Goals_Settings;
+use Google\Site_Kit\Modules\Analytics_4\Site_Goals_Site_Settings;
 use Google\Site_Kit\Modules\Analytics_4\Synchronize_AdsLinked;
 use Google\Site_Kit\Modules\Analytics_4\Tag_Guard;
 use Google\Site_Kit\Modules\Analytics_4\Tag_Interface;
 use Google\Site_Kit\Modules\Analytics_4\Web_Tag;
 use Google\Site_Kit_Dependencies\Google\Model as Google_Model;
 use Google\Site_Kit_Dependencies\Google\Service\AnalyticsData as Google_Service_AnalyticsData;
-use Google\Site_Kit_Dependencies\Google\Service\AnalyticsData\RunReportRequest as Google_Service_AnalyticsData_RunReportRequest;
-use Google\Site_Kit_Dependencies\Google\Service\AnalyticsData\DateRange as Google_Service_AnalyticsData_DateRange;
-use Google\Site_Kit_Dependencies\Google\Service\AnalyticsData\Dimension as Google_Service_AnalyticsData_Dimension;
-use Google\Site_Kit_Dependencies\Google\Service\AnalyticsData\Metric as Google_Service_AnalyticsData_Metric;
 use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin as Google_Service_GoogleAnalyticsAdmin;
-use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin\GoogleAnalyticsAdminV1alphaAudience;
-use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin\GoogleAnalyticsAdminV1betaCustomDimension;
 use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin\GoogleAnalyticsAdminV1betaDataStream;
 use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin\GoogleAnalyticsAdminV1betaDataStreamWebStreamData;
-use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin\GoogleAnalyticsAdminV1betaListDataStreamsResponse;
 use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin\GoogleAnalyticsAdminV1betaProperty as Google_Service_GoogleAnalyticsAdmin_GoogleAnalyticsAdminV1betaProperty;
+use Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdminV1alpha;
 use Google\Site_Kit_Dependencies\Google\Service\TagManager as Google_Service_TagManager;
-use Google\Site_Kit_Dependencies\Google_Service_TagManager_Container;
-use Google\Site_Kit_Dependencies\Psr\Http\Message\RequestInterface;
 use Google\Site_Kit\Core\REST_API\REST_Routes;
 use Google\Site_Kit\Core\Tracking\Feature_Metrics_Trait;
 use Google\Site_Kit\Core\Tracking\Provides_Feature_Metrics;
 use Google\Site_Kit\Core\Util\Feature_Flags;
+use Google\Site_Kit\Modules\Analytics_4\Advanced_Data_Breakdowns_Settings;
 use Google\Site_Kit\Modules\Analytics_4\Audience_Settings;
 use Google\Site_Kit\Modules\Analytics_4\Conversion_Reporting\Conversion_Reporting_Cron;
 use Google\Site_Kit\Modules\Analytics_4\Conversion_Reporting\Conversion_Reporting_Events_Sync;
 use Google\Site_Kit\Modules\Analytics_4\Conversion_Reporting\Conversion_Reporting_New_Badge_Events_Sync;
 use Google\Site_Kit\Modules\Analytics_4\Conversion_Reporting\Conversion_Reporting_Provider;
 use Google\Site_Kit\Modules\Analytics_4\Reset_Audiences;
+use Google\Site_Kit\Core\Modules\Datapoint;
 use stdClass;
 use WP_Error;
 use WP_Post;
@@ -125,7 +143,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	use Module_With_Settings_Trait;
 	use Module_With_Data_Available_State_Trait;
 	use Module_With_Tag_Trait;
-	use Module_With_Inline_Data_Trait;
 	use Feature_Metrics_Trait;
 
 	const PROVISION_ACCOUNT_TICKET_ID = 'googlesitekit_analytics_provision_account_ticket_id';
@@ -148,16 +165,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	 */
 	const CUSTOM_DIMENSION_POST_AUTHOR     = 'googlesitekit_post_author';
 	const CUSTOM_DIMENSION_POST_CATEGORIES = 'googlesitekit_post_categories';
-
-	/**
-	 * Weights for audience types when sorting audiences in the selection panel
-	 * and within the dashboard widget.
-	 */
-	const AUDIENCE_TYPE_SORT_ORDER = array(
-		'USER_AUDIENCE'     => 0,
-		'SITE_KIT_AUDIENCE' => 1,
-		'DEFAULT_AUDIENCE'  => 2,
-	);
 
 	/**
 	 * Custom_Dimensions_Data_Available instance.
@@ -193,6 +200,51 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	protected $audience_settings;
 
 	/**
+	 * Per-user Site_Goals_Settings instance.
+	 *
+	 * @since 1.181.0
+	 *
+	 * @var Site_Goals_Settings
+	 */
+	protected $site_goals_settings;
+
+	/**
+	 * Site-wide Site_Goals_Site_Settings instance.
+	 *
+	 * @since 1.182.0
+	 *
+	 * @var Site_Goals_Site_Settings
+	 */
+	protected $site_goals_site_settings;
+
+	/**
+	 * Audience_Utilities instance.
+	 *
+	 * @since 1.172.0
+	 *
+	 * @var Audience_Utilities
+	 */
+	protected $audience_utilities;
+
+	/**
+	 * Map of datapoint definitions.
+	 *
+	 * @since 1.181.0
+	 *
+	 * @var array
+	 */
+	private $datapoints;
+
+	/**
+	 * Advanced_Data_Breakdowns_Settings instance.
+	 *
+	 * @since 1.181.0
+	 *
+	 * @var Advanced_Data_Breakdowns_Settings
+	 */
+	protected Advanced_Data_Breakdowns_Settings $advanced_data_breakdowns_settings;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.113.0
@@ -211,10 +263,14 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 		?Assets $assets = null
 	) {
 		parent::__construct( $context, $options, $user_options, $authentication, $assets );
-		$this->custom_dimensions_data_available = new Custom_Dimensions_Data_Available( $this->transients );
-		$this->reset_audiences                  = new Reset_Audiences( $this->user_options );
-		$this->audience_settings                = new Audience_Settings( $this->options );
-		$this->resource_data_availability_date  = new Resource_Data_Availability_Date( $this->transients, $this->get_settings(), $this->audience_settings );
+		$this->custom_dimensions_data_available  = new Custom_Dimensions_Data_Available( $this->transients );
+		$this->reset_audiences                   = new Reset_Audiences( $this->user_options );
+		$this->audience_settings                 = new Audience_Settings( $this->options );
+		$this->site_goals_settings               = new Site_Goals_Settings( $this->user_options );
+		$this->site_goals_site_settings          = new Site_Goals_Site_Settings( $this->options );
+		$this->audience_utilities                = new Audience_Utilities( $this->audience_settings );
+		$this->resource_data_availability_date   = new Resource_Data_Availability_Date( $this->transients, $this->get_settings(), $this->audience_settings );
+		$this->advanced_data_breakdowns_settings = new Advanced_Data_Breakdowns_Settings( $this->options );
 	}
 
 	/**
@@ -225,9 +281,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	 */
 	public function register() {
 		$this->register_scopes_hook();
-
-		$this->register_inline_data();
-
 		$this->register_feature_metrics();
 
 		$synchronize_property = new Synchronize_Property(
@@ -258,6 +311,9 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 		$conversion_reporting_provider->register();
 
 		$this->audience_settings->register();
+		$this->site_goals_settings->register();
+		$this->site_goals_site_settings->register();
+		$this->advanced_data_breakdowns_settings->register();
 
 		( new Advanced_Tracking( $this->context ) )->register();
 
@@ -434,6 +490,7 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 					$routes,
 					array(
 						'/' . REST_Routes::REST_ROOT . '/modules/analytics-4/data/audience-settings',
+						'/' . REST_Routes::REST_ROOT . '/modules/analytics-4/data/site-goals-settings',
 					)
 				);
 			}
@@ -540,6 +597,8 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 		$this->custom_dimensions_data_available->reset_data_available();
 		$this->reset_audiences->reset_audience_data();
 		$this->audience_settings->delete();
+		$this->site_goals_settings->delete();
+		$this->advanced_data_breakdowns_settings->delete();
 	}
 
 	/**
@@ -636,7 +695,7 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 
 		// Return the SITE_KIT_AUDIENCE audiences.
 		$available_audiences = $this->audience_settings->get()['availableAudiences'] ?? array();
-		$site_kit_audiences  = $this->get_site_kit_audiences( $available_audiences );
+		$site_kit_audiences  = $this->audience_utilities->get_site_kit_audiences( $available_audiences );
 
 		$debug_fields['analytics_4_site_kit_audiences'] = array(
 			'label' => __( 'Analytics: Site created audiences', 'google-site-kit' ),
@@ -652,6 +711,34 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 				: join( ', ', $site_kit_audiences ),
 		);
 
+		if ( Feature_Flags::enabled( 'siteGoals' ) ) {
+			$active_widget_slugs = $this->site_goals_site_settings->get()['activeWidgets'] ?? array();
+			$widget_names        = array(
+				'ecommerce' => __( 'Online store performance', 'google-site-kit' ),
+				'lead'      => __( 'Lead generation performance', 'google-site-kit' ),
+			);
+			$widget_labels       = array();
+			foreach ( $active_widget_slugs as $slug ) {
+				if ( isset( $widget_names[ $slug ] ) ) {
+					$widget_labels[] = $widget_names[ $slug ];
+				}
+			}
+
+			$debug_fields['analytics_4_site_goals_widgets'] = array(
+				'label' => __( 'Analytics: Site Goal Widgets', 'google-site-kit' ),
+				'value' => empty( $widget_labels )
+					? __( 'None', 'google-site-kit' )
+					: join(
+						/* translators: used between list items, there is a space after the comma */
+						__( ', ', 'google-site-kit' ),
+						$widget_labels
+					),
+				'debug' => empty( $active_widget_slugs )
+					? 'none'
+					: join( ', ', $active_widget_slugs ),
+			);
+		}
+
 		return $debug_fields;
 	}
 
@@ -666,9 +753,12 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 		$settings = $this->get_settings()->get();
 
 		return array(
-			'audseg_setup_completed'   => (bool) $this->audience_settings->get()['audienceSegmentationSetupCompletedBy'],
-			'audseg_audience_count'    => count( $this->audience_settings->get()['availableAudiences'] ?? array() ),
-			'analytics_adsense_linked' => $this->is_adsense_connected() && $settings['adSenseLinked'],
+			'audseg_setup_completed'              => (bool) $this->audience_settings->get()['audienceSegmentationSetupCompletedBy'],
+			'audseg_audience_count'               => count( $this->audience_settings->get()['availableAudiences'] ?? array() ),
+			'analytics_adsense_linked'            => $this->is_adsense_connected() && $settings['adSenseLinked'],
+			'conversion_tracking_detected_events' => $settings['detectedEvents'] ?? array(),
+			'site_goals_widgets'                  => $this->site_goals_site_settings->get()['activeWidgets'] ?? array(),
+			'custom_dimensions'                   => $settings['availableCustomDimensions'] ?: array(),
 		);
 	}
 
@@ -680,26 +770,66 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	 * @return array Map of datapoints to their definitions.
 	 */
 	protected function get_datapoint_definitions() {
-		$datapoints = array(
-			'GET:account-summaries'                     => array( 'service' => 'analyticsadmin' ),
-			'GET:accounts'                              => array( 'service' => 'analyticsadmin' ),
-			'GET:ads-links'                             => array( 'service' => 'analyticsadmin' ),
-			'GET:adsense-links'                         => array( 'service' => 'analyticsadsenselinks' ),
-			'GET:container-lookup'                      => array(
-				'service' => 'tagmanager',
-				'scopes'  => array(
-					'https://www.googleapis.com/auth/tagmanager.readonly',
-				),
+		if ( $this->datapoints ) {
+			return $this->datapoints;
+		}
+
+		$this->datapoints = array(
+			'GET:account-summaries'                     => new Get_Account_Summaries(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
 			),
-			'GET:container-destinations'                => array(
-				'service' => 'tagmanager',
-				'scopes'  => array(
-					'https://www.googleapis.com/auth/tagmanager.readonly',
-				),
+			'GET:accounts'                              => new Get_Accounts(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
 			),
-			'GET:key-events'                            => array(
-				'service'   => 'analyticsadmin',
-				'shareable' => true,
+			'GET:ads-links'                             => new Get_Ads_Links(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
+			),
+			'GET:adsense-links'                         => new Get_Adsense_Links(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin-v1alpha' );
+					},
+				)
+			),
+			'GET:container-lookup'                      => new Get_Container_Lookup(
+				array(
+					'service' => function () {
+						return $this->get_service( 'tagmanager' );
+					},
+					'scopes'  => array(
+						'https://www.googleapis.com/auth/tagmanager.readonly',
+					),
+				)
+			),
+			'GET:container-destinations'                => new Get_Container_Destinations(
+				array(
+					'service' => function () {
+						return $this->get_service( 'tagmanager' );
+					},
+					'scopes'  => array(
+						'https://www.googleapis.com/auth/tagmanager.readonly',
+					),
+				)
+			),
+			'GET:key-events'                            => new Get_Key_Events(
+				array(
+					'service'  => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+					'settings' => $this->get_settings(),
+				)
 			),
 			'POST:create-account-ticket'                => new Create_Account_Ticket(
 				array(
@@ -712,11 +842,15 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 					'request_scopes_message'    => __( 'You’ll need to grant Site Kit permission to create a new Analytics account on your behalf.', 'google-site-kit' ),
 				),
 			),
-			'GET:google-tag-settings'                   => array(
-				'service' => 'tagmanager',
-				'scopes'  => array(
-					'https://www.googleapis.com/auth/tagmanager.readonly',
-				),
+			'GET:google-tag-settings'                   => new Get_Google_Tag_Settings(
+				array(
+					'service' => function () {
+						return $this->get_service( 'tagmanager' );
+					},
+					'scopes'  => array(
+						'https://www.googleapis.com/auth/tagmanager.readonly',
+					),
+				)
 			),
 			'POST:create-property'                      => new Create_Property(
 				array(
@@ -738,64 +872,195 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 					'request_scopes_message' => __( 'You’ll need to grant Site Kit permission to create a new Analytics web data stream for this site on your behalf.', 'google-site-kit' ),
 				)
 			),
-			'GET:properties'                            => array( 'service' => 'analyticsadmin' ),
-			'GET:property'                              => array( 'service' => 'analyticsadmin' ),
-			'GET:has-property-access'                   => array( 'service' => 'analyticsdata' ),
-			'GET:report'                                => array(
-				'service'   => 'analyticsdata',
-				'shareable' => true,
+			'GET:properties'                            => new Get_Properties(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
 			),
-			'GET:batch-report'                          => array(
-				'service'   => 'analyticsdata',
-				'shareable' => true,
+			'GET:property'                              => new Get_Property(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
 			),
-			'GET:webdatastreams'                        => array( 'service' => 'analyticsadmin' ),
-			'GET:webdatastreams-batch'                  => array( 'service' => 'analyticsadmin' ),
-			'GET:enhanced-measurement-settings'         => array( 'service' => 'analyticsenhancedmeasurement' ),
-			'POST:enhanced-measurement-settings'        => array(
-				'service'                => 'analyticsenhancedmeasurement',
-				'scopes'                 => array( self::EDIT_SCOPE ),
-				'request_scopes_message' => __( 'You’ll need to grant Site Kit permission to update enhanced measurement settings for this Analytics web data stream on your behalf.', 'google-site-kit' ),
+			'GET:has-property-access'                   => new Get_Has_Property_Access(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsdata' );
+					},
+				)
 			),
-			'POST:create-custom-dimension'              => array(
-				'service'                => 'analyticsdata',
-				'scopes'                 => array( self::EDIT_SCOPE ),
-				'request_scopes_message' => __( 'You’ll need to grant Site Kit permission to create a new Analytics custom dimension on your behalf.', 'google-site-kit' ),
+			'GET:report'                                => new Get_Report(
+				array(
+					'service'           => function () {
+						return $this->get_service( 'analyticsdata' );
+					},
+					'settings'          => $this->get_settings(),
+					'context'           => $this->context,
+					'is_shared_request' => function ( Datapoint $datapoint ) {
+						return $this->is_shared_datapoint_request( $datapoint );
+					},
+				),
 			),
-			'POST:sync-custom-dimensions'               => array(
-				'service' => 'analyticsadmin',
+			'GET:batch-report'                          => new Get_Batch_Report(
+				array(
+					'service'           => function () {
+						return $this->get_service( 'analyticsdata' );
+					},
+					'settings'          => $this->get_settings(),
+					'context'           => $this->context,
+					'is_shared_request' => function ( Datapoint $datapoint ) {
+						return $this->is_shared_datapoint_request( $datapoint );
+					},
+				),
 			),
-			'POST:custom-dimension-data-available'      => array(
-				'service' => '',
+			'GET:webdatastreams'                        => new Get_Webdatastreams(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
 			),
-			'POST:set-google-tag-id-mismatch'           => array(
-				'service' => '',
+			'GET:webdatastreams-batch'                  => new Get_Webdatastreams_Batch(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
 			),
-			'POST:set-is-web-data-stream-unavailable'   => array(
-				'service' => '',
+			'GET:enhanced-measurement-settings'         => new Get_Enhanced_Measurement_Settings(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin-v1alpha' );
+					},
+				)
 			),
-			'POST:create-audience'                      => array(
-				'service'                => 'analyticsaudiences',
-				'scopes'                 => array( self::EDIT_SCOPE ),
-				'request_scopes_message' => __( 'You’ll need to grant Site Kit permission to create new audiences for your Analytics property on your behalf.', 'google-site-kit' ),
+			'POST:enhanced-measurement-settings'        => new Update_Enhanced_Measurement_Settings(
+				array(
+					'service'                => function () {
+						return $this->get_service( 'analyticsadmin-v1alpha' );
+					},
+					'scopes'                 => array( self::EDIT_SCOPE ),
+					'request_scopes_message' => __( 'You’ll need to grant Site Kit permission to update enhanced measurement settings for this Analytics web data stream on your behalf.', 'google-site-kit' ),
+				)
 			),
-			'POST:save-resource-data-availability-date' => array(
-				'service' => '',
+			'POST:create-custom-dimension'              => new Create_Custom_Dimension(
+				array(
+					'service'                => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+					'scopes'                 => array( self::EDIT_SCOPE ),
+					'request_scopes_message' => __( 'You’ll need to grant Site Kit permission to create a new Analytics custom dimension on your behalf.', 'google-site-kit' ),
+				)
 			),
-			'POST:sync-audiences'                       => array(
-				'service'   => 'analyticsaudiences',
-				'shareable' => true,
+			'GET:custom-dimensions'                     => new Get_Custom_Dimensions(
+				array(
+					'service' => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+				)
 			),
-			'GET:audience-settings'                     => array(
-				'service'   => '',
-				'shareable' => true,
+			'POST:sync-custom-dimensions'               => new Sync_Custom_Dimensions(
+				array(
+					'service'                          => function () {
+						return $this->get_service( 'analyticsadmin' );
+					},
+					'settings'                         => $this->get_settings(),
+					'custom_dimensions_data_available' => $this->custom_dimensions_data_available,
+				)
 			),
-			'POST:save-audience-settings'               => array(
-				'service' => '',
+			'POST:custom-dimension-data-available'      => new Save_Custom_Dimension_Data_Available(
+				array(
+					'custom_dimensions_data_available' => $this->custom_dimensions_data_available,
+				)
+			),
+			'POST:set-google-tag-id-mismatch'           => new Set_Google_Tag_ID_Mismatch(
+				array(
+					'transients' => $this->transients,
+				)
+			),
+			'POST:set-is-web-data-stream-unavailable'   => new Set_Is_Web_Data_Stream_Unavailable(
+				array(
+					'transients' => $this->transients,
+					'settings'   => $this->get_settings(),
+				)
+			),
+			'POST:create-audience'                      => new Create_Audience(
+				array(
+					'settings'               => $this->get_settings(),
+					'service'                => function () {
+						return $this->get_analyticsadminv1alpha_service();
+					},
+					'scopes'                 => array( self::EDIT_SCOPE ),
+					'request_scopes_message' => __( 'You’ll need to grant Site Kit permission to create new audiences for your Analytics property on your behalf.', 'google-site-kit' ),
+				)
+			),
+			'POST:save-resource-data-availability-date' => new Save_Resource_Data_Availability_Date(
+				array(
+					'resource_data_availability_date' => $this->resource_data_availability_date,
+				)
+			),
+			'POST:sync-audiences'                       => new Sync_Audiences(
+				array(
+					'authentication'     => $this->authentication,
+					'settings'           => $this->get_settings(),
+					'audience_utilities' => $this->audience_utilities,
+					'service'            => function () {
+						return $this->get_analyticsadminv1alpha_service();
+					},
+				)
+			),
+			'GET:audience-settings'                     => new Get_Audience_Settings(
+				array(
+					'audience_settings' => $this->audience_settings,
+					'service'           => '',
+				)
+			),
+			'POST:save-audience-settings'               => new Save_Audience_Settings(
+				array(
+					'audience_settings' => $this->audience_settings,
+					'service'           => '',
+				)
+			),
+			'GET:site-goals-settings'                   => new Get_Site_Goals_Settings(
+				array(
+					'site_goals_settings'      => $this->site_goals_settings,
+					'site_goals_site_settings' => $this->site_goals_site_settings,
+					'service'                  => '',
+				)
+			),
+			'POST:save-site-goals-settings'             => new Save_Site_Goals_Settings(
+				array(
+					'site_goals_settings' => $this->site_goals_settings,
+					'service'             => '',
+				)
 			),
 		);
 
-		return $datapoints;
+		if ( Feature_Flags::enabled( 'siteGoals' ) ) {
+			$this->datapoints['GET:advanced-data-breakdowns-settings']       = new Get_Advanced_Data_Breakdowns_Settings(
+				array(
+					'advanced_data_breakdowns_settings' => $this->advanced_data_breakdowns_settings,
+					'service'                           => '',
+				)
+			);
+			$this->datapoints['POST:save-advanced-data-breakdowns-settings'] = new Save_Advanced_Data_Breakdowns_Settings(
+				array(
+					'advanced_data_breakdowns_settings' => $this->advanced_data_breakdowns_settings,
+					'service'                           => '',
+				)
+			);
+			$this->datapoints['GET:form-metadata']                           = new Get_Form_Metadata(
+				array(
+					'service' => '',
+				)
+			);
+		}
+
+		return $this->datapoints;
 	}
 
 	/**
@@ -940,7 +1205,7 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 		 *
 		 * @since 1.1.0
 		 *
-		 * @param $disabled bool Whether to disable tracking or not.
+		 * @param bool $disabled Whether to disable tracking or not.
 		 */
 		return (bool) apply_filters( 'googlesitekit_analytics_tracking_disabled', $disabled );
 	}
@@ -967,6 +1232,11 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 			return;
 		}
 
+		// `show_progress` is set on the provisioning redirect URI by `Create_Account_Ticket`
+		// when the user is in the initial setup flow with the `setupFlowRefresh` feature
+		// flag enabled, and is therefore present on the callback URL when applicable.
+		$show_progress = (bool) $input->filter( INPUT_GET, 'show_progress' );
+
 		// First check that the accountTicketId matches one stored for the user.
 		// This is always provided, even in the event of an error.
 		$account_ticket_id = htmlspecialchars( $input->filter( INPUT_GET, 'accountTicketId' ) );
@@ -983,28 +1253,28 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 
 		if ( $account_ticket->get_id() !== $account_ticket_id ) {
 			wp_safe_redirect(
-				$this->context->admin_url( 'dashboard', array( 'error_code' => 'account_ticket_id_mismatch' ) )
+				$this->get_provisioning_callback_error_redirect_url( 'account_ticket_id_mismatch', $show_progress )
 			);
 			exit;
 		}
-
-		// At this point, the accountTicketId is a match and params are loaded, so we can safely delete the transient.
-		$this->transients->delete( $account_ticket_transient_key );
 
 		// Next, check for a returned error.
 		$error = $input->filter( INPUT_GET, 'error' );
 		if ( ! empty( $error ) ) {
 			wp_safe_redirect(
-				$this->context->admin_url( 'dashboard', array( 'error_code' => htmlspecialchars( $error ) ) )
+				$this->get_provisioning_callback_error_redirect_url( htmlspecialchars( $error ), $show_progress )
 			);
 			exit;
 		}
 
-		$account_id = htmlspecialchars( $input->filter( INPUT_GET, 'accountId' ) );
+		// As the account has been created without an error, we can safely delete the transient.
+		$this->transients->delete( $account_ticket_transient_key );
+
+		$account_id = htmlspecialchars( $input->filter( INPUT_GET, 'accountId' ) ?? '' );
 
 		if ( empty( $account_id ) ) {
 			wp_safe_redirect(
-				$this->context->admin_url( 'dashboard', array( 'error_code' => 'callback_missing_parameter' ) )
+				$this->get_provisioning_callback_error_redirect_url( 'callback_missing_parameter', $show_progress )
 			);
 			exit;
 		}
@@ -1019,8 +1289,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 		$this->provision_property_webdatastream( $account_id, $account_ticket );
 
 		if ( Feature_Flags::enabled( 'setupFlowRefresh' ) ) {
-			$show_progress = (bool) $input->filter( INPUT_GET, 'show_progress' );
-
 			wp_safe_redirect(
 				$this->context->admin_url(
 					'key-metrics-setup',
@@ -1042,6 +1310,51 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 			)
 		);
 		exit;
+	}
+
+	/**
+	 * Builds the redirect URL for an error encountered during the Analytics
+	 * account provisioning callback.
+	 *
+	 * When the `setupFlowRefresh` feature flag is enabled, the user is
+	 * redirected back to the Analytics setup screen so the error can be
+	 * surfaced inline. Otherwise, the legacy dashboard redirect with the
+	 * `error_code` query parameter is used.
+	 *
+	 * @since 1.180.0
+	 *
+	 * @param string $error_code    The error code to surface.
+	 * @param bool   $show_progress Whether the initial setup flow's progress
+	 *                              bar should be retained on the redirect URL.
+	 * @return string The URL to redirect to.
+	 */
+	private function get_provisioning_callback_error_redirect_url( $error_code, $show_progress ) {
+		if ( Feature_Flags::enabled( 'setupFlowRefresh' ) ) {
+			// If the account creation was triggered from the settings edit screen,
+			// redirect back to the settings edit screen with the error code.
+			if ( $this->is_connected() ) {
+				return add_query_arg(
+					array(
+						'accountCreationErrorCode' => $error_code,
+					),
+					$this->context->admin_url( 'settings' )
+				) . '#connected-services/analytics-4/edit';
+			}
+
+			$args = array(
+				'slug'                     => 'analytics-4',
+				'reAuth'                   => 'true',
+				'accountCreationErrorCode' => $error_code,
+			);
+
+			if ( $show_progress ) {
+				$args['showProgress'] = 'true';
+			}
+
+			return $this->context->admin_url( 'dashboard', $args );
+		}
+
+		return $this->context->admin_url( 'dashboard', array( 'error_code' => $error_code ) );
 	}
 
 	/**
@@ -1150,769 +1463,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	}
 
 	/**
-	 * Creates a request object for the given datapoint.
-	 *
-	 * @since 1.30.0
-	 *
-	 * @param Data_Request $data Data request object.
-	 * @return RequestInterface|callable|WP_Error Request object or callable on success, or WP_Error on failure.
-	 *
-	 * @throws Invalid_Datapoint_Exception Thrown if the datapoint does not exist.
-	 * @throws Invalid_Param_Exception Thrown if a parameter is invalid.
-	 * @throws Missing_Required_Param_Exception Thrown if a required parameter is missing or empty.
-	 *
-	 * phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag.WrongNumber
-	 */
-	protected function create_data_request( Data_Request $data ) {
-		switch ( "{$data->method}:{$data->datapoint}" ) {
-			case 'GET:accounts':
-				return $this->get_service( 'analyticsadmin' )->accounts->listAccounts();
-			case 'GET:account-summaries':
-				return $this->get_service( 'analyticsadmin' )->accountSummaries->listAccountSummaries(
-					array(
-						'pageSize'  => 200,
-						'pageToken' => $data['pageToken'],
-					)
-				);
-			case 'GET:ads-links':
-				if ( empty( $data['propertyID'] ) ) {
-					throw new Missing_Required_Param_Exception( 'propertyID' );
-				}
-
-				$parent = self::normalize_property_id( $data['propertyID'] );
-
-				return $this->get_service( 'analyticsadmin' )->properties_googleAdsLinks->listPropertiesGoogleAdsLinks( $parent );
-			case 'GET:adsense-links':
-				if ( empty( $data['propertyID'] ) ) {
-					throw new Missing_Required_Param_Exception( 'propertyID' );
-				}
-
-				$parent = self::normalize_property_id( $data['propertyID'] );
-
-				return $this->get_analyticsadsenselinks_service()->properties_adSenseLinks->listPropertiesAdSenseLinks( $parent );
-			case 'POST:create-audience':
-				$settings = $this->get_settings()->get();
-				if ( ! isset( $settings['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_setting',
-						__( 'No connected Google Analytics property ID.', 'google-site-kit' ),
-						array( 'status' => 500 )
-					);
-				}
-
-				if ( ! isset( $data['audience'] ) ) {
-					throw new Missing_Required_Param_Exception( 'audience' );
-				}
-
-				$property_id = $settings['propertyID'];
-				$audience    = $data['audience'];
-
-				$fields = array(
-					'displayName',
-					'description',
-					'membershipDurationDays',
-					'eventTrigger',
-					'exclusionDurationMode',
-					'filterClauses',
-				);
-
-				$invalid_keys = array_diff( array_keys( $audience ), $fields );
-
-				if ( ! empty( $invalid_keys ) ) {
-					return new WP_Error(
-						'invalid_property_name',
-						/* translators: %s: Invalid property names */
-						sprintf( __( 'Invalid properties in audience: %s.', 'google-site-kit' ), implode( ', ', $invalid_keys ) ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$property_id = self::normalize_property_id( $property_id );
-
-				$post_body = new GoogleAnalyticsAdminV1alphaAudience( $audience );
-
-				$analyticsadmin = $this->get_analyticsaudiences_service();
-
-				return $analyticsadmin
-					->properties_audiences
-					->create(
-						$property_id,
-						$post_body
-					);
-			case 'GET:properties':
-				if ( ! isset( $data['accountID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'accountID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				return $this->get_service( 'analyticsadmin' )->properties->listProperties(
-					array(
-						'filter'   => 'parent:' . self::normalize_account_id( $data['accountID'] ),
-						'pageSize' => 200,
-					)
-				);
-			case 'GET:property':
-				if ( ! isset( $data['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'propertyID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				return $this->get_service( 'analyticsadmin' )->properties->get( self::normalize_property_id( $data['propertyID'] ) );
-			case 'GET:has-property-access':
-				if ( ! isset( $data['propertyID'] ) ) {
-					throw new Missing_Required_Param_Exception( 'propertyID' );
-				}
-
-				// A simple way to check for property access is to attempt a minimal report request.
-				// If the user does not have access, this will return a 403 error.
-				$request = new Google_Service_AnalyticsData_RunReportRequest();
-				$request->setDimensions( array( new Google_Service_AnalyticsData_Dimension( array( 'name' => 'date' ) ) ) );
-				$request->setMetrics( array( new Google_Service_AnalyticsData_Metric( array( 'name' => 'sessions' ) ) ) );
-				$request->setDateRanges(
-					array(
-						new Google_Service_AnalyticsData_DateRange(
-							array(
-								'start_date' => 'yesterday',
-								'end_date'   => 'today',
-							)
-						),
-					)
-				);
-				$request->setLimit( 0 );
-
-				return $this->get_analyticsdata_service()->properties->runReport( $data['propertyID'], $request );
-			case 'GET:report':
-				if ( empty( $data['metrics'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'metrics' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$settings = $this->get_settings()->get();
-				if ( empty( $settings['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_setting',
-						__( 'No connected Google Analytics property ID.', 'google-site-kit' ),
-						array( 'status' => 500 )
-					);
-				}
-
-				$report  = new Analytics_4_Report_Request( $this->context );
-				$request = $report->create_request( $data, $this->is_shared_data_request( $data ) );
-				if ( is_wp_error( $request ) ) {
-					return $request;
-				}
-
-				$property_id = self::normalize_property_id( $settings['propertyID'] );
-				$request->setProperty( $property_id );
-
-				return $this->get_analyticsdata_service()->properties->runReport( $property_id, $request );
-
-			case 'GET:batch-report':
-				if ( empty( $data['requests'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'requests' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				if ( ! is_array( $data['requests'] ) || count( $data['requests'] ) > 5 ) {
-					return new WP_Error(
-						'invalid_batch_size',
-						__( 'Batch report requests must be an array with 1-5 requests.', 'google-site-kit' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$settings = $this->get_settings()->get();
-				if ( empty( $settings['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_setting',
-						__( 'No connected Google Analytics property ID.', 'google-site-kit' ),
-						array( 'status' => 500 )
-					);
-				}
-
-				$batch_requests = array();
-				$report         = new Analytics_4_Report_Request( $this->context );
-
-				foreach ( $data['requests'] as $request_data ) {
-					$data_request = new Data_Request( 'GET', 'modules', $this->slug, 'report', $request_data );
-					$request      = $report->create_request(
-						$data_request,
-						$this->is_shared_data_request( $data_request )
-					);
-					if ( is_wp_error( $request ) ) {
-						return $request;
-					}
-					$batch_requests[] = $request;
-				}
-
-				$property_id = self::normalize_property_id( $settings['propertyID'] );
-
-				$batch_request = new Google_Service_AnalyticsData\BatchRunReportsRequest();
-				$batch_request->setRequests( $batch_requests );
-
-				return $this->get_analyticsdata_service()->properties->batchRunReports(
-					$property_id,
-					$batch_request
-				);
-
-			case 'GET:enhanced-measurement-settings':
-				if ( ! isset( $data['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'propertyID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				if ( ! isset( $data['webDataStreamID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'webDataStreamID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$name = self::normalize_property_id(
-					$data['propertyID']
-				) . '/dataStreams/' . $data['webDataStreamID'] . '/enhancedMeasurementSettings';
-
-				$analyticsadmin = $this->get_analyticsenhancedmeasurements_service();
-
-				return $analyticsadmin
-					->properties_enhancedMeasurements // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-					->getEnhancedMeasurementSettings( $name );
-			case 'POST:enhanced-measurement-settings':
-				if ( ! isset( $data['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'propertyID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				if ( ! isset( $data['webDataStreamID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'webDataStreamID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				if ( ! isset( $data['enhancedMeasurementSettings'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'enhancedMeasurementSettings' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$enhanced_measurement_settings = $data['enhancedMeasurementSettings'];
-
-				$fields = array(
-					'name',
-					'streamEnabled',
-					'scrollsEnabled',
-					'outboundClicksEnabled',
-					'siteSearchEnabled',
-					'videoEngagementEnabled',
-					'fileDownloadsEnabled',
-					'pageChangesEnabled',
-					'formInteractionsEnabled',
-					'searchQueryParameter',
-					'uriQueryParameter',
-				);
-
-				$invalid_keys = array_diff( array_keys( $enhanced_measurement_settings ), $fields );
-
-				if ( ! empty( $invalid_keys ) ) {
-					return new WP_Error(
-						'invalid_property_name',
-						/* translators: %s: Invalid property names */
-						sprintf( __( 'Invalid properties in enhancedMeasurementSettings: %s.', 'google-site-kit' ), implode( ', ', $invalid_keys ) ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$name = self::normalize_property_id(
-					$data['propertyID']
-				) . '/dataStreams/' . $data['webDataStreamID'] . '/enhancedMeasurementSettings';
-
-				$post_body = new EnhancedMeasurementSettingsModel( $data['enhancedMeasurementSettings'] );
-
-				$analyticsadmin = $this->get_analyticsenhancedmeasurements_service();
-
-				return $analyticsadmin
-					->properties_enhancedMeasurements // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-					->updateEnhancedMeasurementSettings(
-						$name,
-						$post_body,
-						array(
-							'updateMask' => 'streamEnabled', // Only allow updating the streamEnabled field for now.
-						)
-					);
-			case 'POST:create-custom-dimension':
-				if ( ! isset( $data['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'propertyID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				if ( ! isset( $data['customDimension'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'customDimension' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$custom_dimension_data = $data['customDimension'];
-
-				$fields = array(
-					'parameterName',
-					'displayName',
-					'description',
-					'scope',
-					'disallowAdsPersonalization',
-				);
-
-				$invalid_keys = array_diff( array_keys( $custom_dimension_data ), $fields );
-
-				if ( ! empty( $invalid_keys ) ) {
-					return new WP_Error(
-						'invalid_property_name',
-						/* translators: %s: Invalid property names */
-						sprintf( __( 'Invalid properties in customDimension: %s.', 'google-site-kit' ), implode( ', ', $invalid_keys ) ),
-						array( 'status' => 400 )
-					);
-				}
-
-				// Define the valid `DimensionScope` enum values.
-				$valid_scopes = array( 'EVENT', 'USER', 'ITEM' );
-
-				// If the scope field is not set, default to `EVENT`.
-				// Otherwise, validate against the enum values.
-				if ( ! isset( $custom_dimension_data['scope'] ) ) {
-					$custom_dimension_data['scope'] = 'EVENT';
-				} elseif ( ! in_array( $custom_dimension_data['scope'], $valid_scopes, true ) ) {
-					return new WP_Error(
-						'invalid_scope',
-						/* translators: %s: Invalid scope */
-						sprintf( __( 'Invalid scope: %s.', 'google-site-kit' ), $custom_dimension_data['scope'] ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$custom_dimension = new GoogleAnalyticsAdminV1betaCustomDimension();
-				$custom_dimension->setParameterName( $custom_dimension_data['parameterName'] );
-				$custom_dimension->setDisplayName( $custom_dimension_data['displayName'] );
-				$custom_dimension->setScope( $custom_dimension_data['scope'] );
-
-				if ( isset( $custom_dimension_data['description'] ) ) {
-					$custom_dimension->setDescription( $custom_dimension_data['description'] );
-				}
-
-				if ( isset( $custom_dimension_data['disallowAdsPersonalization'] ) ) {
-					$custom_dimension->setDisallowAdsPersonalization( $custom_dimension_data['disallowAdsPersonalization'] );
-				}
-
-				$analyticsadmin = $this->get_service( 'analyticsadmin' );
-
-				return $analyticsadmin
-					->properties_customDimensions // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-					->create(
-						self::normalize_property_id( $data['propertyID'] ),
-						$custom_dimension
-					);
-
-			case 'GET:audience-settings':
-				return function () {
-					$settings = $this->audience_settings->get();
-					return current_user_can( Permissions::MANAGE_OPTIONS ) ? $settings : array_intersect_key( $settings, array_flip( $this->audience_settings->get_view_only_keys() ) );
-				};
-
-			case 'POST:save-audience-settings':
-				if ( ! current_user_can( Permissions::MANAGE_OPTIONS ) ) {
-					return new WP_Error(
-						'forbidden',
-						__( 'User does not have permission to save audience settings.', 'google-site-kit' ),
-						array( 'status' => 403 )
-					);
-				}
-
-				$settings = $data['settings'];
-
-				if (
-					isset( $settings['audienceSegmentationSetupCompletedBy'] ) &&
-					! is_int( $settings['audienceSegmentationSetupCompletedBy'] )
-				) {
-					throw new Invalid_Param_Exception( 'audienceSegmentationSetupCompletedBy' );
-				}
-
-				return function () use ( $settings ) {
-					$new_settings = array();
-
-					if ( isset( $settings['audienceSegmentationSetupCompletedBy'] ) ) {
-						$new_settings['audienceSegmentationSetupCompletedBy'] = $settings['audienceSegmentationSetupCompletedBy'];
-					}
-
-					$settings = $this->audience_settings->merge( $new_settings );
-
-					return $settings;
-				};
-
-			case 'POST:sync-audiences':
-				if ( ! $this->authentication->is_authenticated() ) {
-					return new WP_Error(
-						'forbidden',
-						__( 'User must be authenticated to sync audiences.', 'google-site-kit' ),
-						array( 'status' => 403 )
-					);
-				}
-
-				$settings = $this->get_settings()->get();
-				if ( empty( $settings['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_setting',
-						__( 'No connected Google Analytics property ID.', 'google-site-kit' ),
-						array( 'status' => 500 )
-					);
-				}
-
-				$analyticsadmin = $this->get_analyticsaudiences_service();
-				$property_id    = self::normalize_property_id( $settings['propertyID'] );
-
-				return $analyticsadmin
-					->properties_audiences
-					->listPropertiesAudiences( $property_id );
-			case 'POST:sync-custom-dimensions':
-				$settings = $this->get_settings()->get();
-				if ( empty( $settings['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_setting',
-						__( 'No connected Google Analytics property ID.', 'google-site-kit' ),
-						array( 'status' => 500 )
-					);
-				}
-
-				$analyticsadmin = $this->get_service( 'analyticsadmin' );
-
-				return $analyticsadmin
-					->properties_customDimensions // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-					->listPropertiesCustomDimensions( self::normalize_property_id( $settings['propertyID'] ) );
-			case 'POST:custom-dimension-data-available':
-				if ( ! isset( $data['customDimension'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'customDimension' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				if ( ! $this->custom_dimensions_data_available->is_valid_custom_dimension( $data['customDimension'] ) ) {
-					return new WP_Error(
-						'invalid_custom_dimension_slug',
-						/* translators: %s: Invalid custom dimension slug */
-						sprintf( __( 'Invalid custom dimension slug: %s.', 'google-site-kit' ), $data['customDimension'] ),
-						array( 'status' => 400 )
-					);
-				}
-
-				return function () use ( $data ) {
-					return $this->custom_dimensions_data_available->set_data_available( $data['customDimension'] );
-				};
-			case 'POST:save-resource-data-availability-date':
-				if ( ! isset( $data['resourceType'] ) ) {
-					throw new Missing_Required_Param_Exception( 'resourceType' );
-				}
-
-				if ( ! isset( $data['resourceSlug'] ) ) {
-					throw new Missing_Required_Param_Exception( 'resourceSlug' );
-				}
-
-				if ( ! isset( $data['date'] ) ) {
-					throw new Missing_Required_Param_Exception( 'date' );
-				}
-
-				if ( ! $this->resource_data_availability_date->is_valid_resource_type( $data['resourceType'] ) ) {
-					throw new Invalid_Param_Exception( 'resourceType' );
-				}
-
-				if ( ! $this->resource_data_availability_date->is_valid_resource_slug( $data['resourceSlug'], $data['resourceType'] ) ) {
-					throw new Invalid_Param_Exception( 'resourceSlug' );
-				}
-
-				if ( ! is_int( $data['date'] ) ) {
-					throw new Invalid_Param_Exception( 'date' );
-				}
-
-				return function () use ( $data ) {
-					return $this->resource_data_availability_date->set_resource_date( $data['resourceSlug'], $data['resourceType'], $data['date'] );
-				};
-			case 'GET:webdatastreams':
-				if ( ! isset( $data['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'propertyID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$analyticsadmin = $this->get_service( 'analyticsadmin' );
-
-				return $analyticsadmin
-					->properties_dataStreams // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-					->listPropertiesDataStreams(
-						self::normalize_property_id( $data['propertyID'] )
-					);
-			case 'GET:webdatastreams-batch':
-				if ( ! isset( $data['propertyIDs'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'propertyIDs' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				if ( ! is_array( $data['propertyIDs'] ) || count( $data['propertyIDs'] ) > 10 ) {
-					return new WP_Error(
-						'rest_invalid_param',
-						/* translators: %s: List of invalid parameters. */
-						sprintf( __( 'Invalid parameter(s): %s', 'google-site-kit' ), 'propertyIDs' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				$analyticsadmin = $this->get_service( 'analyticsadmin' );
-				$batch_request  = $analyticsadmin->createBatch();
-
-				foreach ( $data['propertyIDs'] as $property_id ) {
-					$batch_request->add(
-						$analyticsadmin
-							->properties_dataStreams // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-							->listPropertiesDataStreams(
-								self::normalize_property_id( $property_id )
-							)
-					);
-				}
-
-				return function () use ( $batch_request ) {
-					return $batch_request->execute();
-				};
-			case 'GET:container-lookup':
-				if ( ! isset( $data['destinationID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'destinationID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				return $this->get_tagmanager_service()->accounts_containers->lookup( array( 'destinationId' => $data['destinationID'] ) );
-			case 'GET:container-destinations':
-				if ( ! isset( $data['accountID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'accountID' ),
-						array( 'status' => 400 )
-					);
-				}
-				if ( ! isset( $data['containerID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'containerID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				return $this->get_tagmanager_service()->accounts_containers_destinations->listAccountsContainersDestinations(
-					"accounts/{$data['accountID']}/containers/{$data['containerID']}"
-				);
-			case 'GET:google-tag-settings':
-				if ( ! isset( $data['measurementID'] ) ) {
-					return new WP_Error(
-						'missing_required_param',
-						/* translators: %s: Missing parameter name */
-						sprintf( __( 'Request parameter is empty: %s.', 'google-site-kit' ), 'measurementID' ),
-						array( 'status' => 400 )
-					);
-				}
-
-				return $this->get_tagmanager_service()->accounts_containers->lookup( array( 'destinationId' => $data['measurementID'] ) );
-			case 'GET:key-events':
-				$settings = $this->get_settings()->get();
-				if ( empty( $settings['propertyID'] ) ) {
-					return new WP_Error(
-						'missing_required_setting',
-						__( 'No connected Google Analytics property ID.', 'google-site-kit' ),
-						array( 'status' => 500 )
-					);
-				}
-
-				$analyticsadmin = $this->get_service( 'analyticsadmin' );
-				$property_id    = self::normalize_property_id( $settings['propertyID'] );
-
-				return $analyticsadmin
-					->properties_keyEvents // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-					->listPropertiesKeyEvents( $property_id );
-			case 'POST:set-google-tag-id-mismatch':
-				if ( ! isset( $data['hasMismatchedTag'] ) ) {
-					throw new Missing_Required_Param_Exception( 'hasMismatchedTag' );
-				}
-
-				if ( false === $data['hasMismatchedTag'] ) {
-					return function () {
-						$this->transients->delete( 'googlesitekit_inline_tag_id_mismatch' );
-						return false;
-					};
-				}
-
-				return function () use ( $data ) {
-					$this->transients->set( 'googlesitekit_inline_tag_id_mismatch', $data['hasMismatchedTag'] );
-					return $data['hasMismatchedTag'];
-				};
-			case 'POST:set-is-web-data-stream-unavailable':
-				if ( ! isset( $data['isWebDataStreamUnavailable'] ) ) {
-					throw new Missing_Required_Param_Exception( 'isWebDataStreamUnavailable' );
-				}
-
-				if ( true === $data['isWebDataStreamUnavailable'] ) {
-					return function () {
-						$settings      = $this->get_settings()->get();
-						$transient_key = 'googlesitekit_web_data_stream_unavailable_' . $settings['webDataStreamID'];
-						$this->transients->set( $transient_key, true );
-						return true;
-					};
-				}
-
-				return function () {
-					$settings      = $this->get_settings()->get();
-					$transient_key = 'googlesitekit_web_data_stream_unavailable_' . $settings['webDataStreamID'];
-					$this->transients->delete( $transient_key );
-					return false;
-				};
-		}
-
-		return parent::create_data_request( $data );
-	}
-
-	/**
-	 * Parses a response for the given datapoint.
-	 *
-	 * @since 1.30.0
-	 *
-	 * @param Data_Request $data     Data request object.
-	 * @param mixed        $response Request response.
-	 *
-	 * @return mixed Parsed response data on success, or WP_Error on failure.
-	 */
-	protected function parse_data_response( Data_Request $data, $response ) {
-		switch ( "{$data->method}:{$data->datapoint}" ) {
-			case 'GET:accounts':
-				return array_map( array( self::class, 'filter_account_with_ids' ), $response->getAccounts() );
-			case 'GET:ads-links':
-				return (array) $response->getGoogleAdsLinks();
-			case 'GET:adsense-links':
-				return (array) $response->getAdsenseLinks();
-			case 'GET:properties':
-				return Sort::case_insensitive_list_sort(
-					array_map( array( self::class, 'filter_property_with_ids' ), $response->getProperties() ),
-					'displayName'
-				);
-			case 'GET:property':
-				return self::filter_property_with_ids( $response );
-			case 'GET:webdatastreams':
-				/* @var GoogleAnalyticsAdminV1betaListDataStreamsResponse $response phpcs:ignore Squiz.PHP.CommentedOutCode.Found */
-				$webdatastreams = self::filter_web_datastreams( $response->getDataStreams() );
-				return array_map( array( self::class, 'filter_webdatastream_with_ids' ), $webdatastreams );
-			case 'GET:webdatastreams-batch':
-				return self::parse_webdatastreams_batch( $response );
-			case 'GET:container-destinations':
-				return (array) $response->getDestination();
-			case 'GET:google-tag-settings':
-				return $this->get_google_tag_settings_for_measurement_id( $response, $data['measurementID'] );
-			case 'GET:key-events':
-				return (array) $response->getKeyEvents();
-			case 'GET:report':
-				$report = new Analytics_4_Report_Response( $this->context );
-				return $report->parse_response( $data, $response );
-			case 'POST:sync-audiences':
-				$audiences = $this->set_available_audiences( $response->getAudiences() );
-				return $audiences;
-			case 'POST:sync-custom-dimensions':
-				if ( is_wp_error( $response ) ) {
-					return $response;
-				}
-
-				$custom_dimensions   = wp_list_pluck( $response->getCustomDimensions(), 'parameterName' );
-				$matching_dimensions = array_values(
-					array_filter(
-						$custom_dimensions,
-						function ( $dimension ) {
-							return strpos( $dimension, 'googlesitekit_' ) === 0;
-						}
-					)
-				);
-				$this->get_settings()->merge(
-					array(
-						'availableCustomDimensions' => $matching_dimensions,
-					)
-				);
-
-				// Reset the data available state for custom dimensions that are no longer available.
-				$missing_custom_dimensions_with_data_available = array_diff(
-					array_keys(
-						// Only compare against custom dimensions that have data available.
-						array_filter(
-							$this->custom_dimensions_data_available->get_data_availability()
-						)
-					),
-					$matching_dimensions
-				);
-
-				if ( count( $missing_custom_dimensions_with_data_available ) > 0 ) {
-					$this->custom_dimensions_data_available->reset_data_available(
-						$missing_custom_dimensions_with_data_available
-					);
-				}
-
-				return $matching_dimensions;
-		}
-
-		return parent::parse_data_response( $data, $response );
-	}
-
-	/**
 	 * Gets the configured TagManager service instance.
 	 *
 	 * @since 1.92.0
@@ -1942,6 +1492,17 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	}
 
 	/**
+	 * Gets the configured Analytics Admin v1alpha service instance.
+	 *
+	 * @since 1.171.0
+	 *
+	 * @return GoogleAnalyticsAdminV1alpha
+	 */
+	protected function get_analyticsadminv1alpha_service(): GoogleAnalyticsAdminV1alpha {
+		return $this->get_service( 'analyticsadmin-v1alpha' );
+	}
+
+	/**
 	 * Gets the configured Analytics Data service object instance.
 	 *
 	 * @since 1.93.0
@@ -1950,39 +1511,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	 */
 	protected function get_analyticsdata_service() {
 		return $this->get_service( 'analyticsdata' );
-	}
-
-	/**
-	 * Gets the configured Analytics Data service object instance.
-	 *
-	 * @since 1.110.0
-	 *
-	 * @return PropertiesEnhancedMeasurementService The Analytics Admin API service.
-	 */
-	protected function get_analyticsenhancedmeasurements_service() {
-		return $this->get_service( 'analyticsenhancedmeasurement' );
-	}
-
-	/**
-	 * Gets the configured Analytics Admin service object instance that includes `adSenseLinks` related methods.
-	 *
-	 * @since 1.120.0
-	 *
-	 * @return PropertiesAdSenseLinksService The Analytics Admin API service.
-	 */
-	protected function get_analyticsadsenselinks_service() {
-		return $this->get_service( 'analyticsadsenselinks' );
-	}
-
-	/**
-	 * Gets the configured Analytics Data service object instance.
-	 *
-	 * @since 1.120.0
-	 *
-	 * @return PropertiesAudiencesService The Analytics Admin API service.
-	 */
-	protected function get_analyticsaudiences_service() {
-		return $this->get_service( 'analyticsaudiences' );
 	}
 
 	/**
@@ -2001,13 +1529,11 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 		$google_proxy = $this->authentication->get_google_proxy();
 
 		return array(
-			'analyticsadmin'               => new Google_Service_GoogleAnalyticsAdmin( $client ),
-			'analyticsdata'                => new Google_Service_AnalyticsData( $client ),
-			'analyticsprovisioning'        => new AccountProvisioningService( $client, $google_proxy->url() ),
-			'analyticsenhancedmeasurement' => new PropertiesEnhancedMeasurementService( $client ),
-			'analyticsaudiences'           => new PropertiesAudiencesService( $client ),
-			'analyticsadsenselinks'        => new PropertiesAdSenseLinksService( $client ),
-			'tagmanager'                   => new Google_Service_TagManager( $client ),
+			'analyticsadmin'         => new Google_Service_GoogleAnalyticsAdmin( $client ),
+			'analyticsadmin-v1alpha' => new GoogleAnalyticsAdminV1alpha( $client ),
+			'analyticsdata'          => new Google_Service_AnalyticsData( $client ),
+			'analyticsprovisioning'  => new AccountProvisioningService( $client, $google_proxy->url() ),
+			'tagmanager'             => new Google_Service_TagManager( $client ),
 		);
 	}
 
@@ -2267,7 +1793,7 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	 *
 	 * @since 1.39.0
 	 *
-	 * @param GoogleAnalyticsAdminV1betaListDataStreamsResponse[] $batch_response Array of GoogleAnalyticsAdminV1betaListWebDataStreamsResponse objects.
+	 * @param \Google\Site_Kit_Dependencies\Google\Service\GoogleAnalyticsAdmin\GoogleAnalyticsAdminV1betaListDataStreamsResponse[] $batch_response Array of GoogleAnalyticsAdminV1betaListWebDataStreamsResponse objects.
 	 * @return stdClass[] Array of models containing _id and _propertyID attributes, keyed by the propertyID.
 	 */
 	public static function parse_webdatastreams_batch( $batch_response ) {
@@ -2360,61 +1886,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	}
 
 	/**
-	 * Gets the Google Tag Settings for the given measurement ID.
-	 *
-	 * @since 1.94.0
-	 *
-	 * @param Google_Service_TagManager_Container $container Tag Manager container.
-	 * @param string                              $measurement_id Measurement ID.
-	 * @return array Google Tag Settings.
-	 */
-	protected function get_google_tag_settings_for_measurement_id( $container, $measurement_id ) {
-		return array(
-			'googleTagAccountID'   => $container->getAccountId(),
-			'googleTagContainerID' => $container->getContainerId(),
-			'googleTagID'          => $this->determine_google_tag_id_from_tag_ids( $container->getTagIds(), $measurement_id ),
-		);
-	}
-
-	/**
-	 * Determines Google Tag ID from the given Tag IDs.
-	 *
-	 * @since 1.94.0
-	 *
-	 * @param array  $tag_ids Tag IDs.
-	 * @param string $measurement_id Measurement ID.
-	 * @return string Google Tag ID.
-	 */
-	private function determine_google_tag_id_from_tag_ids( $tag_ids, $measurement_id ) {
-		// If there is only one tag id in the array, return it.
-		if ( count( $tag_ids ) === 1 ) {
-			return $tag_ids[0];
-		}
-
-		// If there are multiple tags, return the first one that starts with `GT-`.
-		foreach ( $tag_ids as $tag_id ) {
-			if ( substr( $tag_id, 0, 3 ) === 'GT-' ) { // strlen( 'GT-' ) === 3.
-				return $tag_id;
-			}
-		}
-
-		// Otherwise, return the `$measurement_id` if it is in the array.
-		if ( in_array( $measurement_id, $tag_ids, true ) ) {
-			return $measurement_id;
-		}
-
-		// Otherwise, return the first one that starts with `G-`.
-		foreach ( $tag_ids as $tag_id ) {
-			if ( substr( $tag_id, 0, 2 ) === 'G-' ) { // strlen( 'G-' ) === 2.
-				return $tag_id;
-			}
-		}
-
-		// If none of the above, return the first one.
-		return $tag_ids[0];
-	}
-
-	/**
 	 * Gets the Google Analytics 4 tag ID.
 	 *
 	 * @since 1.96.0
@@ -2457,6 +1928,7 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 				'customDimensionsDataAvailable' => $this->custom_dimensions_data_available->get_data_availability(),
 			);
 		}
+		return array();
 	}
 
 	/**
@@ -2521,200 +1993,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	}
 
 	/**
-	 * Sets and returns available audiences.
-	 *
-	 * @since 1.126.0
-	 *
-	 * @param GoogleAnalyticsAdminV1alphaAudience[] $audiences The audiences to set.
-	 * @return array The available audiences.
-	 */
-	private function set_available_audiences( $audiences ) {
-		$available_audiences = array_map(
-			function ( GoogleAnalyticsAdminV1alphaAudience $audience ) {
-				$display_name  = $audience->getDisplayName();
-				$audience_item = array(
-					'name'        => $audience->getName(),
-					'displayName' => ( 'All Users' === $display_name ) ? 'All visitors' : $display_name,
-					'description' => $audience->getDescription(),
-				);
-
-				$audience_slug = $this->get_audience_slug( $audience );
-				$audience_type = $this->get_audience_type( $audience_slug );
-
-				$audience_item['audienceType'] = $audience_type;
-				$audience_item['audienceSlug'] = $audience_slug;
-
-				return $audience_item;
-			},
-			$audiences
-		);
-
-		usort(
-			$available_audiences,
-			function ( $audience_a, $audience_b ) use ( $available_audiences ) {
-				$audience_index_a = array_search( $audience_a, $available_audiences, true );
-				$audience_index_b = array_search( $audience_b, $available_audiences, true );
-
-				if ( false === $audience_index_a || false === $audience_index_b ) {
-					return 0;
-				}
-
-				$audience_a = $available_audiences[ $audience_index_a ];
-				$audience_b = $available_audiences[ $audience_index_b ];
-
-				$audience_type_a = $audience_a['audienceType'];
-				$audience_type_b = $audience_b['audienceType'];
-
-				if ( $audience_type_a === $audience_type_b ) {
-					if ( 'SITE_KIT_AUDIENCE' === $audience_type_b ) {
-						return 'new-visitors' === $audience_a['audienceSlug'] ? -1 : 1;
-					}
-
-					return $audience_index_a - $audience_index_b;
-				}
-
-				$weight_a = self::AUDIENCE_TYPE_SORT_ORDER[ $audience_type_a ];
-				$weight_b = self::AUDIENCE_TYPE_SORT_ORDER[ $audience_type_b ];
-
-				if ( $weight_a === $weight_b ) {
-					return $audience_index_a - $audience_index_b;
-				}
-
-				return $weight_a - $weight_b;
-			}
-		);
-
-		$this->audience_settings->merge(
-			array(
-				'availableAudiences'             => $available_audiences,
-				'availableAudiencesLastSyncedAt' => time(),
-			)
-		);
-
-		return $available_audiences;
-	}
-
-	/**
-	 * Gets the audience slug.
-	 *
-	 * @since 1.126.0
-	 *
-	 * @param GoogleAnalyticsAdminV1alphaAudience $audience The audience object.
-	 * @return string The audience slug.
-	 */
-	private function get_audience_slug( GoogleAnalyticsAdminV1alphaAudience $audience ) {
-		$display_name = $audience->getDisplayName();
-
-		if ( 'All Users' === $display_name ) {
-			return 'all-users';
-		}
-
-		if ( 'Purchasers' === $display_name ) {
-			return 'purchasers';
-		}
-
-		$filter_clauses = $audience->getFilterClauses();
-
-		if ( $filter_clauses ) {
-			if ( $this->has_audience_site_kit_identifier(
-				$filter_clauses,
-				'new_visitors'
-			) ) {
-				return 'new-visitors';
-			}
-
-			if ( $this->has_audience_site_kit_identifier(
-				$filter_clauses,
-				'returning_visitors'
-			) ) {
-				return 'returning-visitors';
-			}
-		}
-
-		// Return an empty string for user defined audiences.
-		return '';
-	}
-
-	/**
-	 * Gets the audience type based on the audience slug.
-	 *
-	 * @since 1.126.0
-	 *
-	 * @param string $audience_slug The audience slug.
-	 * @return string The audience type.
-	 */
-	private function get_audience_type( $audience_slug ) {
-		if ( ! $audience_slug ) {
-			return 'USER_AUDIENCE';
-		}
-
-		switch ( $audience_slug ) {
-			case 'all-users':
-			case 'purchasers':
-				return 'DEFAULT_AUDIENCE';
-			case 'new-visitors':
-			case 'returning-visitors':
-				return 'SITE_KIT_AUDIENCE';
-		}
-	}
-
-	/**
-	 * Checks if an audience Site Kit identifier
-	 * (e.g. `created_by_googlesitekit:new_visitors`) exists in a nested array or object.
-	 *
-	 * @since 1.126.0
-	 *
-	 * @param array|object $data The array or object to search.
-	 * @param mixed        $identifier The identifier to search for.
-	 * @return bool True if the value exists, false otherwise.
-	 */
-	private function has_audience_site_kit_identifier( $data, $identifier ) {
-		if ( is_array( $data ) || is_object( $data ) ) {
-			foreach ( $data as $key => $value ) {
-				if ( is_array( $value ) || is_object( $value ) ) {
-					// Recursively search the nested structure.
-					if ( $this->has_audience_site_kit_identifier( $value, $identifier ) ) {
-						return true;
-					}
-				} elseif (
-					'fieldName' === $key &&
-					'groupId' === $value &&
-					isset( $data['stringFilter'] ) &&
-					"created_by_googlesitekit:{$identifier}" === $data['stringFilter']['value']
-				) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns the Site Kit-created audience display names from the passed list of audiences.
-	 *
-	 * @since 1.129.0
-	 *
-	 * @param array $audiences List of audiences.
-	 *
-	 * @return array List of Site Kit-created audience display names.
-	 */
-	private function get_site_kit_audiences( $audiences ) {
-		// Ensure that audiences are available, otherwise return an empty array.
-		if ( empty( $audiences ) || ! is_array( $audiences ) ) {
-			return array();
-		}
-
-		$site_kit_audiences = array_filter( $audiences, fn ( $audience ) => ! empty( $audience['audienceType'] ) && ( 'SITE_KIT_AUDIENCE' === $audience['audienceType'] ) );
-
-		if ( empty( $site_kit_audiences ) ) {
-			return array();
-		}
-
-		return wp_list_pluck( $site_kit_audiences, 'displayName' );
-	}
-
-	/**
 	 * Populates conversion reporting event data to pass to JS via _googlesitekitModulesData.
 	 *
 	 * @since 1.139.0
@@ -2776,16 +2054,16 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 	 *
 	 * @since 1.158.0
 	 * @since 1.160.0 Include $modules_data parameter to match the interface.
+	 * @since 1.181.0 Remove $modules_data parameter as per updated interface.
 	 *
-	 * @param array $modules_data Inline modules data.
 	 * @return array An array of the module's inline data.
 	 */
-	public function get_inline_data( $modules_data ) {
-		if ( ! $this->is_connected() ) {
-			return $modules_data;
-		}
-
+	public function get_inline_data() {
 		$inline_data = array();
+
+		if ( ! $this->is_connected() ) {
+			return $inline_data;
+		}
 
 		// Web data stream availability data.
 		$settings                                  = $this->get_settings()->get();
@@ -2801,7 +2079,6 @@ final class Analytics_4 extends Module implements Module_With_Inline_Data, Modul
 			$this->get_inline_conversion_reporting_events_detection()
 		);
 
-		$modules_data[ self::MODULE_SLUG ] = $inline_data;
-		return $modules_data;
+		return $inline_data;
 	}
 }
